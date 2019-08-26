@@ -87,6 +87,7 @@ namespace GeometryEscape
                 Index = TotalTileAmount,
                 TileType = tileType
             };
+            _TotalTileAmount++;
             EntityManager.SetComponentData(instance, properties);
         }
 
@@ -122,7 +123,22 @@ namespace GeometryEscape
             [ReadOnly] public float timeStep;
             public void Execute([WriteOnly] ref Coordinate c0)
             {
-                if (c0.X % 2 == 1) c0.Direction = (int)(timer / timeStep * 360);
+                if (c0.X % 2 != 1) c0.Direction = (int)(timer / timeStep * 360);
+            }
+        }
+
+        [BurstCompile]
+        struct ChangeColorTest : IJobForEach<TileProperties, DefaultColor>
+        {
+            [ReadOnly] public int counter;
+            public void Execute([ReadOnly] ref TileProperties c0, [WriteOnly] ref DefaultColor c1)
+            {
+                Vector4 color = default;
+                int offset = c0.Index + counter;
+                color.x = offset * 32 % 256 / 256f;
+                color.y = (offset * 32 + 64) % 256 / 256f;
+                color.z = (offset * 32 + 128) % 256 / 256f;
+                c1.Color = color;
             }
         }
 
@@ -136,6 +152,10 @@ namespace GeometryEscape
                 Timer = 0;
                 ++Counter;
                 inputDeps = new RotateTileTest1
+                {
+                    counter = Counter,
+                }.Schedule(this, inputDeps);
+                inputDeps = new ChangeColorTest
                 {
                     counter = Counter,
                 }.Schedule(this, inputDeps);

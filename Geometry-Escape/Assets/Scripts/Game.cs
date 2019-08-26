@@ -17,7 +17,7 @@ namespace GeometryEscape {
         {
             TileRenderSystem.MaterialAmount = m_TileMaterials.GetMaterialAmount();
             TileSystem.TileScale = 2;
-            TileSystem.TimeStep = 0.5f;
+            TileSystem.TimeStep = 1f;
             m_EntityManager = World.Active.EntityManager;
             m_TileRenderSystem = World.Active.GetOrCreateSystem<TileRenderSystem>();
             m_TileRenderSystem.TileMesh = m_TileMaterials.TileMesh;
