@@ -16,14 +16,18 @@ namespace GeometryEscape {
         void Start()
         {
             TileRenderSystem.MaterialAmount = m_TileMaterials.GetMaterialAmount();
+            TileSystem.TileScale = 2;
+            TileSystem.TimeStep = 0.5f;
             m_EntityManager = World.Active.EntityManager;
             m_TileRenderSystem = World.Active.GetOrCreateSystem<TileRenderSystem>();
             m_TileRenderSystem.TileMesh = m_TileMaterials.TileMesh;
             m_TileRenderSystem.Materials = m_TileMaterials.Materials;
             m_TileRenderSystem.MaxSingleMaterialTileAmount = 1024;
+            m_TileRenderSystem.Camera = Camera.main;
             m_TileRenderSystem.Init();
 
             m_TileSystem = World.Active.GetOrCreateSystem<TileSystem>();
+            
             m_TileSystem.Init();
             for (int i = 0; i < 10; i++)
             {

@@ -5,6 +5,7 @@ using Unity.Collections.LowLevel.Unsafe;
 using Unity.Entities;
 using Unity.Jobs;
 using Unity.Mathematics;
+using Unity.Transforms;
 using UnityEngine;
 using UnityEngine.Assertions;
 
@@ -20,27 +21,61 @@ namespace GeometryEscape
     public class TileRenderSystem : JobComponentSystem
     {
         #region Private
-        private EndSimulationEntityCommandBufferSystem m_CommandBufferSystem;
+        /// <summary>
+        /// The query to select array of tiles for rendering.
+        /// </summary>
         private EntityQuery _TileQuery;
-        private NativeArray<CustomLocalToWorld> _TilesLocalToWorlds;
+        /// <summary>
+        /// Array to hold the result for query.
+        /// </summary>
+        private NativeArray<LocalToWorld> _TilesLocalToWorlds;
+        /// <summary>
+        /// Array to hold the result for query.
+        /// </summary>
         private NativeArray<DefaultColor> _TileColors;
+        /// <summary>
+        /// The data to set the compute buffer.
+        /// </summary>
         private float4x4[] _Matrices;
+        /// <summary>
+        ///  The data to set the compute buffer.
+        /// </summary>
         private float4[] _Colors;
+        /// <summary>
+        /// The buffer send to GPU for rendering.
+        /// </summary>
         private ComputeBuffer _LocalToWorldBuffer, _ColorBuffer, _ArgsBuffer;
-        private Camera m_Camera;
+        
         private uint[] args;
-        private float _Timer;
         #endregion
 
         #region Public
         private int _MaxSingleMaterialTileAmount;
         private UnityEngine.Material[] m_Materials;
         private static int _MaterialAmount;
+        private Camera m_Camera;
         private UnityEngine.Mesh m_TileMesh;
+        /// <summary>
+        /// The list of material for drawing a tile.
+        /// </summary>
         public UnityEngine.Material[] Materials { get => m_Materials; set => m_Materials = value; }
+        /// <summary>
+        /// The mesh for a tile, which is just a quad.
+        /// </summary>
         public UnityEngine.Mesh TileMesh { get => m_TileMesh; set => m_TileMesh = value; }
+        /// <summary>
+        /// The amount of different material types.
+        /// </summary>
         public static int MaterialAmount { get => _MaterialAmount; set => _MaterialAmount = value; }
+        /// <summary>
+        /// For each type of material, the maximum tile amount the system supports.
+        /// There's no upper limit for this but a greater value will produce more overhead.
+        /// </summary>
         public int MaxSingleMaterialTileAmount { get => _MaxSingleMaterialTileAmount; set => _MaxSingleMaterialTileAmount = value; }
+        /// <summary>
+        /// The target camera for rendering.
+        /// </summary>
+        public Camera Camera { get => m_Camera; set => m_Camera = value; }
 
         #endregion
 
@@ -48,13 +83,12 @@ namespace GeometryEscape
         protected override void OnCreate()
         {
             Enabled = false;
-            _TileQuery = GetEntityQuery(typeof(TileProperties), typeof(CustomLocalToWorld), typeof(DefaultColor), typeof(RenderMaterial));
+            _TileQuery = GetEntityQuery(typeof(TileProperties), typeof(LocalToWorld), typeof(DefaultColor), typeof(RenderMaterial));
         }
 
         public void Init()
         {
             ShutDown();
-            m_Camera = Camera.main;
             _Matrices = new float4x4[_MaxSingleMaterialTileAmount];
             _Colors = new float4[_MaxSingleMaterialTileAmount];
             _LocalToWorldBuffer = new ComputeBuffer(_MaxSingleMaterialTileAmount, 64);
@@ -108,11 +142,11 @@ namespace GeometryEscape
             }
         }
 
-        private static unsafe void ToArray(NativeArray<CustomLocalToWorld> transforms, int count, float4x4[] outMatrices, int offset)
+        private static unsafe void ToArray(NativeArray<LocalToWorld> transforms, int count, float4x4[] outMatrices, int offset)
         {
             fixed (float4x4* resultMatrices = outMatrices)
             {
-                CustomLocalToWorld* sourceMatrices = (CustomLocalToWorld*)transforms.GetUnsafeReadOnlyPtr();
+                LocalToWorld* sourceMatrices = (LocalToWorld*)transforms.GetUnsafeReadOnlyPtr();
                 UnsafeUtility.MemCpy(resultMatrices + offset, sourceMatrices, UnsafeUtility.SizeOf<float4x4>() * count);
             }
         }
@@ -126,19 +160,13 @@ namespace GeometryEscape
 
         protected override JobHandle OnUpdate(JobHandle inputDeps)
         {
-            _Timer += Time.deltaTime;
-            if(_Timer >= 0.2)
-            {
-                _Timer = 0;
-            }
-
             for (int i = 0; i < _MaterialAmount; i++)
             {
                 //Set up query filter by material index. We render tiles in same material in batch.
                 _TileQuery.SetFilter(new RenderMaterial { MaterialIndex = i });
 
                 //Query matrix and colors.
-                _TilesLocalToWorlds = _TileQuery.ToComponentDataArray<CustomLocalToWorld>(Allocator.TempJob);
+                _TilesLocalToWorlds = _TileQuery.ToComponentDataArray<LocalToWorld>(Allocator.TempJob);
                 _TileColors = _TileQuery.ToComponentDataArray<DefaultColor>(Allocator.TempJob);
 
                 int amount = _TilesLocalToWorlds.Length;
