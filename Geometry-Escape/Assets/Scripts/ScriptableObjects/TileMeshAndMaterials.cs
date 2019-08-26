@@ -10,5 +10,10 @@ namespace GeometryEscape
         public UnityEngine.Mesh TileMesh;
         public UnityEngine.Material[] Materials;
         #endregion
+
+        public int GetMaterialAmount()
+        {
+            return Materials.Length;
+        }
     }
 }

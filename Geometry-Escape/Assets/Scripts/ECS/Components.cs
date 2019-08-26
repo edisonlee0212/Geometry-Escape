@@ -15,9 +15,19 @@ namespace GeometryEscape
     }
 
     [Serializable]
-    public struct Material : IComponentData
+    public struct RenderMaterial : ISharedComponentData, IEquatable<RenderMaterial>
     {
-        public int Index;
+        public int MaterialIndex;
+
+        public bool Equals(RenderMaterial other)
+        {
+            return other.MaterialIndex == MaterialIndex;
+        }
+
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
     }
 
     [Serializable]
