@@ -30,14 +30,15 @@
         half _Metallic;
 
 		#ifdef UNITY_PROCEDURAL_INSTANCING_ENABLED
-		StructuredBuffer<float4x4> localToWorldBuffer;
-		StructuredBuffer<float4> colorBuffer;
+		StructuredBuffer<float4x4> _LocalToWorldBuffer;
+		StructuredBuffer<float4> _ColorBuffer;
+		StructuredBuffer<float4> _TilingAndOffsetBuffer;
 		#endif
 
 		void setup()
 		{
 			#ifdef UNITY_PROCEDURAL_INSTANCING_ENABLED
-			float4x4 data = localToWorldBuffer[unity_InstanceID];
+			float4x4 data = _LocalToWorldBuffer[unity_InstanceID];
 			unity_ObjectToWorld = data;
 			#endif
 		}
@@ -45,9 +46,14 @@
         void surf (Input IN, inout SurfaceOutputStandard o)
         {
             // Albedo comes from a texture tinted by color
-			fixed4 c = tex2D(_MainTex, IN.uv_MainTex);
 			#ifdef UNITY_PROCEDURAL_INSTANCING_ENABLED
-            c = c * colorBuffer[unity_InstanceID];
+			float4 to = _TilingAndOffsetBuffer[unity_InstanceID];
+			fixed4 c = tex2D(_MainTex, IN.uv_MainTex * to.xy + to.zw);
+			#else
+			fixed4 c = tex2D(_MainTex, IN.uv_MainTex);
+			#endif
+			#ifdef UNITY_PROCEDURAL_INSTANCING_ENABLED
+            c = c * _ColorBuffer[unity_InstanceID];
 			#endif
             o.Albedo = c.rgb;
             // Metallic and smoothness come from slider variables

@@ -30,9 +30,13 @@ namespace GeometryEscape
         /// </summary>
         private NativeArray<LocalToWorld> _TilesLocalToWorlds;
         /// <summary>
+        /// Array to hold the texture info (tiling and offset).
+        /// </summary>
+        private NativeArray<TextureInfo> _TilesTextureInfos;
+        /// <summary>
         /// Array to hold the result for query.
         /// </summary>
-        private NativeArray<DefaultColor> _TileColors;
+        private NativeArray<DefaultColor> _TilesColors;
         /// <summary>
         /// The data to set the compute buffer.
         /// </summary>
@@ -42,9 +46,13 @@ namespace GeometryEscape
         /// </summary>
         private float4[] _Colors;
         /// <summary>
+        /// The data to set the compute buffer.
+        /// </summary>
+        private float4[] _TextureInfos;
+        /// <summary>
         /// The buffer send to GPU for rendering.
         /// </summary>
-        private ComputeBuffer _LocalToWorldBuffer, _ColorBuffer, _ArgsBuffer;
+        private ComputeBuffer _LocalToWorldBuffer, _ColorBuffer, _TextureInfoBuffer, _ArgsBuffer;
         
         private uint[] args;
         #endregion
@@ -83,7 +91,7 @@ namespace GeometryEscape
         protected override void OnCreate()
         {
             Enabled = false;
-            _TileQuery = GetEntityQuery(typeof(TileProperties), typeof(LocalToWorld), typeof(DefaultColor), typeof(RenderMaterial));
+            _TileQuery = GetEntityQuery(typeof(TextureInfo), typeof(TileProperties), typeof(LocalToWorld), typeof(DefaultColor), typeof(RenderMaterialIndex));
         }
 
         public void Init()
@@ -91,7 +99,9 @@ namespace GeometryEscape
             ShutDown();
             _Matrices = new float4x4[_MaxSingleMaterialTileAmount];
             _Colors = new float4[_MaxSingleMaterialTileAmount];
+            _TextureInfos = new float4[_MaxSingleMaterialTileAmount];
             _LocalToWorldBuffer = new ComputeBuffer(_MaxSingleMaterialTileAmount, 64);
+            _TextureInfoBuffer = new ComputeBuffer(_MaxSingleMaterialTileAmount, 16);
             _ColorBuffer = new ComputeBuffer(_MaxSingleMaterialTileAmount, 16);
             args = new uint[5] { m_TileMesh.GetIndexCount(0), 0, 0, 0, 0 };
             _ArgsBuffer = new ComputeBuffer(1, args.Length * sizeof(uint), ComputeBufferType.IndirectArguments);
@@ -103,9 +113,11 @@ namespace GeometryEscape
         {
             Enabled = false;
             if (_TilesLocalToWorlds.IsCreated) _TilesLocalToWorlds.Dispose();
-            if (_TileColors.IsCreated) _TileColors.Dispose();
+            if (_TilesColors.IsCreated) _TilesColors.Dispose();
+            if (_TilesTextureInfos.IsCreated) _TilesTextureInfos.Dispose();
             if (_LocalToWorldBuffer != null) _LocalToWorldBuffer.Release();
             if (_ColorBuffer != null) _ColorBuffer.Release();
+            if (_TextureInfoBuffer != null) _TextureInfoBuffer.Release();
             if (_ArgsBuffer != null) _ArgsBuffer.Release();
         }
 
@@ -142,6 +154,15 @@ namespace GeometryEscape
             }
         }
 
+        public static unsafe void ToArray(NativeArray<TextureInfo> colors, int count, float4[] outMatrices, int offset)
+        {
+            fixed (float4* resultMatrices = outMatrices)
+            {
+                TextureInfo* sourceMatrices = (TextureInfo*)colors.GetUnsafeReadOnlyPtr();
+                UnsafeUtility.MemCpy(resultMatrices + offset, sourceMatrices, UnsafeUtility.SizeOf<float4>() * count);
+            }
+        }
+
         private static unsafe void ToArray(NativeArray<LocalToWorld> transforms, int count, float4x4[] outMatrices, int offset)
         {
             fixed (float4x4* resultMatrices = outMatrices)
@@ -156,31 +177,34 @@ namespace GeometryEscape
 
         #region Jobs
         #endregion
-
+        
 
         protected override JobHandle OnUpdate(JobHandle inputDeps)
         {
             for (int i = 0; i < _MaterialAmount; i++)
             {
                 //Set up query filter by material index. We render tiles in same material in batch.
-                _TileQuery.SetFilter(new RenderMaterial { MaterialIndex = i });
+                _TileQuery.SetFilter(new RenderMaterialIndex { Value = i });
 
                 //Query matrix and colors.
                 _TilesLocalToWorlds = _TileQuery.ToComponentDataArray<LocalToWorld>(Allocator.TempJob);
-                _TileColors = _TileQuery.ToComponentDataArray<DefaultColor>(Allocator.TempJob);
-
+                _TilesColors = _TileQuery.ToComponentDataArray<DefaultColor>(Allocator.TempJob);
+                _TilesTextureInfos = _TileQuery.ToComponentDataArray<TextureInfo>(Allocator.TempJob);
                 int amount = _TilesLocalToWorlds.Length;
 
                 //Convert from NativeArray to array.
                 ToArray(_TilesLocalToWorlds, amount, _Matrices, 0);
-                ToArray(_TileColors, amount, _Colors, 0);
+                ToArray(_TilesColors, amount, _Colors, 0);
+                ToArray(_TilesTextureInfos, amount, _TextureInfos, 0);
 
                 //Set data to compute buffer, so we can send it directly to GPU.
                 _LocalToWorldBuffer.SetData(_Matrices);
                 _ColorBuffer.SetData(_Colors);
-                m_Materials[i].SetBuffer("localToWorldBuffer", _LocalToWorldBuffer);
-                m_Materials[i].SetBuffer("colorBuffer", _ColorBuffer);
+                _TextureInfoBuffer.SetData(_TextureInfos);
 
+                m_Materials[i].SetBuffer("_LocalToWorldBuffer", _LocalToWorldBuffer);
+                m_Materials[i].SetBuffer("_ColorBuffer", _ColorBuffer);
+                m_Materials[i].SetBuffer("_TilingAndOffsetBuffer", _TextureInfoBuffer);
                 //Set up args buffer, so the GPU knows how many meshes(tiles) we want to render in this draw call.
                 args[1] = (uint)amount;
                 _ArgsBuffer.SetData(args);
@@ -188,7 +212,8 @@ namespace GeometryEscape
                 //Draw tiles.
                 Graphics.DrawMeshInstancedIndirect(m_TileMesh, 0, m_Materials[i], new Bounds(Vector3.zero, Vector3.one * 60000), _ArgsBuffer, 0, null, 0, false, 0);
                 _TilesLocalToWorlds.Dispose();
-                _TileColors.Dispose();
+                _TilesColors.Dispose();
+                _TilesTextureInfos.Dispose();
             }
 
             return inputDeps;

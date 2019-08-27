@@ -14,7 +14,7 @@ namespace GeometryEscape
     {
         #region Private
         private EntityArchetype _TileEntityArchetype;
-        private RenderMaterial[] _RenderMaterials;
+        private RenderMaterialIndex[] _RenderMaterials;
         private int _MaterialAmount;
         #endregion
 
@@ -35,14 +35,16 @@ namespace GeometryEscape
         protected override void OnCreate()
         {
             _TileEntityArchetype = EntityManager.CreateArchetype(
-                typeof(RenderMaterial),
+                typeof(RenderMaterialIndex),
+                typeof(TextureIndex),
                 typeof(Coordinate),
                 typeof(Translation),
                 typeof(Rotation),
                 typeof(Scale),
                 typeof(Unity.Transforms.LocalToWorld),
                 typeof(TileProperties),
-                typeof(DefaultColor)
+                typeof(DefaultColor),
+                typeof(TextureInfo)
                 );
         }
 
@@ -50,7 +52,7 @@ namespace GeometryEscape
         {
             ShutDown();
             _MaterialAmount = TileRenderSystem.MaterialAmount;
-            _RenderMaterials = new RenderMaterial[_MaterialAmount];
+            _RenderMaterials = new RenderMaterialIndex[_MaterialAmount];
             _TotalTileAmount = 0;
             Enabled = true;
         }
@@ -78,10 +80,16 @@ namespace GeometryEscape
             }
             var color = new DefaultColor { };
             color.Color = Vector4.one;
+            var textureInfo = new TextureInfo
+            {
+                Value = new float4(1, 1, 0, 0)
+            };
+
             Entity instance = EntityManager.CreateEntity(_TileEntityArchetype);
             EntityManager.SetSharedComponentData(instance, _RenderMaterials[materialIndex]);
             EntityManager.SetComponentData(instance, initialCoordinate);
             EntityManager.SetComponentData(instance, color);
+            EntityManager.SetComponentData(instance, textureInfo);
             var properties = new TileProperties
             {
                 Index = TotalTileAmount,
@@ -142,6 +150,19 @@ namespace GeometryEscape
             }
         }
 
+        [BurstCompile]
+        struct ChangeTextureInfoTest : IJobForEach<TextureInfo>
+        {
+            [ReadOnly] public float timer;
+            [ReadOnly] public float timeStep;
+            public void Execute([WriteOnly] ref TextureInfo c0)
+            {
+                float4 to = default;
+                to.x = timer / timeStep;
+                to.y = timer / timeStep;
+                c0.Value = to;
+            }
+        }
         #endregion
 
         protected override JobHandle OnUpdate(JobHandle inputDeps)
@@ -167,6 +188,13 @@ namespace GeometryEscape
                 timer = Timer,
                 timeStep = TimeStep
             }.Schedule(this, inputDeps);
+
+            inputDeps = new ChangeTextureInfoTest
+            {
+                timer = Timer,
+                timeStep = TimeStep
+            }.Schedule(this, inputDeps);
+
 
             inputDeps = new CalculateTileLocalToWorld
             {
