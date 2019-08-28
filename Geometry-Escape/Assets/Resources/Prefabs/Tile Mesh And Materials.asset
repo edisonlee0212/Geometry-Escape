@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a53890893056b6942a4a3ecf61b5dd4d, type: 3}
   m_Name: Tile Mesh And Materials
   m_EditorClassIdentifier: 
-  TileMesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
-  Materials:
+  _TileMesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
+  _Materials:
   - {fileID: 2100000, guid: 2f7626e6a21e6d947b26a774973205fb, type: 2}
+  - {fileID: 2100000, guid: fd52611b40a505945b8d70e7200e94e1, type: 2}

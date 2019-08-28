@@ -7,17 +7,22 @@ namespace GeometryEscape {
     {
         [SerializeField]
         private TileMeshAndMaterials m_TileMaterials = null;
-
         private EntityManager m_EntityManager;
-        
         private TileRenderSystem m_TileRenderSystem;
         private TileSystem m_TileSystem;
 
+
+        private static Controls _InputSystem;
+        public static Controls InputSystem { get => _InputSystem; set => _InputSystem = value; }
+
         void Start()
         {
+            _InputSystem = new Controls();
+            _InputSystem.Enable();
             TileRenderSystem.MaterialAmount = m_TileMaterials.GetMaterialAmount();
             TileSystem.TileScale = 2;
             TileSystem.TimeStep = 1f;
+            TileSystem.InputSystem = InputSystem;
             m_EntityManager = World.Active.EntityManager;
             m_TileRenderSystem = World.Active.GetOrCreateSystem<TileRenderSystem>();
             m_TileRenderSystem.TileMesh = m_TileMaterials.TileMesh;
@@ -34,7 +39,7 @@ namespace GeometryEscape {
                 for (int j = 0; j < 10; j++)
                 {
                     int index = i * 10 + j;
-                    m_TileSystem.AddTile(0, new Coordinate { X = i, Y = j, Z = 0 });
+                    m_TileSystem.AddTile(index % 2, new Coordinate { X = i, Y = j, Z = 0 });
                 }
             }
         }

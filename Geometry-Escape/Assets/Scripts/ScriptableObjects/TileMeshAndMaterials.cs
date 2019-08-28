@@ -7,13 +7,16 @@ namespace GeometryEscape
     public class TileMeshAndMaterials : ScriptableObject
     {
         #region Public
-        public UnityEngine.Mesh TileMesh;
-        public UnityEngine.Material[] Materials;
-        #endregion
-
+        [SerializeField]
+        private UnityEngine.Mesh _TileMesh;
+        [SerializeField]
+        private UnityEngine.Material[] _Materials;
+        public Mesh TileMesh { get => _TileMesh; set => _TileMesh = value; }
+        public Material[] Materials { get => _Materials; set => _Materials = value; }
         public int GetMaterialAmount()
         {
             return Materials.Length;
         }
+        #endregion
     }
 }

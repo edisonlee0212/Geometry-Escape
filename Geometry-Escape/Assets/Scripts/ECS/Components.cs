@@ -30,21 +30,6 @@ namespace GeometryEscape
     }
 
     [Serializable]
-    public struct TextureIndex : ISharedComponentData, IEquatable<TextureIndex>
-    {
-        public int Value;
-
-        public bool Equals(TextureIndex other)
-        {
-            return other.Value == Value;
-        }
-        public override int GetHashCode()
-        {
-            return base.GetHashCode();
-        }
-    }
-
-    [Serializable]
     public struct TextureInfo : IComponentData
     {
         public float4 Value;
