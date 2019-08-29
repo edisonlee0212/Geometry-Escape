@@ -40,8 +40,8 @@ namespace GeometryEscape
         /// <summary>
         /// The buffer send to GPU for rendering.
         /// </summary>
-        private ComputeBuffer[] _LocalToWorldBuffer, _ColorBuffer, _TextureInfoBuffer;
-        private ComputeBuffer _ArgsBuffer;
+        private ComputeBuffer[] _LocalToWorldBuffers, _ColorBuffers, _TextureInfoBuffers;
+        private ComputeBuffer[] _ArgsBuffers;
         private uint[] args;
         #endregion
 
@@ -85,13 +85,14 @@ namespace GeometryEscape
         public void Init()
         {
             ShutDown();
-            _LocalToWorldBuffer = new ComputeBuffer[_MaterialAmount];
-            _TextureInfoBuffer = new ComputeBuffer[_MaterialAmount];
-            _ColorBuffer = new ComputeBuffer[_MaterialAmount];            
-            
+            _LocalToWorldBuffers = new ComputeBuffer[_MaterialAmount];
+            _TextureInfoBuffers = new ComputeBuffer[_MaterialAmount];
+            _ColorBuffers = new ComputeBuffer[_MaterialAmount];
+
             args = new uint[5] { m_TileMesh.GetIndexCount(0), 0, 0, 0, 0 };
-            _ArgsBuffer = new ComputeBuffer(1, args.Length * sizeof(uint), ComputeBufferType.IndirectArguments);
-            _ArgsBuffer.SetData(args);
+            _ArgsBuffers = new ComputeBuffer[_MaterialAmount];
+            //_ArgsBuffers = new ComputeBuffer(1, args.Length * sizeof(uint), ComputeBufferType.IndirectArguments);
+            //_ArgsBuffers.SetData(args);
             Enabled = true;
         }
 
@@ -101,19 +102,22 @@ namespace GeometryEscape
             if (_TilesLocalToWorlds.IsCreated) _TilesLocalToWorlds.Dispose();
             if (_TilesColors.IsCreated) _TilesColors.Dispose();
             if (_TilesTextureInfos.IsCreated) _TilesTextureInfos.Dispose();
-            if(_LocalToWorldBuffer != null)foreach(var i in _LocalToWorldBuffer)
-            {
-                if (i != null) i.Release();
-            }
-            if (_ColorBuffer != null) foreach (var i in _ColorBuffer)
-            {
-                if (i != null) i.Release();
-            }
-            if (_TextureInfoBuffer != null) foreach (var i in _TextureInfoBuffer)
-            {
-                if (i != null) i.Release();
-            }
-            if (_ArgsBuffer != null) _ArgsBuffer.Release();
+            if (_LocalToWorldBuffers != null) foreach (var i in _LocalToWorldBuffers)
+                {
+                    if (i != null) i.Release();
+                }
+            if (_ColorBuffers != null) foreach (var i in _ColorBuffers)
+                {
+                    if (i != null) i.Release();
+                }
+            if (_TextureInfoBuffers != null) foreach (var i in _TextureInfoBuffers)
+                {
+                    if (i != null) i.Release();
+                }
+            if (_ArgsBuffers != null) foreach (var i in _ArgsBuffers)
+                {
+                    if (i != null) i.Release();
+                }
         }
 
         protected override void OnDestroy()
@@ -167,12 +171,12 @@ namespace GeometryEscape
             }
         }
         #endregion
-        
+
         #endregion
 
         #region Jobs
         #endregion
-        
+
 
         protected override JobHandle OnUpdate(JobHandle inputDeps)
         {
@@ -180,38 +184,42 @@ namespace GeometryEscape
             {
                 //Set up query filter by material index. We render tiles in same material in batch.
                 _TileQuery.SetFilter(new RenderMaterialIndex { Value = i });
-                
+
                 //Query matrix and colors.
                 _TilesLocalToWorlds = _TileQuery.ToComponentDataArray<LocalToWorld>(Allocator.TempJob);
                 _TilesColors = _TileQuery.ToComponentDataArray<DefaultColor>(Allocator.TempJob);
                 _TilesTextureInfos = _TileQuery.ToComponentDataArray<TextureIndex>(Allocator.TempJob);
                 int amount = _TilesLocalToWorlds.Length;
+                if (amount != 0)
+                {
+                    //Reallocate ComputeBuffer.
+                    if (_LocalToWorldBuffers[i] != null) _LocalToWorldBuffers[i].Release();
+                    if (_ColorBuffers[i] != null) _ColorBuffers[i].Release();
+                    if (_TextureInfoBuffers[i] != null) _TextureInfoBuffers[i].Release();
+                    if (_ArgsBuffers[i] != null) _ArgsBuffers[i].Release();
+                    _LocalToWorldBuffers[i] = new ComputeBuffer(amount, 64);
+                    _ColorBuffers[i] = new ComputeBuffer(amount, 16);
+                    _TextureInfoBuffers[i] = new ComputeBuffer(amount, 4);
+                    _ArgsBuffers[i] = new ComputeBuffer(1, args.Length * sizeof(uint), ComputeBufferType.IndirectArguments);
 
-                //Reallocate ComputeBuffer.
-                if (_LocalToWorldBuffer[i] != null) _LocalToWorldBuffer[i].Release();
-                if (_ColorBuffer[i] != null) _ColorBuffer[i].Release();
-                if (_TextureInfoBuffer[i] != null) _TextureInfoBuffer[i].Release();
-                _LocalToWorldBuffer[i] = new ComputeBuffer(amount, 64);
-                _ColorBuffer[i] = new ComputeBuffer(amount, 16);
-                _TextureInfoBuffer[i] = new ComputeBuffer(amount, 4);
+                    //Set up data for ComputeBuffer.
+                    _LocalToWorldBuffers[i].SetData(_TilesLocalToWorlds);
+                    _ColorBuffers[i].SetData(_TilesColors);
+                    _TextureInfoBuffers[i].SetData(_TilesTextureInfos);
 
-                //Set up data for ComputeBuffer.
-                _LocalToWorldBuffer[i].SetData(_TilesLocalToWorlds);
-                _ColorBuffer[i].SetData(_TilesColors);
-                _TextureInfoBuffer[i].SetData(_TilesTextureInfos);
+                    //Set up material.
+                    m_Materials[i].SetBuffer("_LocalToWorldBuffer", _LocalToWorldBuffers[i]);
+                    m_Materials[i].SetBuffer("_ColorBuffer", _ColorBuffers[i]);
+                    m_Materials[i].SetBuffer("_TilingAndOffsetBuffer", _TextureInfoBuffers[i]);
 
-                //Set up material.
-                m_Materials[i].SetBuffer("_LocalToWorldBuffer", _LocalToWorldBuffer[i]);
-                m_Materials[i].SetBuffer("_ColorBuffer", _ColorBuffer[i]);
-                m_Materials[i].SetBuffer("_TilingAndOffsetBuffer", _TextureInfoBuffer[i]);
-                
-                //Set up args buffer, so the GPU knows how many meshes(tiles) we want to render in this draw call.
-                args[1] = (uint)amount;
-                _ArgsBuffer.SetData(args);
-                
-                //Draw tiles.
-                Graphics.DrawMeshInstancedIndirect(m_TileMesh, 0, m_Materials[i], new Bounds(Vector3.zero, Vector3.one * 60000), _ArgsBuffer, 0, null, 0, false, 0);
+                    //Set up args buffer, so the GPU knows how many meshes(tiles) we want to render in this draw call.
+                    args[1] = (uint)amount;
+                    _ArgsBuffers[i].SetData(args);
 
+                    //Draw tiles.
+                    Graphics.DrawMeshInstancedIndirect(m_TileMesh, 0, m_Materials[i], new Bounds(Vector3.zero, Vector3.one * 60000), _ArgsBuffers[i], 0, null, 0, false, 0);
+                }
+                //Dispose resources.
                 _TilesLocalToWorlds.Dispose();
                 _TilesColors.Dispose();
                 _TilesTextureInfos.Dispose();

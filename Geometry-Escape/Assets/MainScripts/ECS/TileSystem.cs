@@ -37,7 +37,7 @@ namespace GeometryEscape
         #region Managers
         protected override void OnCreate()
         {
-            
+
         }
 
         public void Init()
@@ -63,7 +63,7 @@ namespace GeometryEscape
 
         #region Methods
 
-        
+
 
         #endregion
 
@@ -151,7 +151,7 @@ namespace GeometryEscape
             {
                 counter = Counter / 10,
             }.Schedule(this, inputDeps);
-            
+
             inputDeps = new ChangeTextureInfoTest
             {
                 counter = Counter,
@@ -173,7 +173,7 @@ namespace GeometryEscape
             #endregion
 
             #region InputSystem
-            
+
             if (_Moving) OnMoving();
             else InputSystem.Player.Movement.performed += ctx => Move(ctx.ReadValue<Vector2>());
             if (_Zooming) OnZooming();
@@ -199,9 +199,16 @@ namespace GeometryEscape
             }.Schedule(this, inputDeps);
             inputDeps.Complete();
 
+            if (Input.GetKeyDown(KeyCode.Delete)) WorldSystem.DeleteTile(_PositionSelectedEntity[0]);
+            if (!_Moving && _PositionSelectedEntity[0] != null && Input.GetKeyDown(KeyCode.Insert)) WorldSystem.AddTile(0, new Coordinate
+            {
+                X = (int)-_CurrentCenterPosition.x,
+                Y = (int)-_CurrentCenterPosition.y,
+                Z = (int)-_CurrentCenterPosition.z,
+            });
             return inputDeps;
         }
-        
+
         #region Variables for InputSystem
         private bool _Moving, _Zooming;
         private float _MovementTimer, _ZoomingTimer;
@@ -254,7 +261,7 @@ namespace GeometryEscape
                         _TargetZoomFactor = _PreviousZoomFactor;
                         _TargetZoomFactor += 0.5f;
                     }
-                    else if(direction < 0 && _CurrentZoomFactor > 0.5f)
+                    else if (direction < 0 && _CurrentZoomFactor > 0.5f)
                     {
                         _TargetZoomFactor = _PreviousZoomFactor;
                         _TargetZoomFactor -= 0.5f;

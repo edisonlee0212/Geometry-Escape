@@ -37,13 +37,13 @@ namespace GeometryEscape {
 
             m_WorldSystem = World.Active.GetOrCreateSystem<WorldSystem>();
             m_WorldSystem.Init();
-            int count = 100;
+            int count = 2;
             for (int i = 0; i < count; i++)
             {
                 for (int j = 0; j < count; j++)
                 {
                     int index = i * count + j;
-                    m_WorldSystem.AddTile(index % 3, new Coordinate { X = i, Y = j, Z = 0 });
+                    WorldSystem.AddTile(index % 3, new Coordinate { X = i, Y = j, Z = 0 });
                 }
             }
         }

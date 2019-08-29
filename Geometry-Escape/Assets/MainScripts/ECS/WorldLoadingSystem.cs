@@ -20,14 +20,15 @@ namespace GeometryEscape
     public class WorldSystem : JobComponentSystem
     {
         #region Private
-        private EntityArchetype _TileEntityArchetype;
+        private static EntityArchetype _TileEntityArchetype;
         private int _MaterialAmount;
-        private NativeQueue<TileInfo> _TileQueue;
+        private static NativeQueue<TileInfo> _TileCreationQueue;
+        private static NativeQueue<Entity> _TileDestructionQueue;
         #endregion
 
         #region Public
-        private static int _TotalTileAmount;
-        public static int TotalTileAmount { get => _TotalTileAmount; }
+        private int _TotalTileAmount;
+        public int TotalTileAmount { get => _TotalTileAmount; }
         #endregion
 
         #region Managers
@@ -45,7 +46,8 @@ namespace GeometryEscape
                 typeof(TextureIndex),
                 typeof(TextureMaxIndex)
                 );
-            _TileQueue = new NativeQueue<TileInfo>(Allocator.Persistent);
+            _TileCreationQueue = new NativeQueue<TileInfo>(Allocator.Persistent);
+            _TileDestructionQueue = new NativeQueue<Entity>(Allocator.Persistent);
         }
 
         public void Init()
@@ -62,21 +64,28 @@ namespace GeometryEscape
 
         protected override void OnDestroy()
         {
-            if (_TileQueue.IsCreated) _TileQueue.Dispose();
+            if (_TileCreationQueue.IsCreated) _TileCreationQueue.Dispose();
+            if (_TileDestructionQueue.IsCreated) _TileDestructionQueue.Dispose();
         }
         #endregion
 
         #region Methods
 
-        public void AddTile(int materialIndex, Coordinate initialCoordinate = default, TileType tileType = TileType.Normal)
+        public static void AddTile(int materialIndex, Coordinate initialCoordinate = default, TileType tileType = TileType.Normal)
         {
-            _TileQueue.Enqueue(new TileInfo
+            _TileCreationQueue.Enqueue(new TileInfo
             {
                 MaterialIndex = materialIndex,
                 Coordinate = initialCoordinate,
                 TileType = tileType
             });
         }
+
+        public static void DeleteTile(Entity tileEntity)
+        {
+            _TileDestructionQueue.Enqueue(tileEntity);
+        }
+
         #endregion
 
         #region Jobs
@@ -84,16 +93,30 @@ namespace GeometryEscape
 
         protected override JobHandle OnUpdate(JobHandle inputDeps)
         {
-            if(_TileQueue.Count != 0)
+            if(_TileCreationQueue.Count != 0)
             {
-                int count = _TileQueue.Count;
-                for(int i = 0; i < 10 || i < count; i++)
+                int count = _TileCreationQueue.Count;
+                for(int i = 0; i < 100 && i < count; i++)
                 {
-                    var tileInfo = _TileQueue.Dequeue();
+                    var tileInfo = _TileCreationQueue.Dequeue();
                     CreateTile(tileInfo);
                 }
             }
+            if (_TileDestructionQueue.Count != 0)
+            {
+                int count = _TileDestructionQueue.Count;
+                for (int i = 0; i < 100 && i < count; i++)
+                {
+                    var tileEntity = _TileDestructionQueue.Dequeue();
+                    DestroyTile(tileEntity);
+                }
+            }
             return inputDeps;
+        }
+
+        private void DestroyTile(Entity tileEntity)
+        {
+            EntityManager.DestroyEntity(tileEntity);
         }
 
         private void CreateTile(TileInfo tileInfo)
