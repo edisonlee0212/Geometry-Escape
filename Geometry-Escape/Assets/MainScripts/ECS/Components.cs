@@ -29,10 +29,18 @@ namespace GeometryEscape
         }
     }
 
+
+
     [Serializable]
-    public struct TextureInfo : IComponentData
+    public struct TextureMaxIndex : IComponentData
     {
-        public float4 Value;
+        public ushort Value;
+    }
+
+    [Serializable]
+    public struct TextureIndex : IComponentData
+    {
+        public int Value;
     }
 
     [Serializable]
@@ -77,6 +85,7 @@ namespace GeometryEscape
     public struct TileProperties : IComponentData
     {
         public int Index;
+        public int MaterialIndex;
         public TileType TileType;
     }
 

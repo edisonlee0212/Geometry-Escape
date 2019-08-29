@@ -16,3 +16,4 @@ MonoBehaviour:
   _Materials:
   - {fileID: 2100000, guid: 2f7626e6a21e6d947b26a774973205fb, type: 2}
   - {fileID: 2100000, guid: fd52611b40a505945b8d70e7200e94e1, type: 2}
+  - {fileID: 2100000, guid: 7c95ecaafa712de42abc04bc306909e1, type: 2}

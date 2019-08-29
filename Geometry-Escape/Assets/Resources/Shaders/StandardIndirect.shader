@@ -3,8 +3,10 @@
     Properties
     {
         _MainTex ("Albedo (RGB)", 2D) = "white" {}
-        _Glossiness ("Smoothness", Range(0,1)) = 0.5
-        _Metallic ("Metallic", Range(0,1)) = 0.0
+		_Glossiness("Smoothness", Range(0,1)) = 0.5
+		_Metallic("Metallic", Range(0,1)) = 0.0
+		_TileSplitX("Tiling X", Int) = 0
+		_TileSplitY("Tiling Y", Int) = 0
     }
     SubShader
     {
@@ -28,11 +30,12 @@
 
         half _Glossiness;
         half _Metallic;
-
+		int _TileSplitX;
+		int _TileSplitY;
 		#ifdef UNITY_PROCEDURAL_INSTANCING_ENABLED
 		StructuredBuffer<float4x4> _LocalToWorldBuffer;
 		StructuredBuffer<float4> _ColorBuffer;
-		StructuredBuffer<float4> _TilingAndOffsetBuffer;
+		StructuredBuffer<int> _TilingAndOffsetBuffer;
 		#endif
 
 		void setup()
@@ -47,8 +50,14 @@
         {
             // Albedo comes from a texture tinted by color
 			#ifdef UNITY_PROCEDURAL_INSTANCING_ENABLED
-			float4 to = _TilingAndOffsetBuffer[unity_InstanceID];
-			fixed4 c = tex2D(_MainTex, IN.uv_MainTex * to.xy + to.zw);
+			int to = _TilingAndOffsetBuffer[unity_InstanceID];
+			float2 xy;
+			xy.x = 1.0 / _TileSplitX;
+			xy.y = 1.0 / _TileSplitY;
+			float2 zw;
+			zw.x = (1.0 / _TileSplitX) * (to % _TileSplitX);
+			zw.y = 1.0 - (1.0 / _TileSplitX) * (1 + to / _TileSplitX);
+			fixed4 c = tex2D(_MainTex, IN.uv_MainTex * xy + zw);
 			#else
 			fixed4 c = tex2D(_MainTex, IN.uv_MainTex);
 			#endif

@@ -32,7 +32,7 @@ namespace GeometryEscape
         /// <summary>
         /// Array to hold the texture info (tiling and offset).
         /// </summary>
-        private NativeArray<TextureInfo> _TilesTextureInfos;
+        private NativeArray<TextureIndex> _TilesTextureInfos;
         /// <summary>
         /// Array to hold the result for query.
         /// </summary>
@@ -48,7 +48,7 @@ namespace GeometryEscape
         /// <summary>
         /// The data to set the compute buffer.
         /// </summary>
-        private float4[] _TextureInfos;
+        private int[] _TextureInfos;
         /// <summary>
         /// The buffer send to GPU for rendering.
         /// </summary>
@@ -91,23 +91,23 @@ namespace GeometryEscape
         protected override void OnCreate()
         {
             Enabled = false;
-            _TileQuery = GetEntityQuery(typeof(TextureInfo), typeof(TileProperties), typeof(LocalToWorld), typeof(DefaultColor), typeof(RenderMaterialIndex));
+            _TileQuery = GetEntityQuery(typeof(TextureIndex), typeof(TileProperties), typeof(LocalToWorld), typeof(DefaultColor), typeof(RenderMaterialIndex));
         }
 
         public void Init()
         {
             ShutDown();
-            Debug.Log(_MaterialAmount);
+            //Debug.Log(_MaterialAmount);
             _Matrices = new float4x4[_MaxSingleMaterialTileAmount];
             _Colors = new float4[_MaxSingleMaterialTileAmount];
-            _TextureInfos = new float4[_MaxSingleMaterialTileAmount];
+            _TextureInfos = new int[_MaxSingleMaterialTileAmount];
             _LocalToWorldBuffer = new ComputeBuffer[_MaterialAmount];
             _TextureInfoBuffer = new ComputeBuffer[_MaterialAmount];
             _ColorBuffer = new ComputeBuffer[_MaterialAmount];
             for (int i = 0; i < _MaterialAmount; i++)
             {
                 _LocalToWorldBuffer[i] = new ComputeBuffer(_MaxSingleMaterialTileAmount, 64);
-                _TextureInfoBuffer[i] = new ComputeBuffer(_MaxSingleMaterialTileAmount, 16);
+                _TextureInfoBuffer[i] = new ComputeBuffer(_MaxSingleMaterialTileAmount, 4);
                 _ColorBuffer[i] = new ComputeBuffer(_MaxSingleMaterialTileAmount, 16);
             }
             
@@ -172,12 +172,12 @@ namespace GeometryEscape
             }
         }
 
-        public static unsafe void ToArray(NativeArray<TextureInfo> colors, int count, float4[] outMatrices, int offset)
+        public static unsafe void ToArray(NativeArray<TextureIndex> colors, int count, int[] outMatrices, int offset)
         {
-            fixed (float4* resultMatrices = outMatrices)
+            fixed (int* resultMatrices = outMatrices)
             {
-                TextureInfo* sourceMatrices = (TextureInfo*)colors.GetUnsafeReadOnlyPtr();
-                UnsafeUtility.MemCpy(resultMatrices + offset, sourceMatrices, UnsafeUtility.SizeOf<float4>() * count);
+                TextureIndex* sourceMatrices = (TextureIndex*)colors.GetUnsafeReadOnlyPtr();
+                UnsafeUtility.MemCpy(resultMatrices + offset, sourceMatrices, UnsafeUtility.SizeOf<int>() * count);
             }
         }
 
@@ -207,7 +207,7 @@ namespace GeometryEscape
                 //Query matrix and colors.
                 _TilesLocalToWorlds = _TileQuery.ToComponentDataArray<LocalToWorld>(Allocator.TempJob);
                 _TilesColors = _TileQuery.ToComponentDataArray<DefaultColor>(Allocator.TempJob);
-                _TilesTextureInfos = _TileQuery.ToComponentDataArray<TextureInfo>(Allocator.TempJob);
+                _TilesTextureInfos = _TileQuery.ToComponentDataArray<TextureIndex>(Allocator.TempJob);
                 int amount = _TilesLocalToWorlds.Length;
 
                 //Convert from NativeArray to array.

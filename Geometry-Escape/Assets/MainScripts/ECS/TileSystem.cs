@@ -50,7 +50,8 @@ namespace GeometryEscape
                 typeof(Unity.Transforms.LocalToWorld),
                 typeof(TileProperties),
                 typeof(DefaultColor),
-                typeof(TextureInfo)
+                typeof(TextureIndex),
+                typeof(TextureMaxIndex)
                 );
         }
 
@@ -88,23 +89,30 @@ namespace GeometryEscape
             }
             var color = new DefaultColor { };
             color.Color = Vector4.one;
-            var textureInfo = new TextureInfo
+            var textureInfo = new TextureIndex
             {
-                Value = new float4(1, 1, 0, 0)
+                Value = 1
             };
             var renderMaterialIndex = new RenderMaterialIndex
             {
                 Value = materialIndex
             };
+            var maxTextureIndex = new TextureMaxIndex
+            {
+                Value = 25
+            };
+
             Entity instance = EntityManager.CreateEntity(_TileEntityArchetype);
             EntityManager.SetSharedComponentData(instance, renderMaterialIndex);
             EntityManager.SetComponentData(instance, initialCoordinate);
             EntityManager.SetComponentData(instance, color);
             EntityManager.SetComponentData(instance, textureInfo);
+            EntityManager.SetComponentData(instance, maxTextureIndex);
             var properties = new TileProperties
             {
                 Index = TotalTileAmount,
-                TileType = tileType
+                TileType = tileType,
+                MaterialIndex = materialIndex
             };
             _TotalTileAmount++;
             EntityManager.SetComponentData(instance, properties);
@@ -156,17 +164,6 @@ namespace GeometryEscape
         }
 
         [BurstCompile]
-        struct RotateTileTest2 : IJobForEach<Coordinate>
-        {
-            [ReadOnly] public float timer;
-            [ReadOnly] public float timeStep;
-            public void Execute([WriteOnly] ref Coordinate c0)
-            {
-                if (c0.X % 2 != 1) c0.Direction = (int)(timer / timeStep * 360);
-            }
-        }
-
-        [BurstCompile]
         struct ChangeColorTest : IJobForEach<TileProperties, DefaultColor>
         {
             [ReadOnly] public int counter;
@@ -182,32 +179,35 @@ namespace GeometryEscape
         }
 
         [BurstCompile]
-        struct ChangeTextureInfoTest : IJobForEach<TextureInfo>
+        struct ChangeTextureInfoTest : IJobForEach<TextureIndex, TextureMaxIndex, TileProperties>
         {
-            [ReadOnly] public float timer;
-            [ReadOnly] public float timeStep;
-            public void Execute([WriteOnly] ref TextureInfo c0)
+            [ReadOnly] public int counter;
+            public void Execute([WriteOnly] ref TextureIndex c0, [ReadOnly] ref TextureMaxIndex c1, [ReadOnly] ref TileProperties c2)
             {
-                float4 to = default;
-                to.x = timer / timeStep;
-                to.y = timer / timeStep;
-                c0.Value = to;
+                if(c2.MaterialIndex == 2)c0.Value = counter % c1.Value;
             }
         }
+
+
+
         #endregion
 
         protected JobHandle OnFixedUpdate(JobHandle inputDeps)
         {
             inputDeps = new RotateTileTest1
             {
-                counter = Counter,
+                counter = Counter / 10,
             }.Schedule(this, inputDeps);
             inputDeps = new ChangeColorTest
+            {
+                counter = Counter / 10,
+            }.Schedule(this, inputDeps);
+            
+            inputDeps = new ChangeTextureInfoTest
             {
                 counter = Counter,
             }.Schedule(this, inputDeps);
             inputDeps.Complete();
-
             return inputDeps;
         }
 
@@ -231,18 +231,6 @@ namespace GeometryEscape
             else InputSystem.Player.Zoom.performed += ctx => Zoom(ctx.ReadValue<float>());
 
             #endregion
-
-            inputDeps = new RotateTileTest2
-            {
-                timer = Timer,
-                timeStep = TimeStep
-            }.Schedule(this, inputDeps);
-
-            inputDeps = new ChangeTextureInfoTest
-            {
-                timer = Timer,
-                timeStep = TimeStep
-            }.Schedule(this, inputDeps);
 
             inputDeps = new CalculateTileLocalToWorld
             {

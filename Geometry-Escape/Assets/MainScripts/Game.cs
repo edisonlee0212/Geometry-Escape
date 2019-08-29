@@ -21,7 +21,7 @@ namespace GeometryEscape {
             _InputSystem.Enable();
             TileRenderSystem.MaterialAmount = m_TileMaterials.GetMaterialAmount();
             TileSystem.TileScale = 2;
-            TileSystem.TimeStep = 1f;
+            TileSystem.TimeStep = 0.1f;
             TileSystem.InputSystem = InputSystem;
             m_EntityManager = World.Active.EntityManager;
             m_TileRenderSystem = World.Active.GetOrCreateSystem<TileRenderSystem>();
@@ -39,7 +39,7 @@ namespace GeometryEscape {
                 for (int j = 0; j < 10; j++)
                 {
                     int index = i * 10 + j;
-                    m_TileSystem.AddTile(index % 2, new Coordinate { X = i, Y = j, Z = 0 });
+                    m_TileSystem.AddTile(index % 3, new Coordinate { X = i, Y = j, Z = 0 });
                 }
             }
         }
