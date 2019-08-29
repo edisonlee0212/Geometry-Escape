@@ -161,7 +161,7 @@ namespace GeometryEscape
                 {
                     ""name"": ""negative"",
                     ""id"": ""b3c83434-2ec3-4db6-9892-3c959292a065"",
-                    ""path"": ""<Keyboard>/numpadMinus"",
+                    ""path"": ""<Keyboard>/minus"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": "";PC"",
@@ -172,7 +172,7 @@ namespace GeometryEscape
                 {
                     ""name"": ""positive"",
                     ""id"": ""620955dd-e6b5-40c6-aa4a-67c686808924"",
-                    ""path"": ""<Keyboard>/numpadPlus"",
+                    ""path"": ""<Keyboard>/equals"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": ""PC"",

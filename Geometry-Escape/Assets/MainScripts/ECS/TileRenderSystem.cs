@@ -38,18 +38,6 @@ namespace GeometryEscape
         /// </summary>
         private NativeArray<DefaultColor> _TilesColors;
         /// <summary>
-        /// The data to set the compute buffer.
-        /// </summary>
-        private float4x4[] _Matrices;
-        /// <summary>
-        ///  The data to set the compute buffer.
-        /// </summary>
-        private float4[] _Colors;
-        /// <summary>
-        /// The data to set the compute buffer.
-        /// </summary>
-        private int[] _TextureInfos;
-        /// <summary>
         /// The buffer send to GPU for rendering.
         /// </summary>
         private ComputeBuffer[] _LocalToWorldBuffer, _ColorBuffer, _TextureInfoBuffer;
@@ -97,20 +85,9 @@ namespace GeometryEscape
         public void Init()
         {
             ShutDown();
-            //Debug.Log(_MaterialAmount);
-            _Matrices = new float4x4[_MaxSingleMaterialTileAmount];
-            _Colors = new float4[_MaxSingleMaterialTileAmount];
-            _TextureInfos = new int[_MaxSingleMaterialTileAmount];
             _LocalToWorldBuffer = new ComputeBuffer[_MaterialAmount];
             _TextureInfoBuffer = new ComputeBuffer[_MaterialAmount];
-            _ColorBuffer = new ComputeBuffer[_MaterialAmount];
-            for (int i = 0; i < _MaterialAmount; i++)
-            {
-                _LocalToWorldBuffer[i] = new ComputeBuffer(_MaxSingleMaterialTileAmount, 64);
-                _TextureInfoBuffer[i] = new ComputeBuffer(_MaxSingleMaterialTileAmount, 4);
-                _ColorBuffer[i] = new ComputeBuffer(_MaxSingleMaterialTileAmount, 16);
-            }
-            
+            _ColorBuffer = new ComputeBuffer[_MaterialAmount];            
             
             args = new uint[5] { m_TileMesh.GetIndexCount(0), 0, 0, 0, 0 };
             _ArgsBuffer = new ComputeBuffer(1, args.Length * sizeof(uint), ComputeBufferType.IndirectArguments);
@@ -210,18 +187,24 @@ namespace GeometryEscape
                 _TilesTextureInfos = _TileQuery.ToComponentDataArray<TextureIndex>(Allocator.TempJob);
                 int amount = _TilesLocalToWorlds.Length;
 
-                //Convert from NativeArray to array.
-                ToArray(_TilesLocalToWorlds, amount, _Matrices, 0);
-                ToArray(_TilesColors, amount, _Colors, 0);
-                ToArray(_TilesTextureInfos, amount, _TextureInfos, 0);
+                //Reallocate ComputeBuffer.
+                if (_LocalToWorldBuffer[i] != null) _LocalToWorldBuffer[i].Release();
+                if (_ColorBuffer[i] != null) _ColorBuffer[i].Release();
+                if (_TextureInfoBuffer[i] != null) _TextureInfoBuffer[i].Release();
+                _LocalToWorldBuffer[i] = new ComputeBuffer(amount, 64);
+                _ColorBuffer[i] = new ComputeBuffer(amount, 16);
+                _TextureInfoBuffer[i] = new ComputeBuffer(amount, 4);
 
-                _LocalToWorldBuffer[i].SetData(_Matrices);
-                _ColorBuffer[i].SetData(_Colors);
-                _TextureInfoBuffer[i].SetData(_TextureInfos);
+                //Set up data for ComputeBuffer.
+                _LocalToWorldBuffer[i].SetData(_TilesLocalToWorlds);
+                _ColorBuffer[i].SetData(_TilesColors);
+                _TextureInfoBuffer[i].SetData(_TilesTextureInfos);
 
+                //Set up material.
                 m_Materials[i].SetBuffer("_LocalToWorldBuffer", _LocalToWorldBuffer[i]);
                 m_Materials[i].SetBuffer("_ColorBuffer", _ColorBuffer[i]);
                 m_Materials[i].SetBuffer("_TilingAndOffsetBuffer", _TextureInfoBuffer[i]);
+                
                 //Set up args buffer, so the GPU knows how many meshes(tiles) we want to render in this draw call.
                 args[1] = (uint)amount;
                 _ArgsBuffer.SetData(args);

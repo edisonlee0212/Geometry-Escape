@@ -13,8 +13,6 @@ namespace GeometryEscape
     public class TileSystem : JobComponentSystem
     {
         #region Private
-        private EntityArchetype _TileEntityArchetype;
-        private int _MaterialAmount;
         #endregion
 
         #region Public
@@ -25,9 +23,7 @@ namespace GeometryEscape
         private static int _Counter;
         private static float _TimeStep;
         private static float _TileScale;
-        private static int _TotalTileAmount;
         private static NativeArray<Entity> _PositionSelectedEntity;
-        public static int TotalTileAmount { get => _TotalTileAmount; }
         public static float TileScale { get => _TileScale; set => _TileScale = value; }
         public static float Timer { get => _Timer; set => _Timer = value; }
         public static int Counter { get => _Counter; set => _Counter = value; }
@@ -41,27 +37,14 @@ namespace GeometryEscape
         #region Managers
         protected override void OnCreate()
         {
-            _TileEntityArchetype = EntityManager.CreateArchetype(
-                typeof(RenderMaterialIndex),
-                typeof(Coordinate),
-                typeof(Translation),
-                typeof(Rotation),
-                typeof(Scale),
-                typeof(Unity.Transforms.LocalToWorld),
-                typeof(TileProperties),
-                typeof(DefaultColor),
-                typeof(TextureIndex),
-                typeof(TextureMaxIndex)
-                );
+            
         }
 
         public void Init()
         {
             ShutDown();
-            _MaterialAmount = TileRenderSystem.MaterialAmount;
             _PositionSelectedEntity = new NativeArray<Entity>(1, Allocator.Persistent);
             _CurrentZoomFactor = 1;
-            _TotalTileAmount = 0;
             Enabled = true;
         }
 
@@ -80,43 +63,7 @@ namespace GeometryEscape
 
         #region Methods
 
-        public void AddTile(int materialIndex, Coordinate initialCoordinate = default, TileType tileType = TileType.Normal)
-        {
-            if (materialIndex < 0 || materialIndex >= _MaterialAmount)
-            {
-                Debug.LogError("AddTile: Wrong material index: " + materialIndex);
-                return;
-            }
-            var color = new DefaultColor { };
-            color.Color = Vector4.one;
-            var textureInfo = new TextureIndex
-            {
-                Value = 1
-            };
-            var renderMaterialIndex = new RenderMaterialIndex
-            {
-                Value = materialIndex
-            };
-            var maxTextureIndex = new TextureMaxIndex
-            {
-                Value = 25
-            };
-
-            Entity instance = EntityManager.CreateEntity(_TileEntityArchetype);
-            EntityManager.SetSharedComponentData(instance, renderMaterialIndex);
-            EntityManager.SetComponentData(instance, initialCoordinate);
-            EntityManager.SetComponentData(instance, color);
-            EntityManager.SetComponentData(instance, textureInfo);
-            EntityManager.SetComponentData(instance, maxTextureIndex);
-            var properties = new TileProperties
-            {
-                Index = TotalTileAmount,
-                TileType = tileType,
-                MaterialIndex = materialIndex
-            };
-            _TotalTileAmount++;
-            EntityManager.SetComponentData(instance, properties);
-        }
+        
 
         #endregion
 
@@ -174,6 +121,7 @@ namespace GeometryEscape
                 color.x = offset * 32 % 256 / 256f;
                 color.y = (offset * 32 + 64) % 256 / 256f;
                 color.z = (offset * 32 + 128) % 256 / 256f;
+                color.w = 1;
                 c1.Color = color;
             }
         }
@@ -184,7 +132,8 @@ namespace GeometryEscape
             [ReadOnly] public int counter;
             public void Execute([WriteOnly] ref TextureIndex c0, [ReadOnly] ref TextureMaxIndex c1, [ReadOnly] ref TileProperties c2)
             {
-                if(c2.MaterialIndex == 2)c0.Value = counter % c1.Value;
+                if (c2.MaterialIndex == 2) c0.Value = counter % c1.Value;
+                else c0.Value = 0;
             }
         }
 
