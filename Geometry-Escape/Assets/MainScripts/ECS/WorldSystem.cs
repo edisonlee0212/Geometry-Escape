@@ -27,8 +27,12 @@ namespace GeometryEscape
         #endregion
 
         #region Public
-        private int _TotalTileAmount;
-        public int TotalTileAmount { get => _TotalTileAmount; }
+        private static bool _AddingTiles;
+        private static bool _RemovingTiles;
+        private static int _TotalTileAmount;
+        public static int TotalTileAmount { get => _TotalTileAmount; }
+        public static bool AddingTiles { get => _AddingTiles; set => _AddingTiles = value; }
+        public static bool RemovingTiles { get => _RemovingTiles; set => _RemovingTiles = value; }
         #endregion
 
         #region Managers
@@ -46,33 +50,62 @@ namespace GeometryEscape
                 typeof(TextureIndex),
                 typeof(TextureMaxIndex)
                 );
-            _TileCreationQueue = new NativeQueue<TileInfo>(Allocator.Persistent);
-            _TileDestructionQueue = new NativeQueue<Entity>(Allocator.Persistent);
+            
+            Enabled = false;
         }
 
         public void Init()
         {
             ShutDown();
+            _TileCreationQueue = new NativeQueue<TileInfo>(Allocator.Persistent);
+            _TileDestructionQueue = new NativeQueue<Entity>(Allocator.Persistent);
             _MaterialAmount = TileRenderSystem.MaterialAmount;
             _TotalTileAmount = 0;
+            Enabled = true;
         }
 
         public void ShutDown()
         {
-
+            Enabled = false;
+            if (_TileCreationQueue.IsCreated) _TileCreationQueue.Dispose();
+            if (_TileDestructionQueue.IsCreated) _TileDestructionQueue.Dispose();
         }
 
         protected override void OnDestroy()
         {
-            if (_TileCreationQueue.IsCreated) _TileCreationQueue.Dispose();
-            if (_TileDestructionQueue.IsCreated) _TileDestructionQueue.Dispose();
+            ShutDown();
         }
         #endregion
 
         #region Methods
 
+        public static void AddCenterTile()
+        {
+            if (!_AddingTiles && !TileSystem.Moving && TileSystem.CenterEntity == Entity.Null)
+            {
+                AddTile(0, new Coordinate
+                {
+                    X = (int)-TileSystem.CurrentCenterPosition.x,
+                    Y = (int)-TileSystem.CurrentCenterPosition.y,
+                    Z = (int)-TileSystem.CurrentCenterPosition.z,
+                });
+                Debug.Log("Inserted a new tile at " + (-TileSystem.CurrentCenterPosition));
+            }
+        }
+
+        public static void RemoveCenterTile()
+        {
+            if (!_RemovingTiles && !TileSystem.Moving && TileSystem.CenterEntity != Entity.Null)
+            {
+                DeleteTile(TileSystem.CenterEntity);
+                TileSystem.CenterEntity = Entity.Null;
+                Debug.Log("Deleted a new tile at " + (-TileSystem.CurrentCenterPosition));
+            }
+        }
+
         public static void AddTile(int materialIndex, Coordinate initialCoordinate = default, TileType tileType = TileType.Normal)
         {
+            _AddingTiles = true;
             _TileCreationQueue.Enqueue(new TileInfo
             {
                 MaterialIndex = materialIndex,
@@ -83,17 +116,19 @@ namespace GeometryEscape
 
         public static void DeleteTile(Entity tileEntity)
         {
+            _RemovingTiles = true;
             _TileDestructionQueue.Enqueue(tileEntity);
         }
 
         #endregion
+
 
         #region Jobs
         #endregion
 
         protected override JobHandle OnUpdate(JobHandle inputDeps)
         {
-            if(_TileCreationQueue.Count != 0)
+            if(_AddingTiles && _TileCreationQueue.Count != 0)
             {
                 int count = _TileCreationQueue.Count;
                 for(int i = 0; i < 100 && i < count; i++)
@@ -101,8 +136,9 @@ namespace GeometryEscape
                     var tileInfo = _TileCreationQueue.Dequeue();
                     CreateTile(tileInfo);
                 }
+                if (_TileCreationQueue.Count == 0) _AddingTiles = false;
             }
-            if (_TileDestructionQueue.Count != 0)
+            if (_RemovingTiles && _TileDestructionQueue.Count != 0)
             {
                 int count = _TileDestructionQueue.Count;
                 for (int i = 0; i < 100 && i < count; i++)
@@ -110,6 +146,7 @@ namespace GeometryEscape
                     var tileEntity = _TileDestructionQueue.Dequeue();
                     DestroyTile(tileEntity);
                 }
+                if (_TileDestructionQueue.Count == 0) _RemovingTiles = false;
             }
             return inputDeps;
         }
@@ -117,6 +154,7 @@ namespace GeometryEscape
         private void DestroyTile(Entity tileEntity)
         {
             EntityManager.DestroyEntity(tileEntity);
+            _TotalTileAmount--;
         }
 
         private void CreateTile(TileInfo tileInfo)

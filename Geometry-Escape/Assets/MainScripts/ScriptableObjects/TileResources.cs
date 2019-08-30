@@ -4,7 +4,7 @@ using UnityEngine;
 namespace GeometryEscape
 {
     [CreateAssetMenu]
-    public class TileMeshAndMaterials : ScriptableObject
+    public class TileResources : ScriptableObject
     {
         #region Public
         [SerializeField]

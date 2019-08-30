@@ -46,7 +46,8 @@ namespace GeometryEscape
         #endregion
 
         #region Public
-        private int _MaxSingleMaterialTileAmount;
+        private static TileResources m_TileResources;
+
         private UnityEngine.Material[] m_Materials;
         private static int _MaterialAmount;
         private Camera m_Camera;
@@ -64,14 +65,10 @@ namespace GeometryEscape
         /// </summary>
         public static int MaterialAmount { get => _MaterialAmount; set => _MaterialAmount = value; }
         /// <summary>
-        /// For each type of material, the maximum tile amount the system supports.
-        /// There's no upper limit for this but a greater value will produce more overhead.
-        /// </summary>
-        public int MaxSingleMaterialTileAmount { get => _MaxSingleMaterialTileAmount; set => _MaxSingleMaterialTileAmount = value; }
-        /// <summary>
         /// The target camera for rendering.
         /// </summary>
         public Camera Camera { get => m_Camera; set => m_Camera = value; }
+        public static TileResources TileResources { get => m_TileResources; set => m_TileResources = value; }
 
         #endregion
 
@@ -85,14 +82,16 @@ namespace GeometryEscape
         public void Init()
         {
             ShutDown();
+            _MaterialAmount = m_TileResources.GetMaterialAmount();
+            m_TileMesh = m_TileResources.TileMesh;
+            m_Materials = m_TileResources.Materials;
+            m_Camera = Camera.main;
             _LocalToWorldBuffers = new ComputeBuffer[_MaterialAmount];
             _TextureInfoBuffers = new ComputeBuffer[_MaterialAmount];
             _ColorBuffers = new ComputeBuffer[_MaterialAmount];
 
             args = new uint[5] { m_TileMesh.GetIndexCount(0), 0, 0, 0, 0 };
             _ArgsBuffers = new ComputeBuffer[_MaterialAmount];
-            //_ArgsBuffers = new ComputeBuffer(1, args.Length * sizeof(uint), ComputeBufferType.IndirectArguments);
-            //_ArgsBuffers.SetData(args);
             Enabled = true;
         }
 
@@ -102,19 +101,23 @@ namespace GeometryEscape
             if (_TilesLocalToWorlds.IsCreated) _TilesLocalToWorlds.Dispose();
             if (_TilesColors.IsCreated) _TilesColors.Dispose();
             if (_TilesTextureInfos.IsCreated) _TilesTextureInfos.Dispose();
-            if (_LocalToWorldBuffers != null) foreach (var i in _LocalToWorldBuffers)
+            if (_LocalToWorldBuffers != null)
+                foreach (var i in _LocalToWorldBuffers)
                 {
                     if (i != null) i.Release();
                 }
-            if (_ColorBuffers != null) foreach (var i in _ColorBuffers)
+            if (_ColorBuffers != null)
+                foreach (var i in _ColorBuffers)
                 {
                     if (i != null) i.Release();
                 }
-            if (_TextureInfoBuffers != null) foreach (var i in _TextureInfoBuffers)
+            if (_TextureInfoBuffers != null)
+                foreach (var i in _TextureInfoBuffers)
                 {
                     if (i != null) i.Release();
                 }
-            if (_ArgsBuffers != null) foreach (var i in _ArgsBuffers)
+            if (_ArgsBuffers != null)
+                foreach (var i in _ArgsBuffers)
                 {
                     if (i != null) i.Release();
                 }

@@ -9,6 +9,9 @@ using Unity.Transforms;
 using UnityEngine;
 namespace GeometryEscape
 {
+    /// <summary>
+    /// The system that control all tiles.
+    /// </summary>
     [UpdateBefore(typeof(TransformSystemGroup))]
     public class TileSystem : JobComponentSystem
     {
@@ -16,22 +19,23 @@ namespace GeometryEscape
         #endregion
 
         #region Public
-        private static Controls _InputSystem;
+        private static bool _Moving, _Zooming;
         private static float3 _CurrentCenterPosition;
         private static float _CurrentZoomFactor;
         private static float _Timer;
         private static int _Counter;
         private static float _TimeStep;
         private static float _TileScale;
-        private static NativeArray<Entity> _PositionSelectedEntity;
+        private static NativeArray<Entity> _CenterEntity;
         public static float TileScale { get => _TileScale; set => _TileScale = value; }
         public static float Timer { get => _Timer; set => _Timer = value; }
         public static int Counter { get => _Counter; set => _Counter = value; }
         public static float TimeStep { get => _TimeStep; set => _TimeStep = value; }
         public static float3 CurrentCenterPosition { get => _CurrentCenterPosition; set => _CurrentCenterPosition = value; }
-        public static Controls InputSystem { get => _InputSystem; set => _InputSystem = value; }
         public static float CurrentZoomFactor { get => _CurrentZoomFactor; set => _CurrentZoomFactor = value; }
-        public static NativeArray<Entity> PositionSelectedEntity { get => _PositionSelectedEntity; set => _PositionSelectedEntity = value; }
+        public static Entity CenterEntity { get => _CenterEntity[0]; set => _CenterEntity[0] = value; }
+        public static bool Moving { get => _Moving; set => _Moving = value; }
+        public static bool Zooming { get => _Zooming; set => _Zooming = value; }
         #endregion
 
         #region Managers
@@ -43,14 +47,14 @@ namespace GeometryEscape
         public void Init()
         {
             ShutDown();
-            _PositionSelectedEntity = new NativeArray<Entity>(1, Allocator.Persistent);
+            _CenterEntity = new NativeArray<Entity>(1, Allocator.Persistent);
             _CurrentZoomFactor = 1;
             Enabled = true;
         }
 
         public void ShutDown()
         {
-            if (_PositionSelectedEntity.IsCreated) _PositionSelectedEntity.Dispose();
+            if (_CenterEntity.IsCreated) _CenterEntity.Dispose();
             Enabled = false;
         }
 
@@ -78,7 +82,7 @@ namespace GeometryEscape
             [WriteOnly] public NativeArray<Entity> selectedEntity;
             public void Execute(Entity entity, int index, [ReadOnly] ref Translation c0, [WriteOnly] ref DefaultColor c1)
             {
-                if (Mathf.Abs(c0.Value.x - position.x) < scale && Mathf.Abs(c0.Value.y - position.y) < scale)
+                if (Mathf.Abs(c0.Value.x - position.x) < scale && Mathf.Abs(c0.Value.y - position.y) < scale / 4)
                 {
                     selectedEntity[0] = entity;
                     c1.Color = new float4(1);
@@ -136,9 +140,6 @@ namespace GeometryEscape
                 else c0.Value = 0;
             }
         }
-
-
-
         #endregion
 
         protected JobHandle OnFixedUpdate(JobHandle inputDeps)
@@ -175,9 +176,7 @@ namespace GeometryEscape
             #region InputSystem
 
             if (_Moving) OnMoving();
-            else InputSystem.Player.Movement.performed += ctx => Move(ctx.ReadValue<Vector2>());
             if (_Zooming) OnZooming();
-            else InputSystem.Player.Zoom.performed += ctx => Zoom(ctx.ReadValue<float>());
 
             #endregion
 
@@ -189,31 +188,23 @@ namespace GeometryEscape
 
             inputDeps.Complete();
 
-
+            _CenterEntity[0] = Entity.Null;
 
             inputDeps = new PositionSelect
             {
                 scale = _TileScale / _CurrentZoomFactor,
                 position = new Vector3(0, 0, 0),
-                selectedEntity = _PositionSelectedEntity
+                selectedEntity = _CenterEntity
             }.Schedule(this, inputDeps);
             inputDeps.Complete();
-
-            if (Input.GetKeyDown(KeyCode.Delete)) WorldSystem.DeleteTile(_PositionSelectedEntity[0]);
-            if (!_Moving && _PositionSelectedEntity[0] != null && Input.GetKeyDown(KeyCode.Insert)) WorldSystem.AddTile(0, new Coordinate
-            {
-                X = (int)-_CurrentCenterPosition.x,
-                Y = (int)-_CurrentCenterPosition.y,
-                Z = (int)-_CurrentCenterPosition.z,
-            });
             return inputDeps;
         }
 
         #region Variables for InputSystem
-        private bool _Moving, _Zooming;
-        private float _MovementTimer, _ZoomingTimer;
-        private float _PreviousZoomFactor, _TargetZoomFactor;
-        private Vector3 _PreviousCenterPosition, _TargetCenterPosition;
+        
+        private static float _MovementTimer, _ZoomingTimer;
+        private static float _PreviousZoomFactor, _TargetZoomFactor;
+        private static Vector3 _PreviousCenterPosition, _TargetCenterPosition;
         #endregion
 
         private void OnMoving()
@@ -246,11 +237,11 @@ namespace GeometryEscape
 
         }
 
-        private void Zoom(float direction)
+        public static void Zoom(float direction)
         {
             if (!_Zooming)
             {
-                Debug.Log(direction);
+                //Debug.Log(direction);
                 if (direction != 0)
                 {
                     _Zooming = true;
@@ -266,12 +257,11 @@ namespace GeometryEscape
                         _TargetZoomFactor = _PreviousZoomFactor;
                         _TargetZoomFactor -= 0.5f;
                     }
-                    //Debug.Log("TargetZoomFactor: " + _TargetZoomFactor);
                 }
             }
         }
 
-        private void Move(Vector2 direction)
+        public static void Move(Vector2 direction)
         {
             if (!_Moving)
             {

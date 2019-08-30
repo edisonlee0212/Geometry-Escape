@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a53890893056b6942a4a3ecf61b5dd4d, type: 3}
-  m_Name: Tile Mesh And Materials
+  m_Name: Tile Resources
   m_EditorClassIdentifier: 
   _TileMesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
   _Materials:
