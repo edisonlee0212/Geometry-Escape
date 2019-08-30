@@ -65,7 +65,6 @@ namespace GeometryEscape
                         default:
                             break;
                     }
-                    Debug.Log(_InputSystem.InGame.enabled);
                 }
                
                 _ControlMode = value;
@@ -79,7 +78,6 @@ namespace GeometryEscape
             _InputSystem = new Controls();
             //In-Game
             _InputSystem.InGame.Disable();
-            Debug.Log(_InputSystem.InGame.enabled);
             _InputSystem.InGame.Move.performed += ctx => MoveMap(ctx);
             _InputSystem.InGame.Zoom.performed += ctx => ZoomMap(ctx);
             //Map Editor

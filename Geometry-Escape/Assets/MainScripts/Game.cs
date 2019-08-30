@@ -8,9 +8,9 @@ namespace GeometryEscape {
         [SerializeField]
         private TileResources m_TileResources = null;
         [SerializeField]
-        private Transform m_Light;
+        private Transform m_Light = null;
         [SerializeField]
-        private ControlMode _InitialControlMode;
+        private ControlMode _InitialControlMode = ControlMode.NoControl;
 
         private EntityManager m_EntityManager;
         private RenderSystem m_TileRenderSystem;
@@ -35,7 +35,7 @@ namespace GeometryEscape {
             m_WorldSystem.Init();
             m_ControlSystem = new ControlSystem();
             ControlSystem.ControlMode = _InitialControlMode;
-            int count = 10;
+            int count = 100;
             for (int i = 0; i < count; i++)
             {
                 for (int j = 0; j < count; j++)

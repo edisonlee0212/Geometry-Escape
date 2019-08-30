@@ -16,6 +16,7 @@ namespace GeometryEscape
     public class TileSystem : JobComponentSystem
     {
         #region Private
+        private static EntityManager m_EntityManager;
         #endregion
 
         #region Public
@@ -43,7 +44,7 @@ namespace GeometryEscape
         #region Managers
         protected override void OnCreate()
         {
-
+            m_EntityManager = World.Active.EntityManager;
         }
 
         public void Init()
@@ -203,10 +204,10 @@ namespace GeometryEscape
         }
 
         #region Variables for InputSystem
-        
+
         private static float _MovementTimer, _ZoomingTimer;
         private static float _PreviousZoomFactor, _TargetZoomFactor;
-        private static Vector3 _PreviousCenterPosition, _TargetCenterPosition;
+        private static Vector3 _PreviousOriginPosition, _TargetOriginPosition;
         #endregion
 
         private void OnMoving()
@@ -214,12 +215,12 @@ namespace GeometryEscape
             _MovementTimer += Time.deltaTime;
             if (_MovementTimer < 0.1f)
             {
-                _CurrentCenterPosition = Vector3.Lerp(_PreviousCenterPosition, _TargetCenterPosition, _MovementTimer / 0.1f);
+                _CurrentCenterPosition = Vector3.Lerp(_PreviousOriginPosition, _TargetOriginPosition, _MovementTimer / 0.1f);
             }
             else
             {
                 _Moving = false;
-                _CurrentCenterPosition = _TargetCenterPosition;
+                _CurrentCenterPosition = _TargetOriginPosition;
             }
 
         }
@@ -251,15 +252,15 @@ namespace GeometryEscape
                     _Zooming = true;
                     _ZoomingTimer = 0;
                     _PreviousZoomFactor = _CurrentZoomFactor;
-                    if (direction > 0 && _CurrentZoomFactor < 2f)
+                    if (direction > 0 && _CurrentZoomFactor < 16f)
                     {
                         _TargetZoomFactor = _PreviousZoomFactor;
-                        _TargetZoomFactor += 0.5f;
+                        _TargetZoomFactor *= 2;
                     }
                     else if (direction < 0 && _CurrentZoomFactor > 0.5f)
                     {
                         _TargetZoomFactor = _PreviousZoomFactor;
-                        _TargetZoomFactor -= 0.5f;
+                        _TargetZoomFactor /= 2;
                     }
                 }
             }
@@ -267,33 +268,41 @@ namespace GeometryEscape
 
         public static void Move(Vector2 direction)
         {
-            if (!_Moving)
+            if (!_Moving && (ControlSystem.ControlMode == ControlMode.MapEditor || _CenterEntity[0] != Entity.Null))
             {
                 if (direction != Vector2.zero && direction.x * direction.y == 0)
                 {
                     _Moving = true;
                     _MovementTimer = 0;
-                    _PreviousCenterPosition = _CurrentCenterPosition;
-                    _TargetCenterPosition = _PreviousCenterPosition;
-                    if (direction.x > 0)
+                    _PreviousOriginPosition = _CurrentCenterPosition;
+                    _TargetOriginPosition = _PreviousOriginPosition;
+                    if (direction.x > 0 && (ControlSystem.ControlMode == ControlMode.MapEditor
+                        || m_EntityManager.GetComponentData<RightTile>(_CenterEntity[0]).Value != Entity.Null))
                     {
-                        //Debug.Log("Move right.");
-                        _TargetCenterPosition.x -= 1;
+                        _TargetOriginPosition.x -= 1;
+                        Debug.Log("Move right, target position: " + (-_TargetOriginPosition));
                     }
-                    else if (direction.x < 0)
+                    else if (direction.x < 0 && (ControlSystem.ControlMode == ControlMode.MapEditor
+                        || m_EntityManager.GetComponentData<LeftTile>(_CenterEntity[0]).Value != Entity.Null))
                     {
-                        //Debug.Log("Move left.");
-                        _TargetCenterPosition.x += 1;
+                        _TargetOriginPosition.x += 1;
+                        Debug.Log("Move left, target position: " + (-_TargetOriginPosition));
                     }
-                    else if (direction.y > 0)
+                    else if (direction.y > 0 && (ControlSystem.ControlMode == ControlMode.MapEditor
+                        || m_EntityManager.GetComponentData<UpTile>(_CenterEntity[0]).Value != Entity.Null))
                     {
-                        //Debug.Log("Move down.");
-                        _TargetCenterPosition.y -= 1;
+                        _TargetOriginPosition.y -= 1;
+                        Debug.Log("Move up, target position: " + (-_TargetOriginPosition));
                     }
-                    else if (direction.y < 0)
+                    else if (direction.y < 0 && (ControlSystem.ControlMode == ControlMode.MapEditor
+                        || m_EntityManager.GetComponentData<DownTile>(_CenterEntity[0]).Value != Entity.Null))
                     {
-                        //Debug.Log("Move up.");
-                        _TargetCenterPosition.y += 1;
+                        _TargetOriginPosition.y += 1;
+                        Debug.Log("Move down, target position: " + (-_TargetOriginPosition));
+                    }
+                    else
+                    {
+                        Debug.Log("Blocked in player mode! Use map editor mode if you want to move to empty space.");
                     }
                 }
             }

@@ -137,13 +137,25 @@ namespace GeometryEscape
             [NativeDisableParallelForRestriction]
             public NativeArray<LeftTile> leftTile;
             public Entity originEntity;
+            //Case 1: Connect, Case 2: Disconnect.
+            public byte mode;
             public void Execute(Entity entity, int index, ref TileProperties c0, ref Coordinate c1, ref RightTile c2)
             {
                 LeftTile left = default;
                 if (c1.X == coordinate.X - 1 && c1.Y == coordinate.Y) {
-                    left.Value = entity;
+                    switch (mode)
+                    {
+                        case 1:
+                            left.Value = entity;
+                            c2.Value = originEntity;
+                            break;
+                        case 2:
+                            left.Value = Entity.Null;
+                            c2.Value = Entity.Null;
+                            break;
+
+                    }
                     leftTile[0] = left;
-                    c2.Value = originEntity;
                 }
             }
         }
@@ -154,14 +166,24 @@ namespace GeometryEscape
             [NativeDisableParallelForRestriction]
             public NativeArray<RightTile> rightTile;
             public Entity originEntity;
+            public byte mode;
             public void Execute(Entity entity, int index, ref TileProperties c0, ref Coordinate c1, ref LeftTile c2)
             {
                 RightTile right = default;
                 if (c1.X == coordinate.X + 1 && c1.Y == coordinate.Y)
                 {
-                    right.Value = entity;
+                    switch (mode)
+                    {
+                        case 1:
+                            right.Value = entity;
+                            c2.Value = originEntity;
+                            break;
+                        case 2:
+                            right.Value = Entity.Null;
+                            c2.Value = Entity.Null;
+                            break;
+                    }
                     rightTile[0] = right;
-                    c2.Value = originEntity;
                 }
             }
         }
@@ -172,14 +194,24 @@ namespace GeometryEscape
             [NativeDisableParallelForRestriction]
             public NativeArray<UpTile> upTile;
             public Entity originEntity;
+            public byte mode;
             public void Execute(Entity entity, int index, ref TileProperties c0, ref Coordinate c1, ref DownTile c2)
             {
                 UpTile up = default;
                 if (c1.X == coordinate.X && c1.Y == coordinate.Y + 1)
                 {
-                    up.Value = entity;
+                    switch (mode)
+                    {
+                        case 1:
+                            up.Value = entity;
+                            c2.Value = originEntity;
+                            break;
+                        case 2:
+                            up.Value = Entity.Null;
+                            c2.Value = Entity.Null;
+                            break;
+                    }
                     upTile[0] = up;
-                    c2.Value = originEntity;
                 }
             }
         }
@@ -190,14 +222,24 @@ namespace GeometryEscape
             [NativeDisableParallelForRestriction]
             public NativeArray<DownTile> downTile;
             public Entity originEntity;
+            public byte mode;
             public void Execute(Entity entity, int index, ref TileProperties c0, ref Coordinate c1, ref UpTile c2)
             {
                 DownTile down = default;
                 if (c1.X == coordinate.X && c1.Y == coordinate.Y - 1)
                 {
-                    down.Value = entity;
+                    switch (mode)
+                    {
+                        case 1:
+                            down.Value = entity;
+                            c2.Value = originEntity;
+                            break;
+                        case 2:
+                            down.Value = Entity.Null;
+                            c2.Value = Entity.Null;
+                            break;
+                    }
                     downTile[0] = down;
-                    c2.Value = originEntity;
                 }
             }
         }
@@ -231,6 +273,47 @@ namespace GeometryEscape
 
         private void DestroyTile(JobHandle inputDeps, Entity tileEntity)
         {
+            Coordinate coordinate = EntityManager.GetComponentData<Coordinate>(tileEntity);
+
+            NativeArray<LeftTile> left = new NativeArray<LeftTile>(1, Allocator.TempJob);
+            NativeArray<RightTile> right = new NativeArray<RightTile>(1, Allocator.TempJob);
+            NativeArray<UpTile> up = new NativeArray<UpTile>(1, Allocator.TempJob);
+            NativeArray<DownTile> down = new NativeArray<DownTile>(1, Allocator.TempJob);
+            inputDeps = new LocateLeftTilesJob
+            {
+                leftTile = left,
+                coordinate = coordinate,
+                originEntity = tileEntity,
+                mode = 2
+            }.Schedule(this, inputDeps);
+            inputDeps = new LocateRightTilesJob
+            {
+                rightTile = right,
+                coordinate = coordinate,
+                originEntity = tileEntity,
+                mode = 2
+            }.Schedule(this, inputDeps);
+            inputDeps = new LocateUpTilesJob
+            {
+                upTile = up,
+                coordinate = coordinate,
+                originEntity = tileEntity,
+                mode = 2
+            }.Schedule(this, inputDeps);
+            inputDeps = new LocateDownTilesJob
+            {
+                downTile = down,
+                coordinate = coordinate,
+                originEntity = tileEntity,
+                mode = 2
+            }.Schedule(this, inputDeps);
+            inputDeps.Complete();
+
+            left.Dispose();
+            right.Dispose();
+            up.Dispose();
+            down.Dispose();
+
             EntityManager.DestroyEntity(tileEntity);
             _TotalTileAmount--;
         }
@@ -268,25 +351,29 @@ namespace GeometryEscape
             {
                 leftTile = left,
                 coordinate = initialCoordinate,
-                originEntity = instance
+                originEntity = instance,
+                mode = 1
             }.Schedule(this, inputDeps);
             inputDeps = new LocateRightTilesJob
             {
                 rightTile = right,
                 coordinate = initialCoordinate,
-                originEntity = instance
+                originEntity = instance,
+                mode = 1
             }.Schedule(this, inputDeps);
             inputDeps = new LocateUpTilesJob
             {
                 upTile = up,
                 coordinate = initialCoordinate,
-                originEntity = instance
+                originEntity = instance,
+                mode = 1
             }.Schedule(this, inputDeps);
             inputDeps = new LocateDownTilesJob
             {
                 downTile = down,
                 coordinate = initialCoordinate,
-                originEntity = instance
+                originEntity = instance,
+                mode = 1
             }.Schedule(this, inputDeps);
             inputDeps.Complete();
 

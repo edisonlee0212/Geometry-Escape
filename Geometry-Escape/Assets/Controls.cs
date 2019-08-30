@@ -23,7 +23,7 @@ namespace GeometryEscape
                     ""name"": ""Move"",
                     ""type"": ""Button"",
                     ""id"": ""f3f98836-c8e3-4536-a3aa-f1a1c299bb68"",
-                    ""expectedControlType"": """",
+                    ""expectedControlType"": ""Button"",
                     ""processors"": """",
                     ""interactions"": ""Press""
                 },
