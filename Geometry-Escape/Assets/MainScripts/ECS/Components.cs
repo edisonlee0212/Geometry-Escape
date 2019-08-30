@@ -29,7 +29,27 @@ namespace GeometryEscape
         }
     }
 
+    [Serializable]
+    public struct LeftTile : IComponentData
+    {
+        public Entity Value;
+    }
 
+    [Serializable]
+    public struct RightTile : IComponentData
+    {
+        public Entity Value;
+    }
+    [Serializable]
+    public struct UpTile : IComponentData
+    {
+        public Entity Value;
+    }
+    [Serializable]
+    public struct DownTile : IComponentData
+    {
+        public Entity Value;
+    }
 
     [Serializable]
     public struct TextureMaxIndex : IComponentData

@@ -359,6 +359,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_TileResources: {fileID: 11400000, guid: 75920489f2658f2428e04c030bbe9950, type: 2}
+  m_Light: {fileID: 200656893}
   _InitialControlMode: 2
 --- !u!1 &1531173905873237
 GameObject:

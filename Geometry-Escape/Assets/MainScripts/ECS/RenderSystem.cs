@@ -18,7 +18,7 @@ namespace GeometryEscape
      * ECS系统内OnUpdate在Monobehaviour之前执行。
      */
     [UpdateInGroup(typeof(PresentationSystemGroup))]
-    public class TileRenderSystem : JobComponentSystem
+    public class RenderSystem : JobComponentSystem
     {
         #region Private
         /// <summary>
@@ -76,7 +76,7 @@ namespace GeometryEscape
         protected override void OnCreate()
         {
             Enabled = false;
-            _TileQuery = GetEntityQuery(typeof(TextureIndex), typeof(TileProperties), typeof(LocalToWorld), typeof(DefaultColor), typeof(RenderMaterialIndex));
+            _TileQuery = GetEntityQuery(typeof(TextureIndex), typeof(LocalToWorld), typeof(DefaultColor), typeof(RenderMaterialIndex));
         }
 
         public void Init()

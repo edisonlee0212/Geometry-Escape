@@ -26,6 +26,7 @@ namespace GeometryEscape
         private static int _Counter;
         private static float _TimeStep;
         private static float _TileScale;
+        private static Transform m_Light;
         private static NativeArray<Entity> _CenterEntity;
         public static float TileScale { get => _TileScale; set => _TileScale = value; }
         public static float Timer { get => _Timer; set => _Timer = value; }
@@ -36,6 +37,7 @@ namespace GeometryEscape
         public static Entity CenterEntity { get => _CenterEntity[0]; set => _CenterEntity[0] = value; }
         public static bool Moving { get => _Moving; set => _Moving = value; }
         public static bool Zooming { get => _Zooming; set => _Zooming = value; }
+        public static Transform Light { get => m_Light; set => m_Light = value; }
         #endregion
 
         #region Managers
@@ -225,7 +227,7 @@ namespace GeometryEscape
         private void OnZooming()
         {
             _ZoomingTimer += Time.deltaTime;
-            if (_ZoomingTimer < 0.1f)
+            if (_ZoomingTimer <= 0.1f)
             {
                 _CurrentZoomFactor = (_TargetZoomFactor * _ZoomingTimer + _PreviousZoomFactor * (0.1f - _ZoomingTimer)) / 0.1f;
             }
@@ -234,7 +236,9 @@ namespace GeometryEscape
                 _Zooming = false;
                 _CurrentZoomFactor = _TargetZoomFactor;
             }
-
+            Vector3 position = m_Light.position;
+            position.z = -5 / _CurrentZoomFactor;
+            m_Light.position = position;
         }
 
         public static void Zoom(float direction)
