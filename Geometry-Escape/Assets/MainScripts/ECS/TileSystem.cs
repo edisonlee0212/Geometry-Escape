@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using Unity.Burst;
+﻿using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
@@ -17,6 +15,7 @@ namespace GeometryEscape
     {
         #region Private
         private static EntityManager m_EntityManager;
+
         #endregion
 
         #region Public
@@ -50,6 +49,7 @@ namespace GeometryEscape
         public void Init()
         {
             ShutDown();
+            m_Light = CentralSystem.LightResources.ViewLight.transform;
             _CenterEntity = new NativeArray<Entity>(1, Allocator.Persistent);
             _CurrentZoomFactor = 1;
             Enabled = true;

@@ -82,6 +82,7 @@ namespace GeometryEscape
         public void Init()
         {
             ShutDown();
+            m_TileResources = CentralSystem.TileResources;
             _MaterialAmount = m_TileResources.GetMaterialAmount();
             m_TileMesh = m_TileResources.TileMesh;
             m_Materials = m_TileResources.Materials;
