@@ -16,6 +16,7 @@ namespace GeometryEscape
         Menu,
         InGame,
         MapEditor,
+        BeatsEditor
     }
 
     /// <summary>
@@ -48,6 +49,9 @@ namespace GeometryEscape
                         case ControlMode.MapEditor:
                             _InputSystem.MapEditor.Disable();
                             break;
+                        case ControlMode.BeatsEditor:
+                            _InputSystem.BeatsEditor.Disable();
+                            break;
                         default:
                             break;
                     }
@@ -61,6 +65,9 @@ namespace GeometryEscape
                             break;
                         case ControlMode.MapEditor:
                             _InputSystem.MapEditor.Enable();
+                            break;
+                        case ControlMode.BeatsEditor:
+                            _InputSystem.BeatsEditor.Enable();
                             break;
                         default:
                             break;
@@ -89,8 +96,27 @@ namespace GeometryEscape
 
             //Menu
             _InputSystem.Menu.Disable();
+
+            _InputSystem.BeatsEditor.Disable();
+            _InputSystem.BeatsEditor.StartRecording.performed += ctx => BeatsEditorStartRecording(ctx);
+            _InputSystem.BeatsEditor.NewBeat.performed += ctx => BeatsEditorNewBeat(ctx);
+            _InputSystem.BeatsEditor.EndRecording.performed += ctx => BeatsEditorEndRecording(ctx);
         }
 
+        private void BeatsEditorStartRecording(InputAction.CallbackContext ctx)
+        {
+            AudioSystem.StartRecording();
+        }
+
+        private void BeatsEditorNewBeat(InputAction.CallbackContext ctx)
+        {
+            AudioSystem.AddBeats();
+        }
+
+        private void BeatsEditorEndRecording(InputAction.CallbackContext ctx)
+        {
+            AudioSystem.EndRecording();
+        }
 
         private void MoveMap(InputAction.CallbackContext ctx)
         {

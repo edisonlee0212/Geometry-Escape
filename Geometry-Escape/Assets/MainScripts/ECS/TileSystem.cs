@@ -23,6 +23,7 @@ namespace GeometryEscape
         private static float3 _CurrentCenterPosition;
         private static float _CurrentZoomFactor;
         private static float _Timer;
+        private static int _BeatCounter;
         private static int _Counter;
         private static float _TimeStep;
         private static float _TileScale;
@@ -30,7 +31,7 @@ namespace GeometryEscape
         private static NativeArray<Entity> _CenterEntity;
         public static float TileScale { get => _TileScale; set => _TileScale = value; }
         public static float Timer { get => _Timer; set => _Timer = value; }
-        public static int Counter { get => _Counter; set => _Counter = value; }
+        public static int BeatCounter { get => _BeatCounter; set => _BeatCounter = value; }
         public static float TimeStep { get => _TimeStep; set => _TimeStep = value; }
         public static float3 CurrentCenterPosition { get => _CurrentCenterPosition; set => _CurrentCenterPosition = value; }
         public static float CurrentZoomFactor { get => _CurrentZoomFactor; set => _CurrentZoomFactor = value; }
@@ -38,6 +39,7 @@ namespace GeometryEscape
         public static bool Moving { get => _Moving; set => _Moving = value; }
         public static bool Zooming { get => _Zooming; set => _Zooming = value; }
         public static Transform Light { get => m_Light; set => m_Light = value; }
+        public static int Counter { get => _Counter; set => _Counter = value; }
         #endregion
 
         #region Managers
@@ -139,23 +141,28 @@ namespace GeometryEscape
             [ReadOnly] public int counter;
             public void Execute([WriteOnly] ref TextureIndex c0, [ReadOnly] ref TextureMaxIndex c1, [ReadOnly] ref TileProperties c2)
             {
-                if (c2.MaterialIndex == 2) c0.Value = counter % c1.Value;
-                else c0.Value = 0;
+                c0.Value = counter % c1.Value;
             }
         }
         #endregion
 
-        protected JobHandle OnFixedUpdate(JobHandle inputDeps)
+        protected JobHandle OnBeatUpdate(JobHandle inputDeps)
         {
             inputDeps = new RotateTileTest1
             {
-                counter = Counter / 10,
+                counter = BeatCounter,
             }.Schedule(this, inputDeps);
             inputDeps = new ChangeColorTest
             {
-                counter = Counter / 10,
+                counter = BeatCounter,
             }.Schedule(this, inputDeps);
 
+            inputDeps.Complete();
+            return inputDeps;
+        }
+
+        protected JobHandle OnFixedUpdate(JobHandle inputDeps)
+        {
             inputDeps = new ChangeTextureInfoTest
             {
                 counter = Counter,
@@ -173,6 +180,15 @@ namespace GeometryEscape
                 _Counter += (int)(_Timer / _TimeStep);
                 _Timer = 0;
                 OnFixedUpdate(inputDeps);
+            }
+            #endregion
+
+            #region Beat
+            int count = AudioSystem.CurrentBeatCounter();
+            if (count != _BeatCounter)
+            {
+                _BeatCounter = count;
+                OnBeatUpdate(inputDeps);
             }
             #endregion
 
@@ -213,9 +229,9 @@ namespace GeometryEscape
         private void OnMoving()
         {
             _MovementTimer += Time.deltaTime;
-            if (_MovementTimer < 0.1f)
+            if (_MovementTimer < 0.2f)
             {
-                _CurrentCenterPosition = Vector3.Lerp(_PreviousOriginPosition, _TargetOriginPosition, _MovementTimer / 0.1f);
+                _CurrentCenterPosition = Vector3.Lerp(_PreviousOriginPosition, _TargetOriginPosition, _MovementTimer / 0.2f);
             }
             else
             {
@@ -270,7 +286,8 @@ namespace GeometryEscape
         {
             if (!_Moving && (ControlSystem.ControlMode == ControlMode.MapEditor || _CenterEntity[0] != Entity.Null))
             {
-                if (direction != Vector2.zero && direction.x * direction.y == 0)
+                Debug.Log(AudioSystem.OnBeats());
+                if ((AudioSystem.OnBeats() || ControlSystem.ControlMode == ControlMode.MapEditor) && direction != Vector2.zero && direction.x * direction.y == 0)
                 {
                     _Moving = true;
                     _MovementTimer = 0;

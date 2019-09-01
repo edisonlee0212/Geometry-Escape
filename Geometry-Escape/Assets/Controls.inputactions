@@ -399,6 +399,71 @@
                     "isPartOfComposite": false
                 }
             ]
+        },
+        {
+            "name": "Beats Editor",
+            "id": "7746aa3a-7d91-4f64-8ee5-314994893c51",
+            "actions": [
+                {
+                    "name": "StartRecording",
+                    "type": "Button",
+                    "id": "58f28ff7-b274-4ee6-896e-de50249eee00",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "Press"
+                },
+                {
+                    "name": "NewBeat",
+                    "type": "Button",
+                    "id": "e180b037-735f-4d5d-8956-075ef68ce3dd",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "Press"
+                },
+                {
+                    "name": "EndRecording",
+                    "type": "Button",
+                    "id": "1950efc9-9029-47e2-8455-1374a3d36f42",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "Press"
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "e3b45c8c-5dfc-4994-be39-67b63e9624aa",
+                    "path": "<Keyboard>/f5",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "PC",
+                    "action": "StartRecording",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "ad78e34e-4a7b-4dc1-ba1b-fa45eff38b3f",
+                    "path": "<Keyboard>/space",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "PC",
+                    "action": "NewBeat",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "fecee741-068d-46f7-a4b6-81d6536b7dee",
+                    "path": "<Keyboard>/f6",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "PC",
+                    "action": "EndRecording",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
         }
     ],
     "controlSchemes": [

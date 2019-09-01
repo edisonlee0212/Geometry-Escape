@@ -153,7 +153,6 @@ namespace GeometryEscape
                             left.Value = Entity.Null;
                             c2.Value = Entity.Null;
                             break;
-
                     }
                     leftTile[0] = left;
                 }
@@ -338,9 +337,22 @@ namespace GeometryEscape
             {
                 Value = materialIndex
             };
+            int maxIndex = 0;
+            switch (tileInfo.MaterialIndex)
+            {
+                case 2:
+                    maxIndex = 25;
+                    break;
+                case 3:
+                    maxIndex = 23;
+                    break;
+                default:
+                    maxIndex = 1;
+                    break;
+            }
             var maxTextureIndex = new TextureMaxIndex
             {
-                Value = 25
+                Value = (ushort)maxIndex
             };
             Entity instance = EntityManager.CreateEntity(_TileEntityArchetype);
             NativeArray<LeftTile> left = new NativeArray<LeftTile>(1, Allocator.TempJob);

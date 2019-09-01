@@ -413,6 +413,71 @@ namespace GeometryEscape
                     ""isPartOfComposite"": false
                 }
             ]
+        },
+        {
+            ""name"": ""Beats Editor"",
+            ""id"": ""7746aa3a-7d91-4f64-8ee5-314994893c51"",
+            ""actions"": [
+                {
+                    ""name"": ""StartRecording"",
+                    ""type"": ""Button"",
+                    ""id"": ""58f28ff7-b274-4ee6-896e-de50249eee00"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": ""Press""
+                },
+                {
+                    ""name"": ""NewBeat"",
+                    ""type"": ""Button"",
+                    ""id"": ""e180b037-735f-4d5d-8956-075ef68ce3dd"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": ""Press""
+                },
+                {
+                    ""name"": ""EndRecording"",
+                    ""type"": ""Button"",
+                    ""id"": ""1950efc9-9029-47e2-8455-1374a3d36f42"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": ""Press""
+                }
+            ],
+            ""bindings"": [
+                {
+                    ""name"": """",
+                    ""id"": ""e3b45c8c-5dfc-4994-be39-67b63e9624aa"",
+                    ""path"": ""<Keyboard>/f5"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""PC"",
+                    ""action"": ""StartRecording"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""ad78e34e-4a7b-4dc1-ba1b-fa45eff38b3f"",
+                    ""path"": ""<Keyboard>/space"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""PC"",
+                    ""action"": ""NewBeat"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""fecee741-068d-46f7-a4b6-81d6536b7dee"",
+                    ""path"": ""<Keyboard>/f6"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": ""PC"",
+                    ""action"": ""EndRecording"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                }
+            ]
         }
     ],
     ""controlSchemes"": [
@@ -447,6 +512,11 @@ namespace GeometryEscape
             // Menu
             m_Menu = asset.GetActionMap("Menu");
             m_Menu_Newaction = m_Menu.GetAction("New action");
+            // Beats Editor
+            m_BeatsEditor = asset.GetActionMap("Beats Editor");
+            m_BeatsEditor_StartRecording = m_BeatsEditor.GetAction("StartRecording");
+            m_BeatsEditor_NewBeat = m_BeatsEditor.GetAction("NewBeat");
+            m_BeatsEditor_EndRecording = m_BeatsEditor.GetAction("EndRecording");
         }
 
         ~Controls()
@@ -623,6 +693,55 @@ namespace GeometryEscape
             }
         }
         public MenuActions @Menu => new MenuActions(this);
+
+        // Beats Editor
+        private readonly InputActionMap m_BeatsEditor;
+        private IBeatsEditorActions m_BeatsEditorActionsCallbackInterface;
+        private readonly InputAction m_BeatsEditor_StartRecording;
+        private readonly InputAction m_BeatsEditor_NewBeat;
+        private readonly InputAction m_BeatsEditor_EndRecording;
+        public struct BeatsEditorActions
+        {
+            private Controls m_Wrapper;
+            public BeatsEditorActions(Controls wrapper) { m_Wrapper = wrapper; }
+            public InputAction @StartRecording => m_Wrapper.m_BeatsEditor_StartRecording;
+            public InputAction @NewBeat => m_Wrapper.m_BeatsEditor_NewBeat;
+            public InputAction @EndRecording => m_Wrapper.m_BeatsEditor_EndRecording;
+            public InputActionMap Get() { return m_Wrapper.m_BeatsEditor; }
+            public void Enable() { Get().Enable(); }
+            public void Disable() { Get().Disable(); }
+            public bool enabled => Get().enabled;
+            public static implicit operator InputActionMap(BeatsEditorActions set) { return set.Get(); }
+            public void SetCallbacks(IBeatsEditorActions instance)
+            {
+                if (m_Wrapper.m_BeatsEditorActionsCallbackInterface != null)
+                {
+                    StartRecording.started -= m_Wrapper.m_BeatsEditorActionsCallbackInterface.OnStartRecording;
+                    StartRecording.performed -= m_Wrapper.m_BeatsEditorActionsCallbackInterface.OnStartRecording;
+                    StartRecording.canceled -= m_Wrapper.m_BeatsEditorActionsCallbackInterface.OnStartRecording;
+                    NewBeat.started -= m_Wrapper.m_BeatsEditorActionsCallbackInterface.OnNewBeat;
+                    NewBeat.performed -= m_Wrapper.m_BeatsEditorActionsCallbackInterface.OnNewBeat;
+                    NewBeat.canceled -= m_Wrapper.m_BeatsEditorActionsCallbackInterface.OnNewBeat;
+                    EndRecording.started -= m_Wrapper.m_BeatsEditorActionsCallbackInterface.OnEndRecording;
+                    EndRecording.performed -= m_Wrapper.m_BeatsEditorActionsCallbackInterface.OnEndRecording;
+                    EndRecording.canceled -= m_Wrapper.m_BeatsEditorActionsCallbackInterface.OnEndRecording;
+                }
+                m_Wrapper.m_BeatsEditorActionsCallbackInterface = instance;
+                if (instance != null)
+                {
+                    StartRecording.started += instance.OnStartRecording;
+                    StartRecording.performed += instance.OnStartRecording;
+                    StartRecording.canceled += instance.OnStartRecording;
+                    NewBeat.started += instance.OnNewBeat;
+                    NewBeat.performed += instance.OnNewBeat;
+                    NewBeat.canceled += instance.OnNewBeat;
+                    EndRecording.started += instance.OnEndRecording;
+                    EndRecording.performed += instance.OnEndRecording;
+                    EndRecording.canceled += instance.OnEndRecording;
+                }
+            }
+        }
+        public BeatsEditorActions @BeatsEditor => new BeatsEditorActions(this);
         private int m_PCSchemeIndex = -1;
         public InputControlScheme PCScheme
         {
@@ -647,6 +766,12 @@ namespace GeometryEscape
         public interface IMenuActions
         {
             void OnNewaction(InputAction.CallbackContext context);
+        }
+        public interface IBeatsEditorActions
+        {
+            void OnStartRecording(InputAction.CallbackContext context);
+            void OnNewBeat(InputAction.CallbackContext context);
+            void OnEndRecording(InputAction.CallbackContext context);
         }
     }
 }
