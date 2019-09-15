@@ -13,13 +13,17 @@ MonoBehaviour:
   m_Name: MusicResources
   m_EditorClassIdentifier: 
   m_Musics:
-  - MusicClip: {fileID: 8300000, guid: d64a5a9090bdfe74c8dc59689ecbd95c, type: 3}
+  - MusicClip: {fileID: 8300000, guid: 8b8697a82ea5c704ca08719b3be33b1a, type: 3}
     MusicInfo:
-      MusicStartTime: 0.2249065
-      MusicBeatsTime: 0.4955264
-  - MusicClip: {fileID: 8300000, guid: 83d2446235eda5944aee96b77c61306e, type: 3}
+      MusicStartTime: 0.01
+      MusicBeatsTime: 0.1
+  - MusicClip: {fileID: 8300000, guid: d835453e477ff8649ae8f35f5985c2ef, type: 3}
     MusicInfo:
-      MusicStartTime: 0.4135157
+      MusicStartTime: 0.01
       MusicBeatsTime: 0.6465641
+  - MusicClip: {fileID: 8300000, guid: 41c20ecc26a7d524095f1754bc7b187c, type: 3}
+    MusicInfo:
+      MusicStartTime: 0.2
+      MusicBeatsTime: 0.857
   m_AudioSourcePrefab: {fileID: 4990169705052737863, guid: 5bb49094aaac7904f9c5f8d5a9942104,
     type: 3}

@@ -251,6 +251,7 @@ namespace GeometryEscape
             int count = AudioSystem.CurrentBeatCounter();
             if (count != _BeatCounter)
             {
+                AudioSystem.m_BeatsAudioSource.Play();
                 _BeatCounter = count;
                 OnBeatUpdate(inputDeps);
             }
