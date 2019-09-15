@@ -86,7 +86,7 @@ namespace GeometryEscape
             ControlSystem.ControlMode = ControlMode.InGame;
 
             //所有系统建立完毕之后，我们调用worldsystem来构建游戏世界，当前只有砖块，所以我们生成100块砖。
-            int count = 100;
+            int count = 3;
             for (int i = 0; i < count; i++)
             {
                 for (int j = 0; j < count; j++)
@@ -95,6 +95,7 @@ namespace GeometryEscape
                     WorldSystem.AddTile(index % 4, new Coordinate { X = i, Y = j, Z = 0 });
                 }
             }
+
         }
         /// <summary>
         /// 所有系统包含shutdown函数，这个函数包括Init是我的习惯，这两个函数对应”不希望删除整个系统只是中止运行或者恢复运行“这种需求。

@@ -29,6 +29,20 @@ namespace GeometryEscape
         }
     }
 
+    public enum MonsterType
+    {
+        Green,
+        Blue,
+        Skeleton
+    }
+
+    [Serializable]
+    public struct MonsterTypeIndex : IComponentData
+    {
+        public MonsterType Value;
+    }
+
+
     [Serializable]
     public struct LeftTile : IComponentData
     {

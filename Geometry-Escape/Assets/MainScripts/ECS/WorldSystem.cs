@@ -14,6 +14,12 @@ namespace GeometryEscape
         public Coordinate Coordinate;
         public TileType TileType;
     }
+
+    public struct MonsterInfo
+    {
+
+    }
+
     /// <summary>
     /// The system manages the creation and destruction of all world entities.
     /// </summary>
@@ -22,9 +28,13 @@ namespace GeometryEscape
     {
         #region Private
         private static EntityArchetype _TileEntityArchetype;
+        private static EntityArchetype _MonsterEntityArchetype;
+
         private int _MaterialAmount;
         private static NativeQueue<TileInfo> _TileCreationQueue;
         private static NativeQueue<Entity> _TileDestructionQueue;
+        private static NativeQueue<MonsterInfo> _MonsterCreationQueue;
+        private static NativeQueue<Entity> _MonsterDestructionQueue;
         #endregion
 
         #region Public
@@ -39,6 +49,20 @@ namespace GeometryEscape
         #region Managers
         protected override void OnCreate()
         {
+            _MonsterEntityArchetype = EntityManager.CreateArchetype(
+                typeof(MonsterTypeIndex),
+                typeof(RenderMaterialIndex),
+                typeof(Coordinate),
+                typeof(Translation),
+                typeof(Rotation),
+                typeof(Scale),
+                typeof(Unity.Transforms.LocalToWorld),
+                typeof(TileProperties),
+                typeof(DefaultColor),
+                typeof(TextureIndex),
+                typeof(TextureMaxIndex)
+                );
+
             _TileEntityArchetype = EntityManager.CreateArchetype(
                 typeof(LeftTile),
                 typeof(RightTile),
