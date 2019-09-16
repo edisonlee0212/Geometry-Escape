@@ -32,13 +32,20 @@ namespace GeometryEscape
         /// <summary>
         /// The audio source for main backgroud music.
         /// </summary>
+        public static AudioSource m_BeatsAudioSource;
         private static AudioSource m_MusicAudioSource;
+        private static AudioSource m_KeyAudioSource;
         private static MusicResources.Music m_Music;
+        private static MusicResources.Music m_Beats;
+        private static MusicResources.Music m_KeySound;
         private static float _Deviation;
         public static AudioSource MusicAudioSource { get => m_MusicAudioSource; set => m_MusicAudioSource = value; }
+        public static AudioSource BeatsAudioSource { get => m_BeatsAudioSource; set => m_BeatsAudioSource = value; }
+        public static AudioSource KeyAudioSource { get => m_KeyAudioSource; set => m_KeyAudioSource = value; }
         
         public static float Deviation { get => _Deviation; set => _Deviation = value; }
         public static MusicResources.Music Music { get => m_Music; set => m_Music = value; }
+        public static MusicResources.Music Beats { get => m_Beats; set => m_Beats = value; }
 
 
 
@@ -54,8 +61,12 @@ namespace GeometryEscape
         {
             ShutDown();
             m_MusicResources = CentralSystem.MusicResources;
-            m_Music = m_MusicResources.Musics[0];
+            m_Music = m_MusicResources.Musics[2];
+            m_Beats = m_MusicResources.Musics[1];
+            m_KeySound = m_MusicResources.Musics[0];
             CreateMusic(m_Music.MusicClip);
+            CreateBeats(m_Beats.MusicClip);
+            CreateKeySound(m_KeySound.MusicClip);
             m_MusicAudioSource.Play();
             _Deviation = 0.1f;
             Enabled = true;
@@ -109,6 +120,26 @@ namespace GeometryEscape
             m_MusicAudioSource = m_MusicResources.InstanciateAudioSource(audioClip);
         }
 
+        public static void CreateBeats(AudioClip audioClip)
+        {
+            if (m_BeatsAudioSource != null)
+            {
+                Debug.Log("Music AudioSource already exists! Use LoadMusic instead!");
+                return;
+            }
+            m_BeatsAudioSource = m_MusicResources.InstanciateAudioSource(audioClip);
+        }
+
+        public static void CreateKeySound(AudioClip audioClip)
+        {
+            if (m_KeyAudioSource != null)
+            {
+                Debug.Log("Music AudioSource already exists! Use LoadMusic instead!");
+                return;
+            }
+            m_KeyAudioSource = m_MusicResources.InstanciateAudioSource(audioClip);
+        }
+
         public static void LoadMusic(AudioClip audioClip)
         {
             if (m_MusicAudioSource == null)
@@ -127,7 +158,8 @@ namespace GeometryEscape
         public static bool OnBeats()
         {
             float dev = Mathf.Abs((m_MusicAudioSource.time - m_Music.MusicInfo.MusicStartTime) % m_Music.MusicInfo.MusicBeatsTime);
-            Debug.Log(dev);
+            m_KeyAudioSource.Play();
+            Debug.Log("dev: " + dev);
             return dev <= _Deviation || dev >= m_Music.MusicInfo.MusicBeatsTime - _Deviation;
         }
 
@@ -143,7 +175,6 @@ namespace GeometryEscape
 
         protected override JobHandle OnUpdate(JobHandle inputDeps)
         {
-
             return inputDeps;
         }
     }
