@@ -35,24 +35,16 @@ namespace GeometryEscape
         private static bool _Moving, _Zooming;
         private static float3 _CurrentCenterPosition;
         private static float _CurrentZoomFactor;
-        private static float _Timer;
-        private static int _BeatCounter;
-        private static int _Counter;
-        private static float _TimeStep;
         private static float _TileScale;
         private static Transform m_Light;
         private static NativeArray<Entity> _CenterEntity;
         public static float TileScale { get => _TileScale; set => _TileScale = value; }
-        public static float Timer { get => _Timer; set => _Timer = value; }
-        public static int BeatCounter { get => _BeatCounter; set => _BeatCounter = value; }
-        public static float TimeStep { get => _TimeStep; set => _TimeStep = value; }
         public static float3 CurrentCenterPosition { get => _CurrentCenterPosition; set => _CurrentCenterPosition = value; }
         public static float CurrentZoomFactor { get => _CurrentZoomFactor; set => _CurrentZoomFactor = value; }
         public static Entity CenterEntity { get => _CenterEntity[0]; set => _CenterEntity[0] = value; }
         public static bool Moving { get => _Moving; set => _Moving = value; }
         public static bool Zooming { get => _Zooming; set => _Zooming = value; }
         public static Transform Light { get => m_Light; set => m_Light = value; }
-        public static int Counter { get => _Counter; set => _Counter = value; }
         #endregion
 
         #region Managers
@@ -210,26 +202,26 @@ namespace GeometryEscape
         }
         #endregion
 
-        protected JobHandle OnBeatUpdate(JobHandle inputDeps)
+        public JobHandle OnBeatUpdate(ref JobHandle inputDeps, int beatCounter)
         {
             inputDeps = new RotateTileTest1
             {
-                counter = BeatCounter,
+                counter = beatCounter,
             }.Schedule(this, inputDeps);
             inputDeps = new ChangeColorTest
             {
-                counter = BeatCounter,
+                counter = beatCounter,
             }.Schedule(this, inputDeps);
 
             inputDeps.Complete();
             return inputDeps;
         }
 
-        protected JobHandle OnFixedUpdate(JobHandle inputDeps)
+        public JobHandle OnFixedUpdate(ref JobHandle inputDeps, int counter)
         {
             inputDeps = new ChangeTextureInfoTest
             {
-                counter = Counter,
+                counter = counter,
             }.Schedule(this, inputDeps);
             inputDeps.Complete();
             return inputDeps;
@@ -237,26 +229,7 @@ namespace GeometryEscape
 
         protected override JobHandle OnUpdate(JobHandle inputDeps)
         {
-            #region Time
-            _Timer += Time.deltaTime;
-            if (_Timer >= TimeStep)
-            {
-                _Counter += (int)(_Timer / _TimeStep);
-                _Timer = 0;
-                OnFixedUpdate(inputDeps);
-            }
-            #endregion
-
-            #region Beat
-            int count = AudioSystem.CurrentBeatCounter();
-            if (count != _BeatCounter)
-            {
-                AudioSystem.m_BeatsAudioSource.Play();
-                _BeatCounter = count;
-                OnBeatUpdate(inputDeps);
-            }
-            #endregion
-
+            
             #region InputSystem
 
             if (_Moving) OnMoving();

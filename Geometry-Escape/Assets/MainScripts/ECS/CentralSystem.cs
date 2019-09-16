@@ -19,6 +19,18 @@ namespace GeometryEscape
         private static WorldSystem m_WorldSystem;
         private static ControlSystem m_ControlSystem;
         private static AudioSystem m_AudioSystem;
+        private static MonsterSystem m_MonsterSystem;
+        private static float _TimeStep;
+        private static int _Counter;
+        private static int _BeatCounter;
+        public static int BeatCounter { get => _BeatCounter; set => _BeatCounter = value; }
+
+        public static int Counter { get => _Counter; set => _Counter = value; }
+
+        private static float _Timer;
+        public static float Timer { get => _Timer; set => _Timer = value; }
+        public static float TimeStep { get => _TimeStep; set => _TimeStep = value; }
+
         /// <summary>
         /// 下面三个都是scriptobject，用来导入特殊数据，比如说音乐，图像材质等等，具体关于scriptable object可以Google一下。一句话概括，因为unity原来只有在场景里面存在的gameobject才有能力通过“Instanciate”
         /// 方法生成新的gameobject，但是我们常常需要a生成b，b生成c但是b不需要在场景里有实体，所以有了scriptable object，不需要在场景里存在即可生成物体。
@@ -33,7 +45,7 @@ namespace GeometryEscape
         /// <summary>
         /// music resources 存储各种音乐素材和对应beats
         /// </summary>
-        private static MusicResources m_MusicResources;
+        private static AudioResources m_AudioResources;
 
         /*
          * 下面是各种系统的引用，虽然系统内大部分成员变量都是static全局的变量，但是系统本身不是static的，因为unity允许多个相同系统的存在。所以在这里建立和各个子系统的链接。
@@ -44,8 +56,9 @@ namespace GeometryEscape
         public static ControlSystem ControlSystem { get => m_ControlSystem; set => m_ControlSystem = value; }
         public static LightResources LightResources { get => m_LightResources; set => m_LightResources = value; }
         public static TileResources TileResources { get => m_TileResources; set => m_TileResources = value; }
-        public static MusicResources MusicResources { get => m_MusicResources; set => m_MusicResources = value; }
+        public static AudioResources AudioResources { get => m_AudioResources; set => m_AudioResources = value; }
         public static AudioSystem AudioSystem { get => m_AudioSystem; set => m_AudioSystem = value; }
+        public static MonsterSystem MonsterSystem { get => m_MonsterSystem; set => m_MonsterSystem = value; }
 
         #endregion
         /// <summary>
@@ -65,24 +78,27 @@ namespace GeometryEscape
             //首先我们载入resources，准备好要分配给各个子系统的资源
             m_LightResources = Resources.Load<LightResources>("ScriptableObjects/LightResources");
             m_TileResources = Resources.Load<TileResources>("ScriptableObjects/TileResources");
-            m_MusicResources = Resources.Load<MusicResources>("ScriptableObjects/MusicResources");
+            m_AudioResources = Resources.Load<AudioResources>("ScriptableObjects/AudioResources");
             //设置砖块系统的一些初始参数，tilescale值砖块的大小，你可以尝试改变这个值，看看有什么效果。
             TileSystem.TileScale = 2;
             //设置砖块系统的单位时间，砖块系统内有对应的OnUpdate和OnFixedUpdate，对应unity原本的Update和FixedUpdate
             //其中OnUpdate由系统自动调用，OnFixedUpdate为我写的方法，由OnUpdate调用，这里就是调用时间间隔，0.1f代表每秒执行10次OnFixedUpdate
-            TileSystem.TimeStep = 0.1f;
+            TimeStep = 0.1f;
 
             //确认所有必须设置的初始参数设置完毕，我们可以启动各个子系统。
             RenderSystem = World.Active.GetOrCreateSystem<RenderSystem>();//从unity获取当前已经存在的系统
             RenderSystem.Init();//启动这个系统
             TileSystem = World.Active.GetOrCreateSystem<TileSystem>();
             TileSystem.Init();
+            MonsterSystem = World.Active.GetOrCreateSystem<MonsterSystem>();
+            MonsterSystem.Init();
             WorldSystem = World.Active.GetOrCreateSystem<WorldSystem>();
             WorldSystem.Init();
             AudioSystem = World.Active.GetOrCreateSystem<AudioSystem>();
             AudioSystem.Init();
 
             ControlSystem = new ControlSystem();//control system并不是一个真正的ECS的系统，所以我们通过这种方式建立。
+            //这个地方设置操作模式，不同操作模式对应不同场景。
             ControlSystem.ControlMode = ControlMode.InGame;
 
             //所有系统建立完毕之后，我们调用worldsystem来构建游戏世界，当前只有砖块，所以我们生成100块砖。
@@ -116,8 +132,45 @@ namespace GeometryEscape
             ShutDown();
         }
 
+        protected JobHandle OnFixedUpdate(ref JobHandle inputDeps)
+        {
+            m_AudioSystem.OnFixedUpdate(ref inputDeps, _BeatCounter);
+            m_TileSystem.OnFixedUpdate(ref inputDeps, _Counter);
+            m_MonsterSystem.OnFixedUpdate(ref inputDeps, _Counter);
+            return inputDeps;
+        }
+
+        protected JobHandle OnBeatUpdate(ref JobHandle inputDeps)
+        {
+            m_AudioSystem.OnBeatUpdate(ref inputDeps, _BeatCounter);
+            m_TileSystem.OnBeatUpdate(ref inputDeps, _BeatCounter);
+            m_MonsterSystem.OnBeatUpdate(ref inputDeps, _BeatCounter);
+            return inputDeps;
+        }
+
         protected override JobHandle OnUpdate(JobHandle inputDeps)
         {
+            #region Special System Update
+            #region Fixed Time Step
+            _Timer += Time.deltaTime;
+            if (_Timer >= TimeStep)
+            {
+                _Counter += (int)(_Timer / _TimeStep);
+                _Timer = 0;
+                OnFixedUpdate(ref inputDeps);
+            }
+            #endregion
+
+            #region Beat
+            int count = AudioSystem.CurrentBeatCounter();
+            if (count != _BeatCounter)
+            {
+                _BeatCounter = count;
+                OnBeatUpdate(ref inputDeps);
+            }
+            #endregion
+            #endregion
+
             return inputDeps;
         }
     }

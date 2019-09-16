@@ -42,7 +42,17 @@ namespace GeometryEscape
 
         #region Jobs
         #endregion
+        public JobHandle OnBeatUpdate(ref JobHandle inputDeps, int beatCounter)
+        {
+            //Schedule your job for every beat here.
+            return inputDeps;
+        }
 
+        public JobHandle OnFixedUpdate(ref JobHandle inputDeps, int counter)
+        {
+            //Schedule your job for every time step here. Time step is defined in central system.
+            return inputDeps;
+        }
         protected override JobHandle OnUpdate(JobHandle inputDeps)
         {
             return inputDeps;
