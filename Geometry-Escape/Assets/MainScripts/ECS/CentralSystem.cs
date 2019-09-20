@@ -108,7 +108,7 @@ namespace GeometryEscape
                 for (int j = 0; j < count; j++)
                 {
                     int index = i * count + j;
-                    WorldSystem.AddTile(index % 4, new Coordinate { X = i, Y = j, Z = 0 });
+                    WorldSystem.AddTile(index % 4, new Coordinate { X = i, Y = j, Z = 0 }, (TileType) (index % 4));
                 }
             }
 

@@ -10,7 +10,9 @@ namespace GeometryEscape
     public enum TileType
     {
         Normal, 
-        Trap,
+        MusicAccleratorTrap,
+        FreezeTrap,
+        InverseTrap,
         Bonus,
     }
 
