@@ -17,6 +17,13 @@ namespace GeometryEscape
 
     public struct MonsterInfo
     {
+        public MonsterType MonsterType;
+        public Coordinate Coordinate;       // position
+        public int MaterialIndex;
+        // default route
+        // mechanic trigger
+        // view scope check 
+        // monster hp
 
     }
 
@@ -60,7 +67,8 @@ namespace GeometryEscape
                 typeof(TileProperties),
                 typeof(DefaultColor),
                 typeof(TextureIndex),
-                typeof(TextureMaxIndex)
+                typeof(TextureMaxIndex),
+                typeof(MonsterHP)
                 );
 
             _TileEntityArchetype = EntityManager.CreateArchetype(

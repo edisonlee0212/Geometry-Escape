@@ -23,6 +23,8 @@ namespace GeometryEscape
         private static float _TimeStep;
         private static int _Counter;
         private static int _BeatCounter;
+        private static int _TileCount;
+
         public static int BeatCounter { get => _BeatCounter; set => _BeatCounter = value; }
 
         public static int Counter { get => _Counter; set => _Counter = value; }
@@ -30,7 +32,7 @@ namespace GeometryEscape
         private static float _Timer;
         public static float Timer { get => _Timer; set => _Timer = value; }
         public static float TimeStep { get => _TimeStep; set => _TimeStep = value; }
-
+        public static int Count { get => _TileCount; set => _TileCount = value; }
         /// <summary>
         /// 下面三个都是scriptobject，用来导入特殊数据，比如说音乐，图像材质等等，具体关于scriptable object可以Google一下。一句话概括，因为unity原来只有在场景里面存在的gameobject才有能力通过“Instanciate”
         /// 方法生成新的gameobject，但是我们常常需要a生成b，b生成c但是b不需要在场景里有实体，所以有了scriptable object，不需要在场景里存在即可生成物体。
@@ -46,6 +48,7 @@ namespace GeometryEscape
         /// music resources 存储各种音乐素材和对应beats
         /// </summary>
         private static AudioResources m_AudioResources;
+        private static AudioResources m_MonsterResources;
 
         /*
          * 下面是各种系统的引用，虽然系统内大部分成员变量都是static全局的变量，但是系统本身不是static的，因为unity允许多个相同系统的存在。所以在这里建立和各个子系统的链接。
@@ -79,6 +82,8 @@ namespace GeometryEscape
             m_LightResources = Resources.Load<LightResources>("ScriptableObjects/LightResources");
             m_TileResources = Resources.Load<TileResources>("ScriptableObjects/TileResources");
             m_AudioResources = Resources.Load<AudioResources>("ScriptableObjects/AudioResources");
+            m_MonsterResources = Resources.Load<AudioResources>("ScriptableObjects/MonsterResources");
+
             //设置砖块系统的一些初始参数，tilescale值砖块的大小，你可以尝试改变这个值，看看有什么效果。
             TileSystem.TileScale = 2;
             //设置砖块系统的单位时间，砖块系统内有对应的OnUpdate和OnFixedUpdate，对应unity原本的Update和FixedUpdate
@@ -102,16 +107,15 @@ namespace GeometryEscape
             ControlSystem.ControlMode = ControlMode.InGame;
 
             //所有系统建立完毕之后，我们调用worldsystem来构建游戏世界，当前只有砖块，所以我们生成100块砖。
-            int count = 3;
-            for (int i = 0; i < count; i++)
+            _TileCount = 100;
+            for (int i = 0; i < _TileCount; i++)
             {
-                for (int j = 0; j < count; j++)
+                for (int j = 0; j < _TileCount; j++)
                 {
-                    int index = i * count + j;
-                    WorldSystem.AddTile(index % 4, new Coordinate { X = i, Y = j, Z = 0 }, (TileType) (index % 4));
+                    int index = i * _TileCount + j;
+                    WorldSystem.AddTile(index % 4, new Coordinate { X = i, Y = j, Z = 0 });
                 }
             }
-
         }
         /// <summary>
         /// 所有系统包含shutdown函数，这个函数包括Init是我的习惯，这两个函数对应”不希望删除整个系统只是中止运行或者恢复运行“这种需求。
