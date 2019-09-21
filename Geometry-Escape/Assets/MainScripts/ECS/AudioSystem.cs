@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Entities;
@@ -75,7 +75,8 @@ namespace GeometryEscape
             m_MusicAudioSource.Play();
             _Deviation = 0.1f;
             Enabled = true;
-            _Deviation = m_Music.MusicInfo.MusicBeatsTime / 4;
+
+            _Deviation = m_Music.MusicInfo.MusicBeatsTime / 2;
         }
 
         public void ShutDown()

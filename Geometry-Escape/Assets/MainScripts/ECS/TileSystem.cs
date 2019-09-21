@@ -33,6 +33,9 @@ namespace GeometryEscape
 
         #region Public
         private static bool _Moving, _Zooming;
+        private static bool _CheckTile;
+        private static bool _InverseDirection;
+        private static int _FreezeCount;
         private static float3 _CurrentCenterPosition;
         private static float _CurrentZoomFactor;
         private static float _TileScale;
@@ -45,6 +48,9 @@ namespace GeometryEscape
         public static bool Moving { get => _Moving; set => _Moving = value; }
         public static bool Zooming { get => _Zooming; set => _Zooming = value; }
         public static Transform Light { get => m_Light; set => m_Light = value; }
+        public static bool CheckTile { get => _CheckTile; set => _CheckTile = value; }
+        public static int FreezeCount { get => _FreezeCount; set => _FreezeCount = value; }
+        public static bool InverseDirection { get => _InverseDirection; set => _InverseDirection = value; }
         #endregion
 
         #region Managers
@@ -118,7 +124,7 @@ namespace GeometryEscape
          * 关于Jobs（IjobForEach IJobForEachWithEntity）：
          * https://docs.unity3d.com/Packages/com.unity.entities@0.0/manual/entity_iteration_job.html
          */
-        struct PositionSelect : IJobForEachWithEntity<Translation, DefaultColor>
+        struct PositionSelect : IJobForEachWithEntity<Translation, DefaultColor, TileProperties>
         {
             [ReadOnly] public float scale;
             [ReadOnly] public Vector3 position;
@@ -138,9 +144,10 @@ namespace GeometryEscape
             /*每个Job都必须含有Execute，这个是job的具体工作，execute格式不需要自己写，对着上面的”IJobForEachwithentity”按alt+enter会有选项自动帮你创建。
              * 注意这个地方的【ReadOnly】和WriteOnly，这两个标记告诉Unity我们只会读取这个数据或者我们只会写入这个数据，这个是optional的，但是会提高运行效率。
              */
-            public void Execute(Entity entity, int index, [ReadOnly] ref Translation c0, [WriteOnly] ref DefaultColor c1)
-            {
 
+
+            public void Execute(Entity entity, int index, [ReadOnly] ref Translation c0, [WriteOnly] ref DefaultColor c1, [ReadOnly] ref TileProperties c2)
+            {
                 if (Mathf.Abs(c0.Value.x - position.x) < scale && Mathf.Abs(c0.Value.y - position.y) < scale / 4)
                 {
                     //如果这个砖块处于中心，我们把它存到container里面
@@ -152,11 +159,11 @@ namespace GeometryEscape
         }
 
         [BurstCompile]
-        struct CalculateTileLocalToWorld : IJobForEach<Coordinate, Scale, Translation, Rotation>
+        struct CalculateTileLocalToWorld : IJobForEach<Coordinate, Scale, Translation, Rotation, TileProperties>
         {
             [ReadOnly] public float scale;
             [ReadOnly] public float3 centerPosition;
-            public void Execute([ReadOnly] ref Coordinate c0, [WriteOnly] ref Scale c1, [WriteOnly] ref Translation c2, [WriteOnly] ref Rotation c3)
+            public void Execute([ReadOnly] ref Coordinate c0, [WriteOnly] ref Scale c1, [WriteOnly] ref Translation c2, [WriteOnly] ref Rotation c3, [ReadOnly] ref TileProperties c4)
             {
                 var coordinate = c0;
                 c1.Value = scale;
@@ -166,20 +173,20 @@ namespace GeometryEscape
         }
 
         [BurstCompile]
-        struct RotateTileTest1 : IJobForEach<Coordinate>
+        struct RotateTileTest1 : IJobForEach<Coordinate, TileProperties>
         {
             [ReadOnly] public int counter;
-            public void Execute([WriteOnly] ref Coordinate c0)
+            public void Execute([WriteOnly] ref Coordinate c0, [ReadOnly] ref TileProperties c1)
             {
                 if (c0.X % 2 == 0) c0.Direction = counter * 90;
             }
         }
 
         [BurstCompile]
-        struct ChangeColorTest : IJobForEach<TileProperties, DefaultColor>
+        struct ChangeColorTest : IJobForEach<TileProperties, DefaultColor, TileProperties>
         {
             [ReadOnly] public int counter;
-            public void Execute([ReadOnly] ref TileProperties c0, [WriteOnly] ref DefaultColor c1)
+            public void Execute([ReadOnly] ref TileProperties c0, [WriteOnly] ref DefaultColor c1, [ReadOnly] ref TileProperties c2)
             {
                 Vector4 color = default;
                 int offset = c0.Index + counter;
@@ -233,6 +240,27 @@ namespace GeometryEscape
             #region InputSystem
 
             if (_Moving) OnMoving();
+            else if(_CheckTile && _CenterEntity[0] != Entity.Null)
+            {
+                //如果上次移动之后没有检测是什么砖块，我们在这里进行操作。
+                _CheckTile = false;
+                switch (EntityManager.GetComponentData<TileProperties>(_CenterEntity[0]).TileType)
+                {
+                    case TileType.Normal:
+                        break;
+                    case TileType.FreezeTrap:
+                        _FreezeCount = 5;
+                        break;
+                    case TileType.InverseTrap:
+                        _InverseDirection = !_InverseDirection;
+                        break;
+                    case TileType.MusicAccleratorTrap:
+                        
+                        break;
+                    default:
+                        break;
+                }
+            }
             if (_Zooming) OnZooming();
 
             #endregion
@@ -254,6 +282,9 @@ namespace GeometryEscape
                 selectedEntity = _CenterEntity
             }.Schedule(this, inputDeps);
             inputDeps.Complete();
+
+            
+
             return inputDeps;
         }
 
@@ -276,7 +307,8 @@ namespace GeometryEscape
                 _Moving = false;
                 _CurrentCenterPosition = _TargetOriginPosition;
             }
-
+            //设置以在移动完成之后进行操作。
+            _CheckTile = true;
         }
 
         private void OnZooming()
@@ -322,6 +354,12 @@ namespace GeometryEscape
 
         public static void Move(Vector2 direction)
         {
+            if(_FreezeCount > 0)
+            {
+                _FreezeCount--;
+                Debug.Log("Freezed! Need " + _FreezeCount + " more try to make another move.");
+                return;
+            }
             if (!_Moving && (ControlSystem.ControlMode == ControlMode.MapEditor || _CenterEntity[0] != Entity.Null))
             {
                 Debug.Log(AudioSystem.OnBeats());
@@ -331,28 +369,94 @@ namespace GeometryEscape
                     _MovementTimer = 0;
                     _PreviousOriginPosition = _CurrentCenterPosition;
                     _TargetOriginPosition = _PreviousOriginPosition;
-                    if (direction.x > 0 && (ControlSystem.ControlMode == ControlMode.MapEditor
-                        || m_EntityManager.GetComponentData<RightTile>(_CenterEntity[0]).Value != Entity.Null))
+                    if (direction.x > 0)
                     {
-                        _TargetOriginPosition.x -= 1;
+                        if (!(ControlSystem.ControlMode == ControlMode.MapEditor))
+                        {
+                            {
+                                if (_InverseDirection)
+                                {
+                                    if (m_EntityManager.GetComponentData<LeftTile>(_CenterEntity[0]).Value == Entity.Null)
+                                    {
+                                        return;
+                                    }
+                                }
+                                else
+                                {
+                                    if (m_EntityManager.GetComponentData<RightTile>(_CenterEntity[0]).Value == Entity.Null)
+                                    {
+                                        return;
+                                    }
+                                }
+                            }
+                        }
+                        _TargetOriginPosition.x -= _InverseDirection ? -1 : 1;
                         Debug.Log("Move right, target position: " + (-_TargetOriginPosition));
                     }
-                    else if (direction.x < 0 && (ControlSystem.ControlMode == ControlMode.MapEditor
-                        || m_EntityManager.GetComponentData<LeftTile>(_CenterEntity[0]).Value != Entity.Null))
+                    else if (direction.x < 0)
                     {
-                        _TargetOriginPosition.x += 1;
+                        if (!(ControlSystem.ControlMode == ControlMode.MapEditor))
+                        {
+                            if (_InverseDirection)
+                            {
+                                if (m_EntityManager.GetComponentData<RightTile>(_CenterEntity[0]).Value == Entity.Null)
+                                {
+                                    return;
+                                }
+                            }
+                            else
+                            {
+                                if (m_EntityManager.GetComponentData<LeftTile>(_CenterEntity[0]).Value == Entity.Null)
+                                {
+                                    return;
+                                }
+                            }
+                        }
+                        _TargetOriginPosition.x += _InverseDirection ? -1 : 1; ;
                         Debug.Log("Move left, target position: " + (-_TargetOriginPosition));
                     }
-                    else if (direction.y > 0 && (ControlSystem.ControlMode == ControlMode.MapEditor
-                        || m_EntityManager.GetComponentData<UpTile>(_CenterEntity[0]).Value != Entity.Null))
+                    else if (direction.y > 0)
                     {
-                        _TargetOriginPosition.y -= 1;
+                        if (!(ControlSystem.ControlMode == ControlMode.MapEditor))
+                        {
+                            if (_InverseDirection)
+                            {
+                                if (m_EntityManager.GetComponentData<DownTile>(_CenterEntity[0]).Value == Entity.Null)
+                                {
+                                    return;
+                                }
+                            }
+                            else
+                            {
+                                if (m_EntityManager.GetComponentData<UpTile>(_CenterEntity[0]).Value == Entity.Null)
+                                {
+                                    return;
+                                }
+                            }
+                        }
+                        _TargetOriginPosition.y -= _InverseDirection ? -1 : 1; ;
                         Debug.Log("Move up, target position: " + (-_TargetOriginPosition));
                     }
-                    else if (direction.y < 0 && (ControlSystem.ControlMode == ControlMode.MapEditor
-                        || m_EntityManager.GetComponentData<DownTile>(_CenterEntity[0]).Value != Entity.Null))
+                    else if (direction.y < 0)
                     {
-                        _TargetOriginPosition.y += 1;
+                        if (!(ControlSystem.ControlMode == ControlMode.MapEditor))
+                        {
+                            if (_InverseDirection)
+                            {
+                                if (m_EntityManager.GetComponentData<UpTile>(_CenterEntity[0]).Value == Entity.Null)
+                                {
+                                    return;
+                                }
+                            }
+                            else
+                            {
+                                if (m_EntityManager.GetComponentData<DownTile>(_CenterEntity[0]).Value == Entity.Null)
+                                {
+                                    return;
+                                }
+                            }
+                        }
+                        _TargetOriginPosition.y += _InverseDirection ? -1 : 1; ;
                         Debug.Log("Move down, target position: " + (-_TargetOriginPosition));
                     }
                     else
@@ -361,7 +465,6 @@ namespace GeometryEscape
                     }
                 }
             }
-
         }
     }
 }
