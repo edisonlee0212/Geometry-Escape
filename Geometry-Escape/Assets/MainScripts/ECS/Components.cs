@@ -89,7 +89,7 @@ namespace GeometryEscape
     [Serializable]
     public struct Coordinate : IComponentData
     {
-        public int X, Y, Z, Direction;
+        public float X, Y, Z, Direction;
     }
 
     [Serializable]
