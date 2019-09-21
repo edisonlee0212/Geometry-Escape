@@ -121,12 +121,12 @@ namespace GeometryEscape
         private static void Move(InputAction.CallbackContext ctx)
         {
             AudioSystem.PlayKeySound();
-            TileSystem.Move(ctx.ReadValue<Vector2>());
+            CentralSystem.Move(ctx.ReadValue<Vector2>());
         }
 
         private static void ZoomMap(InputAction.CallbackContext ctx)
         {
-            TileSystem.Zoom(ctx.ReadValue<float>());
+            CentralSystem.Zoom(ctx.ReadValue<float>());
         }
 
         private static void MapEditorAddCenterTile(InputAction.CallbackContext ctx)
