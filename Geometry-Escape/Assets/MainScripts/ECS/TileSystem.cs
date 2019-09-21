@@ -124,7 +124,7 @@ namespace GeometryEscape
          * 关于Jobs（IjobForEach IJobForEachWithEntity）：
          * https://docs.unity3d.com/Packages/com.unity.entities@0.0/manual/entity_iteration_job.html
          */
-        struct PositionSelect : IJobForEachWithEntity<Translation, DefaultColor>
+        struct PositionSelect : IJobForEachWithEntity<Translation, DefaultColor, TileProperties>
         {
             [ReadOnly] public float scale;
             [ReadOnly] public Vector3 position;
@@ -146,9 +146,8 @@ namespace GeometryEscape
              */
 
 
-            public void Execute(Entity entity, int index, [ReadOnly] ref Translation c0, [WriteOnly] ref DefaultColor c1)
+            public void Execute(Entity entity, int index, [ReadOnly] ref Translation c0, [WriteOnly] ref DefaultColor c1, [ReadOnly] ref TileProperties c2)
             {
-
                 if (Mathf.Abs(c0.Value.x - position.x) < scale && Mathf.Abs(c0.Value.y - position.y) < scale / 4)
                 {
                     //如果这个砖块处于中心，我们把它存到container里面
@@ -160,11 +159,11 @@ namespace GeometryEscape
         }
 
         [BurstCompile]
-        struct CalculateTileLocalToWorld : IJobForEach<Coordinate, Scale, Translation, Rotation>
+        struct CalculateTileLocalToWorld : IJobForEach<Coordinate, Scale, Translation, Rotation, TileProperties>
         {
             [ReadOnly] public float scale;
             [ReadOnly] public float3 centerPosition;
-            public void Execute([ReadOnly] ref Coordinate c0, [WriteOnly] ref Scale c1, [WriteOnly] ref Translation c2, [WriteOnly] ref Rotation c3)
+            public void Execute([ReadOnly] ref Coordinate c0, [WriteOnly] ref Scale c1, [WriteOnly] ref Translation c2, [WriteOnly] ref Rotation c3, [ReadOnly] ref TileProperties c4)
             {
                 var coordinate = c0;
                 c1.Value = scale;
@@ -174,20 +173,20 @@ namespace GeometryEscape
         }
 
         [BurstCompile]
-        struct RotateTileTest1 : IJobForEach<Coordinate>
+        struct RotateTileTest1 : IJobForEach<Coordinate, TileProperties>
         {
             [ReadOnly] public int counter;
-            public void Execute([WriteOnly] ref Coordinate c0)
+            public void Execute([WriteOnly] ref Coordinate c0, [ReadOnly] ref TileProperties c1)
             {
                 if (c0.X % 2 == 0) c0.Direction = counter * 90;
             }
         }
 
         [BurstCompile]
-        struct ChangeColorTest : IJobForEach<TileProperties, DefaultColor>
+        struct ChangeColorTest : IJobForEach<TileProperties, DefaultColor, TileProperties>
         {
             [ReadOnly] public int counter;
-            public void Execute([ReadOnly] ref TileProperties c0, [WriteOnly] ref DefaultColor c1)
+            public void Execute([ReadOnly] ref TileProperties c0, [WriteOnly] ref DefaultColor c1, [ReadOnly] ref TileProperties c2)
             {
                 Vector4 color = default;
                 int offset = c0.Index + counter;
@@ -466,7 +465,6 @@ namespace GeometryEscape
                     }
                 }
             }
-
         }
     }
 }
