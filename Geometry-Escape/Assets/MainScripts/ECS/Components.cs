@@ -54,6 +54,13 @@ namespace GeometryEscape
     {
         public Entity Value;
     }
+
+    [Serializable]
+    public struct MonsterHP : IComponentData
+    {
+        public Entity Value;
+    }
+
     [Serializable]
     public struct UpTile : IComponentData
     {
@@ -122,6 +129,16 @@ namespace GeometryEscape
         public int MaterialIndex;
         public TileType TileType;
     }
+
+    [Serializable]
+    public struct MonsterProperties : IComponentData
+    {
+        //public int Index;
+        public int MaterialIndex;
+        public MonsterType MonsterType;
+
+    }
+
 
     [Serializable]
     public struct DefaultColor : IComponentData
