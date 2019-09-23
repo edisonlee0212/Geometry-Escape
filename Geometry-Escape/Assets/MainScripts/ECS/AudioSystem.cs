@@ -70,7 +70,8 @@ namespace GeometryEscape
             m_MusicAudioSource.Play();
             _Deviation = 0.1f;
             Enabled = true;
-            _Deviation = m_Music.MusicInfo.MusicBeatsTime / 6;
+
+            _Deviation = m_Music.MusicInfo.MusicBeatsTime / 4;
         }
 
         public void ShutDown()
@@ -158,8 +159,7 @@ namespace GeometryEscape
         public static bool OnBeats()
         {
             float dev = Mathf.Abs((m_MusicAudioSource.time - m_Music.MusicInfo.MusicStartTime) % m_Music.MusicInfo.MusicBeatsTime);
-            m_KeyAudioSource.Play();
-            Debug.Log("dev: " + dev);
+            // Debug.Log("dev: " + dev);
             return dev <= _Deviation || dev >= m_Music.MusicInfo.MusicBeatsTime - _Deviation;
         }
 

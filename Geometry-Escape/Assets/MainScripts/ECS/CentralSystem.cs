@@ -115,6 +115,170 @@ namespace GeometryEscape
         {
             ShutDown();
         }
+        #endregion
+
+
+        #region Methods
+        public static void Zoom(float direction)
+        {
+            if (!_Zooming)
+            {
+                //Debug.Log(direction);
+                if (direction != 0)
+                {
+                    _Zooming = true;
+                    _ZoomingTimer = 0;
+                    _PreviousZoomFactor = _CurrentZoomFactor;
+                    if (direction > 0 && _CurrentZoomFactor < 16f)
+                    {
+                        _TargetZoomFactor = _PreviousZoomFactor;
+                        _TargetZoomFactor *= 2;
+                    }
+                    else if (direction < 0 && _CurrentZoomFactor > 0.5f)
+                    {
+                        _TargetZoomFactor = _PreviousZoomFactor;
+                        _TargetZoomFactor /= 2;
+                    }
+                }
+            }
+        }
+
+        public static void Move(Vector2 direction)
+        {
+            if (_FreezeCount > 0)
+            {
+                _FreezeCount--;
+                Debug.Log("Freezed! Need " + _FreezeCount + " more try to make another move.");
+                return;
+            }
+            if (!_Moving && (ControlSystem.ControlMode == ControlMode.MapEditor || TileSystem.CenterEntity != Entity.Null))
+            {
+                Debug.Log(AudioSystem.OnBeats());
+                if ((AudioSystem.OnBeats() || ControlSystem.ControlMode == ControlMode.MapEditor) && direction != Vector2.zero && direction.x * direction.y == 0)
+                {
+                    _Moving = true;
+                    _MovementTimer = 0;
+                    _PreviousOriginPosition = _CurrentCenterPosition;
+                    _TargetOriginPosition = _PreviousOriginPosition;
+                    UISystem.ShowHit_300();
+                    if (direction.x > 0)
+                    {
+                        if (!(ControlSystem.ControlMode == ControlMode.MapEditor))
+                        {
+                            {
+                                if (_InverseDirection)
+                                {
+                                    if (m_EntityManager.GetComponentData<LeftTile>(TileSystem.CenterEntity).Value == Entity.Null)
+                                    {
+                                        return;
+                                    }
+                                }
+                                else
+                                {
+                                    if (m_EntityManager.GetComponentData<RightTile>(TileSystem.CenterEntity).Value == Entity.Null)
+                                    {
+                                        return;
+                                    }
+                                }
+                            }
+                        }
+                        _TargetOriginPosition.x -= _InverseDirection ? -1 : 1;
+                        Debug.Log("Move right, target position: " + (-_TargetOriginPosition));
+                    }
+                    else if (direction.x < 0)
+                    {
+                        if (!(ControlSystem.ControlMode == ControlMode.MapEditor))
+                        {
+                            if (_InverseDirection)
+                            {
+                                if (m_EntityManager.GetComponentData<RightTile>(TileSystem.CenterEntity).Value == Entity.Null)
+                                {
+                                    return;
+                                }
+                            }
+                            else
+                            {
+                                if (m_EntityManager.GetComponentData<LeftTile>(TileSystem.CenterEntity).Value == Entity.Null)
+                                {
+                                    return;
+                                }
+                            }
+                        }
+                        _TargetOriginPosition.x += _InverseDirection ? -1 : 1; ;
+                        Debug.Log("Move left, target position: " + (-_TargetOriginPosition));
+                    }
+                    else if (direction.y > 0)
+                    {
+                        if (!(ControlSystem.ControlMode == ControlMode.MapEditor))
+                        {
+                            if (_InverseDirection)
+                            {
+                                if (m_EntityManager.GetComponentData<DownTile>(TileSystem.CenterEntity).Value == Entity.Null)
+                                {
+                                    return;
+                                }
+                            }
+                            else
+                            {
+                                if (m_EntityManager.GetComponentData<UpTile>(TileSystem.CenterEntity).Value == Entity.Null)
+                                {
+                                    return;
+                                }
+                            }
+                        }
+                        _TargetOriginPosition.y -= _InverseDirection ? -1 : 1; ;
+                        Debug.Log("Move up, target position: " + (-_TargetOriginPosition));
+                    }
+                    else if (direction.y < 0)
+                    {
+                        if (!(ControlSystem.ControlMode == ControlMode.MapEditor))
+                        {
+                            if (_InverseDirection)
+                            {
+                                if (m_EntityManager.GetComponentData<UpTile>(TileSystem.CenterEntity).Value == Entity.Null)
+                                {
+                                    return;
+                                }
+                            }
+                            else
+                            {
+                                if (m_EntityManager.GetComponentData<DownTile>(TileSystem.CenterEntity).Value == Entity.Null)
+                                {
+                                    return;
+                                }
+                            }
+                        }
+                        _TargetOriginPosition.y += _InverseDirection ? -1 : 1; ;
+                        Debug.Log("Move down, target position: " + (-_TargetOriginPosition));
+                    }
+                    else
+                    {
+                        Debug.Log("Blocked in player mode! Use map editor mode if you want to move to empty space.");
+                    }
+                }
+                else
+                {
+                    UISystem.ShowMiss();
+                }
+            }
+        }
+        #endregion
+
+        protected JobHandle OnFixedUpdate(ref JobHandle inputDeps)
+        {
+            m_AudioSystem.OnFixedUpdate(ref inputDeps, _BeatCounter);
+            m_TileSystem.OnFixedUpdate(ref inputDeps, _Counter);
+            m_MonsterSystem.OnFixedUpdate(ref inputDeps, _Counter);
+            return inputDeps;
+        }
+
+        protected JobHandle OnBeatUpdate(ref JobHandle inputDeps)
+        {
+            m_AudioSystem.OnBeatUpdate(ref inputDeps, _BeatCounter);
+            m_TileSystem.OnBeatUpdate(ref inputDeps, _BeatCounter);
+            m_MonsterSystem.OnBeatUpdate(ref inputDeps, _BeatCounter);
+            return inputDeps;
+        }
 
         protected override JobHandle OnUpdate(JobHandle inputDeps)
         {
