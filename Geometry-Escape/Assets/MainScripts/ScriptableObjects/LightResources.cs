@@ -6,7 +6,7 @@ namespace GeometryEscape
     [CreateAssetMenu]
     public class LightResources : ScriptableObject
     {
-        #region Public
+        #region Private
         [SerializeField]
         private GameObject m_ViewLightPrefab = null;
         #endregion
@@ -22,7 +22,7 @@ namespace GeometryEscape
 
         public void Init()
         {
-            m_ViewLight = Instantiate(m_ViewLightPrefab, new Vector3(0, 0, -5), Quaternion.identity);
+            m_ViewLight = Instantiate(m_ViewLightPrefab);
         }
     }
 }
