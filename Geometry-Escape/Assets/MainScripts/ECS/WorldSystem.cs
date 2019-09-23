@@ -17,6 +17,13 @@ namespace GeometryEscape
 
     public struct MonsterInfo
     {
+        public MonsterType MonsterType;
+        public Coordinate Coordinate;       // position
+        public int MaterialIndex;
+        // default route
+        // mechanic trigger
+        // view scope check 
+        // monster hp
 
     }
 
@@ -60,7 +67,8 @@ namespace GeometryEscape
                 typeof(TileProperties),
                 typeof(DefaultColor),
                 typeof(TextureIndex),
-                typeof(TextureMaxIndex)
+                typeof(TextureMaxIndex),
+                typeof(MonsterHP)
                 );
 
             _TileEntityArchetype = EntityManager.CreateArchetype(
@@ -110,25 +118,25 @@ namespace GeometryEscape
 
         public static void AddCenterTile()
         {
-            if (!_AddingTiles && !TileSystem.Moving && TileSystem.CenterEntity == Entity.Null)
+            if (!_AddingTiles && !CentralSystem.Moving && TileSystem.CenterEntity == Entity.Null)
             {
                 AddTile(0, new Coordinate
                 {
-                    X = (int)-TileSystem.CurrentCenterPosition.x,
-                    Y = (int)-TileSystem.CurrentCenterPosition.y,
-                    Z = (int)-TileSystem.CurrentCenterPosition.z,
+                    X = (int)-CentralSystem.CurrentCenterPosition.x,
+                    Y = (int)-CentralSystem.CurrentCenterPosition.y,
+                    Z = (int)-CentralSystem.CurrentCenterPosition.z,
                 });
-                Debug.Log("Inserted a new tile at " + (-TileSystem.CurrentCenterPosition));
+                Debug.Log("Inserted a new tile at " + (-CentralSystem.CurrentCenterPosition));
             }
         }
 
         public static void RemoveCenterTile()
         {
-            if (!_RemovingTiles && !TileSystem.Moving && TileSystem.CenterEntity != Entity.Null)
+            if (!_RemovingTiles && !CentralSystem.Moving && TileSystem.CenterEntity != Entity.Null)
             {
                 DeleteTile(TileSystem.CenterEntity);
                 TileSystem.CenterEntity = Entity.Null;
-                Debug.Log("Deleted a new tile at " + (-TileSystem.CurrentCenterPosition));
+                Debug.Log("Deleted a new tile at " + (-CentralSystem.CurrentCenterPosition));
             }
         }
 

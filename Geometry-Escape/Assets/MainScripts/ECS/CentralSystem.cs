@@ -13,12 +13,30 @@ namespace GeometryEscape
     /// </summary>
     public class CentralSystem : JobComponentSystem
     {
+        #region Private
+        private static EntityManager m_EntityManager;
+        #endregion
+
         #region Public
         private static RenderSystem m_RenderSystem;
         private static TileSystem m_TileSystem;
         private static WorldSystem m_WorldSystem;
         private static ControlSystem m_ControlSystem;
         private static AudioSystem m_AudioSystem;
+        private static MonsterSystem m_MonsterSystem;
+        private static float _TimeStep;
+        private static int _Counter;
+        private static int _BeatCounter;
+        private static int _TileCount;
+
+        public static int BeatCounter { get => _BeatCounter; set => _BeatCounter = value; }
+
+        public static int Counter { get => _Counter; set => _Counter = value; }
+
+        private static float _Timer;
+        public static float Timer { get => _Timer; set => _Timer = value; }
+        public static float TimeStep { get => _TimeStep; set => _TimeStep = value; }
+        public static int Count { get => _TileCount; set => _TileCount = value; }
         /// <summary>
         /// 下面三个都是scriptobject，用来导入特殊数据，比如说音乐，图像材质等等，具体关于scriptable object可以Google一下。一句话概括，因为unity原来只有在场景里面存在的gameobject才有能力通过“Instanciate”
         /// 方法生成新的gameobject，但是我们常常需要a生成b，b生成c但是b不需要在场景里有实体，所以有了scriptable object，不需要在场景里存在即可生成物体。
@@ -33,7 +51,8 @@ namespace GeometryEscape
         /// <summary>
         /// music resources 存储各种音乐素材和对应beats
         /// </summary>
-        private static MusicResources m_MusicResources;
+        private static AudioResources m_AudioResources;
+        private static AudioResources m_MonsterResources;
 
         /*
          * 下面是各种系统的引用，虽然系统内大部分成员变量都是static全局的变量，但是系统本身不是static的，因为unity允许多个相同系统的存在。所以在这里建立和各个子系统的链接。
@@ -44,58 +63,74 @@ namespace GeometryEscape
         public static ControlSystem ControlSystem { get => m_ControlSystem; set => m_ControlSystem = value; }
         public static LightResources LightResources { get => m_LightResources; set => m_LightResources = value; }
         public static TileResources TileResources { get => m_TileResources; set => m_TileResources = value; }
-        public static MusicResources MusicResources { get => m_MusicResources; set => m_MusicResources = value; }
+        public static AudioResources AudioResources { get => m_AudioResources; set => m_AudioResources = value; }
         public static AudioSystem AudioSystem { get => m_AudioSystem; set => m_AudioSystem = value; }
+        public static MonsterSystem MonsterSystem { get => m_MonsterSystem; set => m_MonsterSystem = value; }
 
         #endregion
         /// <summary>
         /// 每个继承JobComponentSystem的系统都拥有OnCreate，OnDestroy方法，这两个方法在系统建立时和系统被删除时会被调用。ecs的所有系统默认随程序启动，所以在程序运行时所有系统都会被调用OnCreate方法。
         /// 在程序结束的时候所有系统也会被调用ondestroy方法。
         /// </summary>
+
+        #region Managers
         protected override void OnCreate()
         {
+            m_EntityManager = EntityManager;
             //如果你观察所有其他系统的OnCreate函数，
             //你会发现它们都只包含Enabled = false，即所有子系统虽然在程序开始时都被自动建立，但是所有子系统在开始时都会中止运行。
             //直到centralsystem结束所有必要设置后由centralsystem开启各个子系统，这些初始设置及启动子系统的步骤包含在Init内。
             Init();
         }
-
         public void Init()
         {
             //首先我们载入resources，准备好要分配给各个子系统的资源
             m_LightResources = Resources.Load<LightResources>("ScriptableObjects/LightResources");
             m_TileResources = Resources.Load<TileResources>("ScriptableObjects/TileResources");
-            m_MusicResources = Resources.Load<MusicResources>("ScriptableObjects/MusicResources");
+            m_AudioResources = Resources.Load<AudioResources>("ScriptableObjects/AudioResources");
+            m_MonsterResources = Resources.Load<AudioResources>("ScriptableObjects/MonsterResources");
+
+            /* 设置灯光，因为地图具有缩放功能，在地图缩放的时候灯光范围也应该随之更改，所以在这里加入引用。
+             */
+            m_Light = CentralSystem.LightResources.ViewLight.transform;
+
+            /*
+             * 地图放大倍数
+             */
+            _CurrentZoomFactor = 1;
+
             //设置砖块系统的一些初始参数，tilescale值砖块的大小，你可以尝试改变这个值，看看有什么效果。
-            TileSystem.TileScale = 2;
+            Scale = 2;
             //设置砖块系统的单位时间，砖块系统内有对应的OnUpdate和OnFixedUpdate，对应unity原本的Update和FixedUpdate
             //其中OnUpdate由系统自动调用，OnFixedUpdate为我写的方法，由OnUpdate调用，这里就是调用时间间隔，0.1f代表每秒执行10次OnFixedUpdate
-            TileSystem.TimeStep = 0.1f;
+            TimeStep = 0.1f;
 
             //确认所有必须设置的初始参数设置完毕，我们可以启动各个子系统。
             RenderSystem = World.Active.GetOrCreateSystem<RenderSystem>();//从unity获取当前已经存在的系统
             RenderSystem.Init();//启动这个系统
             TileSystem = World.Active.GetOrCreateSystem<TileSystem>();
             TileSystem.Init();
+            MonsterSystem = World.Active.GetOrCreateSystem<MonsterSystem>();
+            MonsterSystem.Init();
             WorldSystem = World.Active.GetOrCreateSystem<WorldSystem>();
             WorldSystem.Init();
             AudioSystem = World.Active.GetOrCreateSystem<AudioSystem>();
             AudioSystem.Init();
 
             ControlSystem = new ControlSystem();//control system并不是一个真正的ECS的系统，所以我们通过这种方式建立。
+            //这个地方设置操作模式，不同操作模式对应不同场景。
             ControlSystem.ControlMode = ControlMode.InGame;
 
             //所有系统建立完毕之后，我们调用worldsystem来构建游戏世界，当前只有砖块，所以我们生成100块砖。
-            int count = 3;
-            for (int i = 0; i < count; i++)
+            _TileCount = 10;
+            for (int i = 0; i < _TileCount; i++)
             {
-                for (int j = 0; j < count; j++)
+                for (int j = 0; j < _TileCount; j++)
                 {
-                    int index = i * count + j;
+                    int index = i * _TileCount + j;
                     WorldSystem.AddTile(index % 4, new Coordinate { X = i, Y = j, Z = 0 });
                 }
             }
-
         }
         /// <summary>
         /// 所有系统包含shutdown函数，这个函数包括Init是我的习惯，这两个函数对应”不希望删除整个系统只是中止运行或者恢复运行“这种需求。
@@ -282,6 +317,160 @@ namespace GeometryEscape
 
         protected override JobHandle OnUpdate(JobHandle inputDeps)
         {
+            #region Special System Update
+            #region Fixed Time Step
+            _Timer += Time.deltaTime;
+            if (_Timer >= TimeStep)
+            {
+                _Counter += (int)(_Timer / _TimeStep);
+                _Timer = 0;
+                OnFixedUpdate(ref inputDeps);
+            }
+            #endregion
+
+            #region Beat
+            int count = AudioSystem.CurrentBeatCounter();
+            if (count != _BeatCounter)
+            {
+                _BeatCounter = count;
+                OnBeatUpdate(ref inputDeps);
+            }
+            #endregion
+            #endregion
+
+            #region Movement
+            if (_Moving) OnMoving();
+            else if (_CheckTile && TileSystem.CenterEntity != Entity.Null)
+            {
+                //如果上次移动之后没有检测是什么砖块，我们在这里进行操作。
+                _CheckTile = false;
+                switch (EntityManager.GetComponentData<TileProperties>(TileSystem.CenterEntity).TileType)
+                {
+                    case TileType.Normal:
+                        break;
+                    case TileType.FreezeTrap:
+                        _FreezeCount = 5;
+                        break;
+                    case TileType.InverseTrap:
+                        _InverseDirection = !_InverseDirection;
+                        break;
+                    case TileType.MusicAccleratorTrap:
+
+                        break;
+                    default:
+                        break;
+                }
+            }
+            if (_Zooming) OnZooming();
+
+            #endregion
+
+            return inputDeps;
+        }
+        #region Movement
+        #region Variables for Moving and Zooming
+        private static bool _Moving, _Zooming;
+        private static bool _CheckTile;
+        private static bool _InverseDirection;
+        private static int _FreezeCount;
+        private static float3 _CurrentCenterPosition;
+        private static float _CurrentZoomFactor;
+        private static float _Scale;
+        private static Transform m_Light;
+
+        private static float _MovementTimer, _ZoomingTimer;
+        private static float _PreviousZoomFactor, _TargetZoomFactor;
+        private static Vector3 _PreviousOriginPosition, _TargetOriginPosition;
+
+        public static float Scale { get => _Scale; set => _Scale = value; }
+        public static float3 CurrentCenterPosition { get => _CurrentCenterPosition; set => _CurrentCenterPosition = value; }
+        public static float CurrentZoomFactor { get => _CurrentZoomFactor; set => _CurrentZoomFactor = value; }
+        public static bool Moving { get => _Moving; set => _Moving = value; }
+        public static bool Zooming { get => _Zooming; set => _Zooming = value; }
+        public static Transform Light { get => m_Light; set => m_Light = value; }
+        public static bool CheckTile { get => _CheckTile; set => _CheckTile = value; }
+        public static int FreezeCount { get => _FreezeCount; set => _FreezeCount = value; }
+        public static bool InverseDirection { get => _InverseDirection; set => _InverseDirection = value; }
+        #endregion
+
+        private void OnMoving()
+        {
+            _MovementTimer += Time.deltaTime;
+            if (_MovementTimer < 0.2f)
+            {
+                _CurrentCenterPosition = Vector3.Lerp(_PreviousOriginPosition, _TargetOriginPosition, _MovementTimer / 0.2f);
+            }
+            else
+            {
+                _Moving = false;
+                _CurrentCenterPosition = _TargetOriginPosition;
+            }
+            //设置以在移动完成之后进行操作。
+            _CheckTile = true;
+        }
+
+        private void OnZooming()
+        {
+            _ZoomingTimer += Time.deltaTime;
+            if (_ZoomingTimer <= 0.1f)
+            {
+                _CurrentZoomFactor = (_TargetZoomFactor * _ZoomingTimer + _PreviousZoomFactor * (0.1f - _ZoomingTimer)) / 0.1f;
+            }
+            else
+            {
+                _Zooming = false;
+                _CurrentZoomFactor = _TargetZoomFactor;
+            }
+            Vector3 position = m_Light.position;
+            position.z = -5 / _CurrentZoomFactor;
+            m_Light.position = position;
+        }
+        #endregion
+    }
+
+
+    [UpdateInGroup(typeof(LateSimulationSystemGroup))]
+    public class FloatingOriginSystem : JobComponentSystem
+    {
+        #region Private
+        private float3 _PreviousCenterPosition;
+        #endregion
+
+        #region Public
+        #endregion
+
+        #region Managers
+
+        #endregion
+
+        #region Methods
+        #endregion
+
+        #region Jobs
+
+        [BurstCompile]
+        struct CalculateLocalToWorld : IJobForEach<Coordinate, Scale, Translation, Rotation>
+        {
+            [ReadOnly] public float scale;
+            [ReadOnly] public float3 centerPosition;
+            public void Execute([ReadOnly] ref Coordinate c0, [WriteOnly] ref Scale c1, [WriteOnly] ref Translation c2, [WriteOnly] ref Rotation c3)
+            {
+                var coordinate = c0;
+                c1.Value = scale;
+                c2.Value = new float3((coordinate.X + centerPosition.x) * scale, (coordinate.Y + centerPosition.y) * scale, (coordinate.Z + centerPosition.z) * scale);
+                c3.Value = Quaternion.Euler(0, 0, coordinate.Direction);
+            }
+        }
+
+        #endregion
+        protected override JobHandle OnUpdate(JobHandle inputDeps)
+        {
+            inputDeps = new CalculateLocalToWorld
+            {
+                scale = CentralSystem.Scale / CentralSystem.CurrentZoomFactor,
+                centerPosition = CentralSystem.CurrentCenterPosition
+            }.Schedule(this, inputDeps);
+            inputDeps.Complete();
             return inputDeps;
         }
     }

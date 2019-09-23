@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Entities;
@@ -24,7 +24,7 @@ namespace GeometryEscape
     public class AudioSystem : JobComponentSystem
     {
         #region Private
-        private static MusicResources m_MusicResources;
+        private static AudioResources m_MusicResources;
         private static MusicRecordingInfo m_MusicRecordingInfo;
         #endregion
 
@@ -32,20 +32,23 @@ namespace GeometryEscape
         /// <summary>
         /// The audio source for main backgroud music.
         /// </summary>
-        public static AudioSource m_BeatsAudioSource;
+        //private static AudioSource m_BeatsAudioSource;
+        private static AudioSource[] m_SoundEffectAudioSources;
         private static AudioSource m_MusicAudioSource;
-        private static AudioSource m_KeyAudioSource;
-        private static MusicResources.Music m_Music;
-        private static MusicResources.Music m_Beats;
-        private static MusicResources.Music m_KeySound;
+        //private static AudioSource m_KeyAudioSource;
+        private static AudioResources.Music m_Music;
+        //private static MusicResources.Music m_Beats;
+        //private static MusicResources.Music m_KeySound;
         private static float _Deviation;
         public static AudioSource MusicAudioSource { get => m_MusicAudioSource; set => m_MusicAudioSource = value; }
-        public static AudioSource BeatsAudioSource { get => m_BeatsAudioSource; set => m_BeatsAudioSource = value; }
-        public static AudioSource KeyAudioSource { get => m_KeyAudioSource; set => m_KeyAudioSource = value; }
+        //public static AudioSource BeatsAudioSource { get => m_BeatsAudioSource; set => m_BeatsAudioSource = value; }
+        //public static AudioSource KeyAudioSource { get => m_KeyAudioSource; set => m_KeyAudioSource = value; }
+
         
         public static float Deviation { get => _Deviation; set => _Deviation = value; }
-        public static MusicResources.Music Music { get => m_Music; set => m_Music = value; }
-        public static MusicResources.Music Beats { get => m_Beats; set => m_Beats = value; }
+        public static AudioResources.Music Music { get => m_Music; set => m_Music = value; }
+        //public static MusicResources.Music Beats { get => m_Beats; set => m_Beats = value; }
+        public static AudioSource[] SoundEffectAudioSources { get => m_SoundEffectAudioSources; set => m_SoundEffectAudioSources = value; }
 
 
 
@@ -60,13 +63,15 @@ namespace GeometryEscape
         public void Init()
         {
             ShutDown();
-            m_MusicResources = CentralSystem.MusicResources;
+            m_MusicResources = CentralSystem.AudioResources;
             m_Music = m_MusicResources.Musics[2];
-            m_Beats = m_MusicResources.Musics[1];
-            m_KeySound = m_MusicResources.Musics[0];
+            //m_Beats = m_MusicResources.Musics[1];
+            //m_KeySound = m_MusicResources.Musics[0];
+            m_SoundEffectAudioSources = new AudioSource[m_MusicResources.SoundEffects.Length];
             CreateMusic(m_Music.MusicClip);
-            CreateBeats(m_Beats.MusicClip);
-            CreateKeySound(m_KeySound.MusicClip);
+            CreateSoundEffects(m_MusicResources.SoundEffects);
+            //CreateBeats(m_Beats.MusicClip);
+            //CreateKeySound(m_KeySound.MusicClip);
             m_MusicAudioSource.Play();
             _Deviation = 0.1f;
             Enabled = true;
@@ -88,6 +93,7 @@ namespace GeometryEscape
 
         #region Methods
 
+        #region Beats Editor
         public static void StartRecording()
         {
             m_MusicRecordingInfo = default;
@@ -110,7 +116,9 @@ namespace GeometryEscape
             m_MusicRecordingInfo.StartTime = m_MusicRecordingInfo.StartTime % beatsTime;
             Debug.Log("[Starting Time]:" + m_MusicRecordingInfo.StartTime + " [Beat Time]: " + beatsTime);
         }
+        #endregion
 
+        #region Create Audio Sources
         public static void CreateMusic(AudioClip audioClip)
         {
             if (m_MusicAudioSource != null)
@@ -121,7 +129,7 @@ namespace GeometryEscape
             m_MusicAudioSource = m_MusicResources.InstanciateAudioSource(audioClip);
         }
 
-        public static void CreateBeats(AudioClip audioClip)
+        /*public static void CreateBeats(AudioClip audioClip)
         {
             if (m_BeatsAudioSource != null)
             {
@@ -139,17 +147,41 @@ namespace GeometryEscape
                 return;
             }
             m_KeyAudioSource = m_MusicResources.InstanciateAudioSource(audioClip);
-        }
+        }*/
 
-        public static void LoadMusic(AudioClip audioClip)
+        public static void CreateSoundEffects(AudioClip[] audioClips)
         {
-            if (m_MusicAudioSource == null)
+            int amount = audioClips.Length;
+            for(int i = 0; i < amount; i++)
             {
-                Debug.Log("Music AudioSource does not exists! Use CreateMusic instead!");
+                m_SoundEffectAudioSources[i] = m_MusicResources.InstanciateAudioSource(audioClips[i]);
+            }
+        }
+        #endregion
+
+        #region Reload Audio Sources
+        public static void ReloadMusic(AudioClip audioClip)
+        {
+            if(m_MusicAudioSource == null)
+            {
+                Debug.Log("Music AudioSource doesn't exists! Use CreateMusic instead!");
                 return;
             }
             m_MusicAudioSource.clip = audioClip;
         }
+        #endregion
+
+        #region Play Sound Effects
+        public static void PlayKeySound()
+        {
+            m_SoundEffectAudioSources[0].Play();
+        }
+
+        public static void PlayBeatSound()
+        {
+            m_SoundEffectAudioSources[1].Play();
+        }
+        #endregion
 
         public static void PrintMusicTime()
         {
@@ -159,7 +191,7 @@ namespace GeometryEscape
         public static bool OnBeats()
         {
             float dev = Mathf.Abs((m_MusicAudioSource.time - m_Music.MusicInfo.MusicStartTime) % m_Music.MusicInfo.MusicBeatsTime);
-            // Debug.Log("dev: " + dev);
+            Debug.Log("dev: " + dev);
             return dev <= _Deviation || dev >= m_Music.MusicInfo.MusicBeatsTime - _Deviation;
         }
 
@@ -172,7 +204,18 @@ namespace GeometryEscape
 
         #region Jobs
         #endregion
+        public JobHandle OnBeatUpdate(ref JobHandle inputDeps, int beatCounter)
+        {
+            PlayBeatSound();
+            //Schedule your job for every beat here.
+            return inputDeps;
+        }
 
+        public JobHandle OnFixedUpdate(ref JobHandle inputDeps, int counter)
+        {
+            //Schedule your job for every time step here. Time step is defined in central system.
+            return inputDeps;
+        }
         protected override JobHandle OnUpdate(JobHandle inputDeps)
         {
             return inputDeps;

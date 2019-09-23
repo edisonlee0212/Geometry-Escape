@@ -10,7 +10,9 @@ namespace GeometryEscape
     public enum TileType
     {
         Normal, 
-        Trap,
+        MusicAccleratorTrap,
+        FreezeTrap,
+        InverseTrap,
         Bonus,
     }
 
@@ -54,6 +56,13 @@ namespace GeometryEscape
     {
         public Entity Value;
     }
+
+    [Serializable]
+    public struct MonsterHP : IComponentData
+    {
+        public Entity Value;
+    }
+
     [Serializable]
     public struct UpTile : IComponentData
     {
@@ -80,7 +89,7 @@ namespace GeometryEscape
     [Serializable]
     public struct Coordinate : IComponentData
     {
-        public int X, Y, Z, Direction;
+        public float X, Y, Z, Direction;
     }
 
     [Serializable]
@@ -122,6 +131,16 @@ namespace GeometryEscape
         public int MaterialIndex;
         public TileType TileType;
     }
+
+    [Serializable]
+    public struct MonsterProperties : IComponentData
+    {
+        //public int Index;
+        public int MaterialIndex;
+        public MonsterType MonsterType;
+
+    }
+
 
     [Serializable]
     public struct DefaultColor : IComponentData

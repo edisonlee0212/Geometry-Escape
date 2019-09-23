@@ -85,11 +85,11 @@ namespace GeometryEscape
             _InputSystem = new Controls();
             //In-Game
             _InputSystem.InGame.Disable();
-            _InputSystem.InGame.Move.performed += ctx => MoveMap(ctx);
+            _InputSystem.InGame.Move.performed += ctx => Move(ctx);
             _InputSystem.InGame.Zoom.performed += ctx => ZoomMap(ctx);
             //Map Editor
             _InputSystem.MapEditor.Disable();
-            _InputSystem.MapEditor.Move.performed += ctx => MoveMap(ctx);
+            _InputSystem.MapEditor.Move.performed += ctx => Move(ctx);
             _InputSystem.MapEditor.Zoom.performed += ctx => ZoomMap(ctx);
             _InputSystem.MapEditor.AddCenterTile.performed += ctx => MapEditorAddCenterTile(ctx);
             _InputSystem.MapEditor.RemoveCenterTile.performed += ctx => MapEditorRemoveCenterTile(ctx);
@@ -103,37 +103,38 @@ namespace GeometryEscape
             _InputSystem.BeatsEditor.EndRecording.performed += ctx => BeatsEditorEndRecording(ctx);
         }
 
-        private void BeatsEditorStartRecording(InputAction.CallbackContext ctx)
+        private static void BeatsEditorStartRecording(InputAction.CallbackContext ctx)
         {
             AudioSystem.StartRecording();
         }
 
-        private void BeatsEditorNewBeat(InputAction.CallbackContext ctx)
+        private static void BeatsEditorNewBeat(InputAction.CallbackContext ctx)
         {
             AudioSystem.AddBeats();
         }
 
-        private void BeatsEditorEndRecording(InputAction.CallbackContext ctx)
+        private static void BeatsEditorEndRecording(InputAction.CallbackContext ctx)
         {
             AudioSystem.EndRecording();
         }
 
-        private void MoveMap(InputAction.CallbackContext ctx)
+        private static void Move(InputAction.CallbackContext ctx)
         {
-            TileSystem.Move(ctx.ReadValue<Vector2>());
+            AudioSystem.PlayKeySound();
+            CentralSystem.Move(ctx.ReadValue<Vector2>());
         }
 
-        private void ZoomMap(InputAction.CallbackContext ctx)
+        private static void ZoomMap(InputAction.CallbackContext ctx)
         {
-            TileSystem.Zoom(ctx.ReadValue<float>());
+            CentralSystem.Zoom(ctx.ReadValue<float>());
         }
 
-        private void MapEditorAddCenterTile(InputAction.CallbackContext ctx)
+        private static void MapEditorAddCenterTile(InputAction.CallbackContext ctx)
         {
             WorldSystem.AddCenterTile();
         }
 
-        private void MapEditorRemoveCenterTile(InputAction.CallbackContext ctx)
+        private static void MapEditorRemoveCenterTile(InputAction.CallbackContext ctx)
         {
             WorldSystem.RemoveCenterTile();
         }

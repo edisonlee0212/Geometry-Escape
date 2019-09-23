@@ -32,34 +32,19 @@ namespace GeometryEscape
         #endregion
 
         #region Public
-        private static bool _Moving, _Zooming;
-        private static float3 _CurrentCenterPosition;
-        private static float _CurrentZoomFactor;
-        private static float _Timer;
-        private static int _BeatCounter;
-        private static int _Counter;
-        private static float _TimeStep;
-        private static float _TileScale;
-        private static Transform m_Light;
+
+        
         private static NativeArray<Entity> _CenterEntity;
-        public static float TileScale { get => _TileScale; set => _TileScale = value; }
-        public static float Timer { get => _Timer; set => _Timer = value; }
-        public static int BeatCounter { get => _BeatCounter; set => _BeatCounter = value; }
-        public static float TimeStep { get => _TimeStep; set => _TimeStep = value; }
-        public static float3 CurrentCenterPosition { get => _CurrentCenterPosition; set => _CurrentCenterPosition = value; }
-        public static float CurrentZoomFactor { get => _CurrentZoomFactor; set => _CurrentZoomFactor = value; }
+        
         public static Entity CenterEntity { get => _CenterEntity[0]; set => _CenterEntity[0] = value; }
-        public static bool Moving { get => _Moving; set => _Moving = value; }
-        public static bool Zooming { get => _Zooming; set => _Zooming = value; }
-        public static Transform Light { get => m_Light; set => m_Light = value; }
-        public static int Counter { get => _Counter; set => _Counter = value; }
+
         #endregion
 
         #region Managers
         protected override void OnCreate()
         {
             //在这里我们设置EnittyManager，因为EntityManager全局只有一个并且在程序运行时自动创建，在这里我们是存储一下它的reference。
-            m_EntityManager = World.Active.EntityManager;
+            m_EntityManager = EntityManager;
         }
 
         public void Init()
@@ -70,16 +55,11 @@ namespace GeometryEscape
              * 所以在Init之前首先调用ShutDown，保证所有之前可能的遗留内存确认清理。
              */
             ShutDown();
-            /* 设置灯光，因为地图具有缩放功能，在地图缩放的时候灯光范围也应该随之更改，所以在这里加入引用。
-             */
-            m_Light = CentralSystem.LightResources.ViewLight.transform;
+            
             /*这个centerentity一直存储着位于视野中心的砖块，这个由PositionSelect这个Job更新
              */
             _CenterEntity = new NativeArray<Entity>(1, Allocator.Persistent);
-            /*
-             * 地图放大倍数
-             */
-            _CurrentZoomFactor = 1;
+            
 
             /*当我们初始化完毕，就可以开始运行这个系统了。
              */
@@ -126,7 +106,7 @@ namespace GeometryEscape
          * 关于Jobs（IjobForEach IJobForEachWithEntity）：
          * https://docs.unity3d.com/Packages/com.unity.entities@0.0/manual/entity_iteration_job.html
          */
-        struct PositionSelect : IJobForEachWithEntity<Translation, DefaultColor>
+        struct PositionSelect : IJobForEachWithEntity<Translation, DefaultColor, TileProperties>
         {
             [ReadOnly] public float scale;
             [ReadOnly] public Vector3 position;
@@ -146,9 +126,10 @@ namespace GeometryEscape
             /*每个Job都必须含有Execute，这个是job的具体工作，execute格式不需要自己写，对着上面的”IJobForEachwithentity”按alt+enter会有选项自动帮你创建。
              * 注意这个地方的【ReadOnly】和WriteOnly，这两个标记告诉Unity我们只会读取这个数据或者我们只会写入这个数据，这个是optional的，但是会提高运行效率。
              */
-            public void Execute(Entity entity, int index, [ReadOnly] ref Translation c0, [WriteOnly] ref DefaultColor c1)
-            {
 
+
+            public void Execute(Entity entity, int index, [ReadOnly] ref Translation c0, [WriteOnly] ref DefaultColor c1, [ReadOnly] ref TileProperties c2)
+            {
                 if (Mathf.Abs(c0.Value.x - position.x) < scale && Mathf.Abs(c0.Value.y - position.y) < scale / 4)
                 {
                     //如果这个砖块处于中心，我们把它存到container里面
@@ -159,25 +140,13 @@ namespace GeometryEscape
             }
         }
 
-        [BurstCompile]
-        struct CalculateTileLocalToWorld : IJobForEach<Coordinate, Scale, Translation, Rotation>
-        {
-            [ReadOnly] public float scale;
-            [ReadOnly] public float3 centerPosition;
-            public void Execute([ReadOnly] ref Coordinate c0, [WriteOnly] ref Scale c1, [WriteOnly] ref Translation c2, [WriteOnly] ref Rotation c3)
-            {
-                var coordinate = c0;
-                c1.Value = scale;
-                c2.Value = new float3((coordinate.X + centerPosition.x) * scale, (coordinate.Y + centerPosition.y) * scale, (coordinate.Z + centerPosition.z) * scale);
-                c3.Value = Quaternion.Euler(0, 0, coordinate.Direction);
-            }
-        }
+        
 
         [BurstCompile]
-        struct RotateTileTest1 : IJobForEach<Coordinate>
+        struct RotateTileTest1 : IJobForEach<Coordinate, TileProperties>
         {
             [ReadOnly] public int counter;
-            public void Execute([WriteOnly] ref Coordinate c0)
+            public void Execute([WriteOnly] ref Coordinate c0, [ReadOnly] ref TileProperties c1)
             {
                 if (c0.X % 2 == 0) c0.Direction = counter * 90;
             }
@@ -210,26 +179,26 @@ namespace GeometryEscape
         }
         #endregion
 
-        protected JobHandle OnBeatUpdate(JobHandle inputDeps)
+        public JobHandle OnBeatUpdate(ref JobHandle inputDeps, int beatCounter)
         {
             inputDeps = new RotateTileTest1
             {
-                counter = BeatCounter,
+                counter = beatCounter,
             }.Schedule(this, inputDeps);
             inputDeps = new ChangeColorTest
             {
-                counter = BeatCounter,
+                counter = beatCounter,
             }.Schedule(this, inputDeps);
 
             inputDeps.Complete();
             return inputDeps;
         }
 
-        protected JobHandle OnFixedUpdate(JobHandle inputDeps)
+        public JobHandle OnFixedUpdate(ref JobHandle inputDeps, int counter)
         {
             inputDeps = new ChangeTextureInfoTest
             {
-                counter = Counter,
+                counter = counter,
             }.Schedule(this, inputDeps);
             inputDeps.Complete();
             return inputDeps;
@@ -237,46 +206,11 @@ namespace GeometryEscape
 
         protected override JobHandle OnUpdate(JobHandle inputDeps)
         {
-            #region Time
-            _Timer += Time.deltaTime;
-            if (_Timer >= TimeStep)
-            {
-                _Counter += (int)(_Timer / _TimeStep);
-                _Timer = 0;
-                OnFixedUpdate(inputDeps);
-            }
-            #endregion
-
-            #region Beat
-            int count = AudioSystem.CurrentBeatCounter();
-            if (count != _BeatCounter)
-            {
-                AudioSystem.m_BeatsAudioSource.Play();
-                _BeatCounter = count;
-                OnBeatUpdate(inputDeps);
-            }
-            #endregion
-
-            #region InputSystem
-
-            if (_Moving) OnMoving();
-            if (_Zooming) OnZooming();
-
-            #endregion
-
-            inputDeps = new CalculateTileLocalToWorld
-            {
-                scale = _TileScale / _CurrentZoomFactor,
-                centerPosition = _CurrentCenterPosition
-            }.Schedule(this, inputDeps);
-
-            inputDeps.Complete();
-
             _CenterEntity[0] = Entity.Null;
 
             inputDeps = new PositionSelect
             {
-                scale = _TileScale / _CurrentZoomFactor,
+                scale = CentralSystem.Scale / CentralSystem.CurrentZoomFactor,
                 position = new Vector3(0, 0, 0),
                 selectedEntity = _CenterEntity
             }.Schedule(this, inputDeps);
@@ -284,111 +218,6 @@ namespace GeometryEscape
             return inputDeps;
         }
 
-        #region Variables for InputSystem
-
-        private static float _MovementTimer, _ZoomingTimer;
-        private static float _PreviousZoomFactor, _TargetZoomFactor;
-        private static Vector3 _PreviousOriginPosition, _TargetOriginPosition;
-        #endregion
-
-        private void OnMoving()
-        {
-            _MovementTimer += Time.deltaTime;
-            if (_MovementTimer < 0.2f)
-            {
-                _CurrentCenterPosition = Vector3.Lerp(_PreviousOriginPosition, _TargetOriginPosition, _MovementTimer / 0.2f);
-            }
-            else
-            {
-                _Moving = false;
-                _CurrentCenterPosition = _TargetOriginPosition;
-            }
-
-        }
-
-        private void OnZooming()
-        {
-            _ZoomingTimer += Time.deltaTime;
-            if (_ZoomingTimer <= 0.1f)
-            {
-                _CurrentZoomFactor = (_TargetZoomFactor * _ZoomingTimer + _PreviousZoomFactor * (0.1f - _ZoomingTimer)) / 0.1f;
-            }
-            else
-            {
-                _Zooming = false;
-                _CurrentZoomFactor = _TargetZoomFactor;
-            }
-            Vector3 position = m_Light.position;
-            position.z = -5 / _CurrentZoomFactor;
-            m_Light.position = position;
-        }
-
-        public static void Zoom(float direction)
-        {
-            if (!_Zooming)
-            {
-                //Debug.Log(direction);
-                if (direction != 0)
-                {
-                    _Zooming = true;
-                    _ZoomingTimer = 0;
-                    _PreviousZoomFactor = _CurrentZoomFactor;
-                    if (direction > 0 && _CurrentZoomFactor < 16f)
-                    {
-                        _TargetZoomFactor = _PreviousZoomFactor;
-                        _TargetZoomFactor *= 2;
-                    }
-                    else if (direction < 0 && _CurrentZoomFactor > 0.5f)
-                    {
-                        _TargetZoomFactor = _PreviousZoomFactor;
-                        _TargetZoomFactor /= 2;
-                    }
-                }
-            }
-        }
-
-        public static void Move(Vector2 direction)
-        {
-            if (!_Moving && (ControlSystem.ControlMode == ControlMode.MapEditor || _CenterEntity[0] != Entity.Null))
-            {
-                Debug.Log(AudioSystem.OnBeats());
-                if ((AudioSystem.OnBeats() || ControlSystem.ControlMode == ControlMode.MapEditor) && direction != Vector2.zero && direction.x * direction.y == 0)
-                {
-                    _Moving = true;
-                    _MovementTimer = 0;
-                    _PreviousOriginPosition = _CurrentCenterPosition;
-                    _TargetOriginPosition = _PreviousOriginPosition;
-                    if (direction.x > 0 && (ControlSystem.ControlMode == ControlMode.MapEditor
-                        || m_EntityManager.GetComponentData<RightTile>(_CenterEntity[0]).Value != Entity.Null))
-                    {
-                        _TargetOriginPosition.x -= 1;
-                        Debug.Log("Move right, target position: " + (-_TargetOriginPosition));
-                    }
-                    else if (direction.x < 0 && (ControlSystem.ControlMode == ControlMode.MapEditor
-                        || m_EntityManager.GetComponentData<LeftTile>(_CenterEntity[0]).Value != Entity.Null))
-                    {
-                        _TargetOriginPosition.x += 1;
-                        Debug.Log("Move left, target position: " + (-_TargetOriginPosition));
-                    }
-                    else if (direction.y > 0 && (ControlSystem.ControlMode == ControlMode.MapEditor
-                        || m_EntityManager.GetComponentData<UpTile>(_CenterEntity[0]).Value != Entity.Null))
-                    {
-                        _TargetOriginPosition.y -= 1;
-                        Debug.Log("Move up, target position: " + (-_TargetOriginPosition));
-                    }
-                    else if (direction.y < 0 && (ControlSystem.ControlMode == ControlMode.MapEditor
-                        || m_EntityManager.GetComponentData<DownTile>(_CenterEntity[0]).Value != Entity.Null))
-                    {
-                        _TargetOriginPosition.y += 1;
-                        Debug.Log("Move down, target position: " + (-_TargetOriginPosition));
-                    }
-                    else
-                    {
-                        Debug.Log("Blocked in player mode! Use map editor mode if you want to move to empty space.");
-                    }
-                }
-            }
-
-        }
+        
     }
 }

@@ -11,6 +11,7 @@ public class UISystem : MonoBehaviour
     {
         hit_300 = GameObject.Find("hit_300");
         miss = GameObject.Find("Miss");
+        Debug.Log("init");
         HideHit_300();
         HideMiss();
     }
@@ -18,7 +19,6 @@ public class UISystem : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
     }
 
     public static void ShowMiss()
