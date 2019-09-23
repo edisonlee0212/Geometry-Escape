@@ -76,7 +76,7 @@ namespace GeometryEscape
             _Deviation = 0.1f;
             Enabled = true;
 
-            _Deviation = m_Music.MusicInfo.MusicBeatsTime / 2;
+            _Deviation = m_Music.MusicInfo.MusicBeatsTime / 4;
         }
 
         public void ShutDown()

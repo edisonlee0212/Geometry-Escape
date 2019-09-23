@@ -195,6 +195,7 @@ namespace GeometryEscape
                     _MovementTimer = 0;
                     _PreviousOriginPosition = _CurrentCenterPosition;
                     _TargetOriginPosition = _PreviousOriginPosition;
+                    UISystem.ShowHit_300();
                     if (direction.x > 0)
                     {
                         if (!(ControlSystem.ControlMode == ControlMode.MapEditor))
@@ -289,6 +290,10 @@ namespace GeometryEscape
                     {
                         Debug.Log("Blocked in player mode! Use map editor mode if you want to move to empty space.");
                     }
+                }
+                else
+                {
+                    UISystem.ShowMiss();
                 }
             }
         }
