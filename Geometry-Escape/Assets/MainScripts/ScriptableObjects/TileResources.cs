@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 namespace GeometryEscape
@@ -9,25 +8,15 @@ namespace GeometryEscape
     {
         #region Public
         [SerializeField]
-        private Tile[] _Tiles;
-        public int GetTileAmount()
+        private UnityEngine.Mesh _TileMesh;
+        [SerializeField]
+        private UnityEngine.Material[] _Materials;
+        public Mesh TileMesh { get => _TileMesh; set => _TileMesh = value; }
+        public Material[] Materials { get => _Materials; set => _Materials = value; }
+        public int GetMaterialAmount()
         {
-            return _Tiles.Length;
+            return Materials.Length;
         }
-
-        public Tile GetTile(int index)
-        {
-            return _Tiles[index];
-        }
-
         #endregion
-        [Serializable]
-        public struct Tile
-        {
-            public int TileIndex;
-            public TileType TileType;
-            public RenderContent RenderContent;
-            public int TilingX, TilingY, MaxIndex;
-        }
     }
 }

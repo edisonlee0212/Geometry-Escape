@@ -12,7 +12,7 @@ namespace GeometryEscape
     public class MonsterSystem : JobComponentSystem
     {
         #region Private
-        private static MeshRenderSystem m_RenderSystem;
+        private static RenderSystem m_RenderSystem;
         private static TileSystem m_TileSystem;
         private static WorldSystem m_WorldSystem;
         private static ControlSystem m_ControlSystem;
@@ -63,102 +63,8 @@ namespace GeometryEscape
         }
 
 
-        private void CreateMonster(JobHandle inputDeps, MonsterInfo monsterInfo)
-        {
-            var materialIndex = monsterInfo.MaterialIndex;
-            var initialCoordinate = monsterInfo.Coordinate;
-            var monsterType = monsterInfo.MonsterType;
-            if (materialIndex < 0 || materialIndex >= _MonsterMaterAmount)
-            {
-                Debug.LogError("AddTile: Wrong material index: " + materialIndex);
-                return;
-            }
-            var color = new DefaultColor { };
-            //color.Color = Vector4.one;
-            var textureInfo = new TextureIndex
-            {
-                Value = 1
-            };
-            /*var renderMaterialIndex = new RenderMaterialIndex
-            {
-               Value = materialIndex
-            };*/
-            //int maxIndex = 0;
-            //switch (monsterInfo.MaterialIndex)
-            //{
-            //    case 2:
-            //        maxIndex = 25;
-            //        break;
-            //    case 3:
-            //        maxIndex = 23;
-            //        break;
-            //    default:
-            //        maxIndex = 1;
-            //        break;
-            //}
-            var maxTextureIndex = new TextureMaxIndex
-            {
-                Value = 1
-            };
-            Entity instance = EntityManager.CreateEntity(_MonsterEntityArchetype);
-            //NativeArray<LeftTile> left = new NativeArray<LeftTile>(1, Allocator.TempJob);
-            //NativeArray<RightTile> right = new NativeArray<RightTile>(1, Allocator.TempJob);
-            //NativeArray<UpTile> up = new NativeArray<UpTile>(1, Allocator.TempJob);
-            //NativeArray<DownTile> down = new NativeArray<DownTile>(1, Allocator.TempJob);
-            //inputDeps = new LocateLeftTilesJob
-            //{
-            //    leftTile = left,
-            //    coordinate = initialCoordinate,
-            //    originEntity = instance,
-            //    mode = 1
-            //}.Schedule(this, inputDeps);
-            //inputDeps = new LocateRightTilesJob
-            //{
-            //    rightTile = right,
-            //    coordinate = initialCoordinate,
-            //    originEntity = instance,
-            //    mode = 1
-            //}.Schedule(this, inputDeps);
-            //inputDeps = new LocateUpTilesJob
-            //{
-            //    upTile = up,
-            //    coordinate = initialCoordinate,
-            //    originEntity = instance,
-            //    mode = 1
-            //}.Schedule(this, inputDeps);
-            //inputDeps = new LocateDownTilesJob
-            //{
-            //    downTile = down,
-            //    coordinate = initialCoordinate,
-            //    originEntity = instance,
-            //    mode = 1
-            //}.Schedule(this, inputDeps);
-            //inputDeps.Complete();
 
 
-            //EntityManager.SetComponentData(instance, left[0]);
-            //EntityManager.SetComponentData(instance, right[0]);
-            //EntityManager.SetComponentData(instance, up[0]);
-            //EntityManager.SetComponentData(instance, down[0]);
-            //left.Dispose();
-            //right.Dispose();
-            //up.Dispose();
-            //down.Dispose();
-
-            //EntityManager.SetSharedComponentData(instance, renderMaterialIndex);
-            EntityManager.SetComponentData(instance, initialCoordinate);
-            EntityManager.SetComponentData(instance, color);
-            EntityManager.SetComponentData(instance, textureInfo);
-            EntityManager.SetComponentData(instance, maxTextureIndex);
-            var properties = new MonsterProperties
-            {
-                MonsterType = monsterType,
-                //Coordinate = 
-                MaterialIndex=materialIndex 
-            };
-            _MonsterCount++;
-            EntityManager.SetComponentData(instance, properties);
-        }
 
 
         #endregion

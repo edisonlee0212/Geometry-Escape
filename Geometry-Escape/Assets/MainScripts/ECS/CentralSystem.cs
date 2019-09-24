@@ -15,30 +15,28 @@ namespace GeometryEscape
     {
         #region Private
         private static EntityManager m_EntityManager;
-        private static Transform m_Light;
-        private static CharacterController m_MainCharacterController;
         #endregion
 
         #region Public
-
-        #region Sub-Systems
-        /*
-         * 下面是各种系统的引用，虽然系统内大部分成员变量都是static全局的变量，但是系统本身不是static的，因为unity允许多个相同系统的存在。所以在这里建立和各个子系统的链接。
-         */
-        private static MeshRenderSystem m_RenderSystem;
+        private static RenderSystem m_RenderSystem;
         private static TileSystem m_TileSystem;
         private static WorldSystem m_WorldSystem;
         private static ControlSystem m_ControlSystem;
         private static AudioSystem m_AudioSystem;
         private static MonsterSystem m_MonsterSystem;
-        private static UISystem m_UISystem;
-        private static CopyTextureIndexSystem m_CopyTextureIndexSystem;
-        private static CopyDisplayColorSystem m_CopyDisplayColorSystem;
-        #endregion
+        private static float _TimeStep;
+        private static int _Counter;
+        private static int _BeatCounter;
+        private static int _TileCount;
 
-        #region Resources
-        /* Resource作为ECS与非ECS内容的媒介，可以帮助ECS创建Mono GameObject或者引入美术及音乐资源以及导入数据。
-         */
+        public static int BeatCounter { get => _BeatCounter; set => _BeatCounter = value; }
+
+        public static int Counter { get => _Counter; set => _Counter = value; }
+
+        private static float _Timer;
+        public static float Timer { get => _Timer; set => _Timer = value; }
+        public static float TimeStep { get => _TimeStep; set => _TimeStep = value; }
+        public static int Count { get => _TileCount; set => _TileCount = value; }
         /// <summary>
         /// 下面三个都是scriptobject，用来导入特殊数据，比如说音乐，图像材质等等，具体关于scriptable object可以Google一下。一句话概括，因为unity原来只有在场景里面存在的gameobject才有能力通过“Instanciate”
         /// 方法生成新的gameobject，但是我们常常需要a生成b，b生成c但是b不需要在场景里有实体，所以有了scriptable object，不需要在场景里存在即可生成物体。
@@ -55,85 +53,29 @@ namespace GeometryEscape
         /// music resources 存储各种音乐素材和对应beats
         /// </summary>
         private static AudioResources m_AudioResources;
-
-        /// <summary>
-        /// tile resources 存储各类怪物材质，我们以后设计不同的砖块最后就放到这个里面。
-        /// </summary>
         private static MonsterResources m_MonsterResources;
-        /// <summary>
-        /// 这里面存储所有主角相关的GameObject。
-        /// </summary>
-        private static MainCharacterResources m_MainCharacterResources;
-        #endregion
 
-        #region Timers and Counters
-        /* 这部分保存了所有与计数有关或者与时间相关的参数
-         * 
+        /*
+         * 下面是各种系统的引用，虽然系统内大部分成员变量都是static全局的变量，但是系统本身不是static的，因为unity允许多个相同系统的存在。所以在这里建立和各个子系统的链接。
          */
-        private static float _TimeStep;
-        private static int _Counter;
-        private static int _BeatCounter;
-        private static int _TileCount;
-
-        public static int BeatCounter { get => _BeatCounter; set => _BeatCounter = value; }
-
-        public static int Counter { get => _Counter; set => _Counter = value; }
-
-        private static float _Timer;
-        public static float Timer { get => _Timer; set => _Timer = value; }
-        public static float TimeStep { get => _TimeStep; set => _TimeStep = value; }
-        public static int Count { get => _TileCount; set => _TileCount = value; }
-        #endregion
-
-        #region Variables for Moving and Zooming
-        private static bool _Moving, _Zooming;
-        private static bool _CheckTile;
-        private static bool _InverseDirection;
-        private static int _FreezeCount;
-        private static float3 _CurrentCenterPosition;
-        private static float _CurrentZoomFactor;
-        private static float _Scale;
-
-        private static float _MovementTimer, _ZoomingTimer;
-        private static float _PreviousZoomFactor, _TargetZoomFactor;
-        private static Vector3 _PreviousOriginPosition, _TargetOriginPosition;
-
-        #endregion
-
-        #region Getters and Setters
-        public static MeshRenderSystem RenderSystem { get => m_RenderSystem; set => m_RenderSystem = value; }
+        public static RenderSystem RenderSystem { get => m_RenderSystem; set => m_RenderSystem = value; }
         public static TileSystem TileSystem { get => m_TileSystem; set => m_TileSystem = value; }
         public static WorldSystem WorldSystem { get => m_WorldSystem; set => m_WorldSystem = value; }
         public static ControlSystem ControlSystem { get => m_ControlSystem; set => m_ControlSystem = value; }
-        public static AudioSystem AudioSystem { get => m_AudioSystem; set => m_AudioSystem = value; }
-        public static MonsterSystem MonsterSystem { get => m_MonsterSystem; set => m_MonsterSystem = value; }
-        public static UISystem UISystem { get => m_UISystem; set => m_UISystem = value; }
-        public static CopyTextureIndexSystem CopyTextureIndexSystem { get => m_CopyTextureIndexSystem; set => m_CopyTextureIndexSystem = value; }
         public static LightResources LightResources { get => m_LightResources; set => m_LightResources = value; }
         public static TileResources TileResources { get => m_TileResources; set => m_TileResources = value; }
         public static MonsterResources MonsterResources { get => m_MonsterResources; set => m_MonsterResources = value; }
         public static AudioResources AudioResources { get => m_AudioResources; set => m_AudioResources = value; }
-        public static MonsterResources MonsterResources { get => m_MonsterResources; set => m_MonsterResources = value; }
-        public static MainCharacterResources MainCharacterResources { get => m_MainCharacterResources; set => m_MainCharacterResources = value; }
-        public static float Scale { get => _Scale; set => _Scale = value; }
-        public static float3 CurrentCenterPosition { get => _CurrentCenterPosition; set => _CurrentCenterPosition = value; }
-        public static float CurrentZoomFactor { get => _CurrentZoomFactor; set => _CurrentZoomFactor = value; }
-        public static bool Moving { get => _Moving; set => _Moving = value; }
-        public static bool Zooming { get => _Zooming; set => _Zooming = value; }
-        public static bool CheckTile { get => _CheckTile; set => _CheckTile = value; }
-        public static int FreezeCount { get => _FreezeCount; set => _FreezeCount = value; }
-        public static bool InverseDirection { get => _InverseDirection; set => _InverseDirection = value; }
-        public static CopyDisplayColorSystem CopyDisplayColorSystem { get => m_CopyDisplayColorSystem; set => m_CopyDisplayColorSystem = value; }
+        public static AudioSystem AudioSystem { get => m_AudioSystem; set => m_AudioSystem = value; }
+        public static MonsterSystem MonsterSystem { get => m_MonsterSystem; set => m_MonsterSystem = value; }
 
         #endregion
-
-        #endregion
-
-        #region Managers
         /// <summary>
         /// 每个继承JobComponentSystem的系统都拥有OnCreate，OnDestroy方法，这两个方法在系统建立时和系统被删除时会被调用。ecs的所有系统默认随程序启动，所以在程序运行时所有系统都会被调用OnCreate方法。
         /// 在程序结束的时候所有系统也会被调用ondestroy方法。
         /// </summary>
+
+        #region Managers
         protected override void OnCreate()
         {
             m_EntityManager = EntityManager;
@@ -144,24 +86,16 @@ namespace GeometryEscape
         }
         public void Init()
         {
-            #region Load Resources
             //首先我们载入resources，准备好要分配给各个子系统的资源
             m_LightResources = Resources.Load<LightResources>("ScriptableObjects/LightResources");
             m_TileResources = Resources.Load<TileResources>("ScriptableObjects/TileResources");
             m_AudioResources = Resources.Load<AudioResources>("ScriptableObjects/AudioResources");
             m_MonsterResources = Resources.Load<MonsterResources>("ScriptableObjects/MonsterResources");
 
-            m_MainCharacterResources = Resources.Load<MainCharacterResources>("ScriptableObjects/MainCharacterResources");
-            #endregion
-
-            #region Initial Settings
             /* 设置灯光，因为地图具有缩放功能，在地图缩放的时候灯光范围也应该随之更改，所以在这里加入引用。
              */
-            m_Light = LightResources.ViewLight.transform;
+            m_Light = CentralSystem.LightResources.ViewLight.transform;
 
-            /* 设置主角，主角动画及大小随地图缩放和玩家操作改变，这里加入引用。
-             */
-            m_MainCharacterController = m_MainCharacterResources.MainCharacterController;
             /*
              * 地图放大倍数
              */
@@ -172,31 +106,20 @@ namespace GeometryEscape
             //设置砖块系统的单位时间，砖块系统内有对应的OnUpdate和OnFixedUpdate，对应unity原本的Update和FixedUpdate
             //其中OnUpdate由系统自动调用，OnFixedUpdate为我写的方法，由OnUpdate调用，这里就是调用时间间隔，0.1f代表每秒执行10次OnFixedUpdate
             TimeStep = 0.1f;
-            #endregion
 
-            #region Initialize sub-systems
             //确认所有必须设置的初始参数设置完毕，我们可以启动各个子系统。
-            UISystem = Object.FindObjectOfType<UISystem>();
-            RenderSystem = World.Active.GetOrCreateSystem<MeshRenderSystem>();//从unity获取当前已经存在的系统
+            RenderSystem = World.Active.GetOrCreateSystem<RenderSystem>();//从unity获取当前已经存在的系统
             RenderSystem.Init();//启动这个系统
             TileSystem = World.Active.GetOrCreateSystem<TileSystem>();
             TileSystem.Init();
             MonsterSystem = World.Active.GetOrCreateSystem<MonsterSystem>();
             MonsterSystem.Init();
             WorldSystem = World.Active.GetOrCreateSystem<WorldSystem>();
-            WorldSystem.TileResources = m_TileResources;
-            WorldSystem.MonsterResources = m_MonsterResources;
             WorldSystem.Init();
             AudioSystem = World.Active.GetOrCreateSystem<AudioSystem>();
             AudioSystem.Init();
+
             ControlSystem = new ControlSystem();//control system并不是一个真正的ECS的系统，所以我们通过这种方式建立。
-            CopyTextureIndexSystem = World.Active.GetOrCreateSystem<CopyTextureIndexSystem>();
-            CopyTextureIndexSystem.Init();
-            CopyDisplayColorSystem = World.Active.GetOrCreateSystem<CopyDisplayColorSystem>();
-            CopyDisplayColorSystem.Init();
-            #endregion
-
-
             //这个地方设置操作模式，不同操作模式对应不同场景。
             ControlSystem.ControlMode = ControlMode.InGame;
 
@@ -207,7 +130,7 @@ namespace GeometryEscape
                 for (int j = 0; j < _TileCount; j++)
                 {
                     int index = i * _TileCount + j;
-                    WorldSystem.AddTile(index % 2, new Coordinate { X = i, Y = j, Z = 0 });
+                    WorldSystem.AddTile(index % 4, new Coordinate { X = i, Y = j, Z = 0 });
                 }
             }
             int mapDimension = CentralSystem.Count;
@@ -269,6 +192,7 @@ namespace GeometryEscape
         }
         #endregion
 
+
         #region Methods
         public static void Zoom(float direction)
         {
@@ -294,15 +218,7 @@ namespace GeometryEscape
             }
         }
 
-        public enum Direction
-        {
-            Up,
-            Down,
-            Left,
-            Right
-        }
-
-        public static void Move(Vector2 moveVec)
+        public static void Move(Vector2 direction)
         {
             if (_FreezeCount > 0)
             {
@@ -313,135 +229,107 @@ namespace GeometryEscape
             if (!_Moving && (ControlSystem.ControlMode == ControlMode.MapEditor || TileSystem.CenterEntity != Entity.Null))
             {
                 Debug.Log(AudioSystem.OnBeats());
-                if ((AudioSystem.OnBeats() || ControlSystem.ControlMode == ControlMode.MapEditor) && moveVec != Vector2.zero && moveVec.x * moveVec.y == 0)
+                if ((AudioSystem.OnBeats() || ControlSystem.ControlMode == ControlMode.MapEditor) && direction != Vector2.zero && direction.x * direction.y == 0)
                 {
-                    Direction characterMovingDirection = default;
                     _Moving = true;
                     _MovementTimer = 0;
                     _PreviousOriginPosition = _CurrentCenterPosition;
                     _TargetOriginPosition = _PreviousOriginPosition;
-
-                    #region Decide Direction
-                    if (moveVec.x > 0)
-                    {
-                        if (!(ControlSystem.ControlMode == ControlMode.MapEditor))
-                        {
-
-                            if (_InverseDirection)
-                            {
-                                if (m_EntityManager.GetComponentData<LeftTile>(TileSystem.CenterEntity).Value == Entity.Null)
-                                {
-                                    Debug.Log("Blocked in player mode! Use map editor mode if you want to move to empty space.");
-                                    return;
-                                }
-                            }
-                            else
-                            {
-                                if (m_EntityManager.GetComponentData<RightTile>(TileSystem.CenterEntity).Value == Entity.Null)
-                                {
-                                    Debug.Log("Blocked in player mode! Use map editor mode if you want to move to empty space.");
-                                    return;
-                                }
-                            }
-
-                        }
-                        characterMovingDirection = _InverseDirection ? Direction.Left : Direction.Right;
-                    }
-                    else if (moveVec.x < 0)
-                    {
-                        if (!(ControlSystem.ControlMode == ControlMode.MapEditor))
-                        {
-                            if (_InverseDirection)
-                            {
-                                if (m_EntityManager.GetComponentData<RightTile>(TileSystem.CenterEntity).Value == Entity.Null)
-                                {
-                                    Debug.Log("Blocked in player mode! Use map editor mode if you want to move to empty space.");
-                                    return;
-                                }
-                            }
-                            else
-                            {
-                                if (m_EntityManager.GetComponentData<LeftTile>(TileSystem.CenterEntity).Value == Entity.Null)
-                                {
-                                    Debug.Log("Blocked in player mode! Use map editor mode if you want to move to empty space.");
-                                    return;
-                                }
-                            }
-                        }
-                        characterMovingDirection = _InverseDirection ? Direction.Right : Direction.Left;
-                    }
-                    else if (moveVec.y > 0)
-                    {
-                        if (!(ControlSystem.ControlMode == ControlMode.MapEditor))
-                        {
-                            if (_InverseDirection)
-                            {
-                                if (m_EntityManager.GetComponentData<DownTile>(TileSystem.CenterEntity).Value == Entity.Null)
-                                {
-                                    Debug.Log("Blocked in player mode! Use map editor mode if you want to move to empty space.");
-                                    return;
-                                }
-                            }
-                            else
-                            {
-                                if (m_EntityManager.GetComponentData<UpTile>(TileSystem.CenterEntity).Value == Entity.Null)
-                                {
-                                    Debug.Log("Blocked in player mode! Use map editor mode if you want to move to empty space.");
-                                    return;
-                                }
-                            }
-                        }
-                        characterMovingDirection = _InverseDirection ? Direction.Down : Direction.Up;
-                    }
-                    else if (moveVec.y < 0)
-                    {
-                        if (!(ControlSystem.ControlMode == ControlMode.MapEditor))
-                        {
-                            if (_InverseDirection)
-                            {
-                                if (m_EntityManager.GetComponentData<UpTile>(TileSystem.CenterEntity).Value == Entity.Null)
-                                {
-                                    Debug.Log("Blocked in player mode! Use map editor mode if you want to move to empty space.");
-                                    return;
-                                }
-                            }
-                            else
-                            {
-                                if (m_EntityManager.GetComponentData<DownTile>(TileSystem.CenterEntity).Value == Entity.Null)
-                                {
-                                    Debug.Log("Blocked in player mode! Use map editor mode if you want to move to empty space.");
-                                    return;
-                                }
-                            }
-                        }
-                        characterMovingDirection = _InverseDirection ? Direction.Up : Direction.Down;
-                    }
-                    #endregion
-
-                    switch (characterMovingDirection)
-                    {
-                        case Direction.Up:
-                            _TargetOriginPosition.y -= 1;
-                            m_MainCharacterController.MoveUp();
-                            Debug.Log("Move up, target position: " + (-_TargetOriginPosition));
-                            break;
-                        case Direction.Down:
-                            _TargetOriginPosition.y += 1;
-                            m_MainCharacterController.MoveDown();
-                            Debug.Log("Move down, target position: " + (-_TargetOriginPosition));
-                            break;
-                        case Direction.Left:
-                            _TargetOriginPosition.x += 1;
-                            m_MainCharacterController.MoveLeft();
-                            Debug.Log("Move left, target position: " + (-_TargetOriginPosition));
-                            break;
-                        case Direction.Right:
-                            _TargetOriginPosition.x -= 1;
-                            m_MainCharacterController.MoveRight();
-                            Debug.Log("Move right, target position: " + (-_TargetOriginPosition));
-                            break;
-                    }
                     UISystem.ShowHit_300();
+                    if (direction.x > 0)
+                    {
+                        if (!(ControlSystem.ControlMode == ControlMode.MapEditor))
+                        {
+                            {
+                                if (_InverseDirection)
+                                {
+                                    if (m_EntityManager.GetComponentData<LeftTile>(TileSystem.CenterEntity).Value == Entity.Null)
+                                    {
+                                        return;
+                                    }
+                                }
+                                else
+                                {
+                                    if (m_EntityManager.GetComponentData<RightTile>(TileSystem.CenterEntity).Value == Entity.Null)
+                                    {
+                                        return;
+                                    }
+                                }
+                            }
+                        }
+                        _TargetOriginPosition.x -= _InverseDirection ? -1 : 1;
+                        Debug.Log("Move right, target position: " + (-_TargetOriginPosition));
+                    }
+                    else if (direction.x < 0)
+                    {
+                        if (!(ControlSystem.ControlMode == ControlMode.MapEditor))
+                        {
+                            if (_InverseDirection)
+                            {
+                                if (m_EntityManager.GetComponentData<RightTile>(TileSystem.CenterEntity).Value == Entity.Null)
+                                {
+                                    return;
+                                }
+                            }
+                            else
+                            {
+                                if (m_EntityManager.GetComponentData<LeftTile>(TileSystem.CenterEntity).Value == Entity.Null)
+                                {
+                                    return;
+                                }
+                            }
+                        }
+                        _TargetOriginPosition.x += _InverseDirection ? -1 : 1; ;
+                        Debug.Log("Move left, target position: " + (-_TargetOriginPosition));
+                    }
+                    else if (direction.y > 0)
+                    {
+                        if (!(ControlSystem.ControlMode == ControlMode.MapEditor))
+                        {
+                            if (_InverseDirection)
+                            {
+                                if (m_EntityManager.GetComponentData<DownTile>(TileSystem.CenterEntity).Value == Entity.Null)
+                                {
+                                    return;
+                                }
+                            }
+                            else
+                            {
+                                if (m_EntityManager.GetComponentData<UpTile>(TileSystem.CenterEntity).Value == Entity.Null)
+                                {
+                                    return;
+                                }
+                            }
+                        }
+                        _TargetOriginPosition.y -= _InverseDirection ? -1 : 1; ;
+                        Debug.Log("Move up, target position: " + (-_TargetOriginPosition));
+                    }
+                    else if (direction.y < 0)
+                    {
+                        if (!(ControlSystem.ControlMode == ControlMode.MapEditor))
+                        {
+                            if (_InverseDirection)
+                            {
+                                if (m_EntityManager.GetComponentData<UpTile>(TileSystem.CenterEntity).Value == Entity.Null)
+                                {
+                                    return;
+                                }
+                            }
+                            else
+                            {
+                                if (m_EntityManager.GetComponentData<DownTile>(TileSystem.CenterEntity).Value == Entity.Null)
+                                {
+                                    return;
+                                }
+                            }
+                        }
+                        _TargetOriginPosition.y += _InverseDirection ? -1 : 1; ;
+                        Debug.Log("Move down, target position: " + (-_TargetOriginPosition));
+                    }
+                    else
+                    {
+                        Debug.Log("Blocked in player mode! Use map editor mode if you want to move to empty space.");
+                    }
                 }
                 else
                 {
@@ -496,7 +384,7 @@ namespace GeometryEscape
             {
                 //如果上次移动之后没有检测是什么砖块，我们在这里进行操作。
                 _CheckTile = false;
-                switch (EntityManager.GetComponentData<TileTypeIndex>(TileSystem.CenterEntity).Value)
+                switch (EntityManager.GetComponentData<TileProperties>(TileSystem.CenterEntity).TileType)
                 {
                     case TileType.Normal:
                         break;
@@ -520,7 +408,30 @@ namespace GeometryEscape
             return inputDeps;
         }
         #region Movement
+        #region Variables for Moving and Zooming
+        private static bool _Moving, _Zooming;
+        private static bool _CheckTile;
+        private static bool _InverseDirection;
+        private static int _FreezeCount;
+        private static float3 _CurrentCenterPosition;
+        private static float _CurrentZoomFactor;
+        private static float _Scale;
+        private static Transform m_Light;
 
+        private static float _MovementTimer, _ZoomingTimer;
+        private static float _PreviousZoomFactor, _TargetZoomFactor;
+        private static Vector3 _PreviousOriginPosition, _TargetOriginPosition;
+
+        public static float Scale { get => _Scale; set => _Scale = value; }
+        public static float3 CurrentCenterPosition { get => _CurrentCenterPosition; set => _CurrentCenterPosition = value; }
+        public static float CurrentZoomFactor { get => _CurrentZoomFactor; set => _CurrentZoomFactor = value; }
+        public static bool Moving { get => _Moving; set => _Moving = value; }
+        public static bool Zooming { get => _Zooming; set => _Zooming = value; }
+        public static Transform Light { get => m_Light; set => m_Light = value; }
+        public static bool CheckTile { get => _CheckTile; set => _CheckTile = value; }
+        public static int FreezeCount { get => _FreezeCount; set => _FreezeCount = value; }
+        public static bool InverseDirection { get => _InverseDirection; set => _InverseDirection = value; }
+        #endregion
 
         private void OnMoving()
         {
@@ -533,7 +444,6 @@ namespace GeometryEscape
             {
                 _Moving = false;
                 _CurrentCenterPosition = _TargetOriginPosition;
-                m_MainCharacterController.Idle();
             }
             //设置以在移动完成之后进行操作。
             _CheckTile = true;
