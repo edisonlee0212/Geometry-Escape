@@ -36,6 +36,30 @@
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "Press"
+                },
+                {
+                    "name": "DestroyAllTiles",
+                    "type": "Button",
+                    "id": "30721afd-8f6d-4b02-9290-6729597987f9",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "Press"
+                },
+                {
+                    "name": "SaveMap",
+                    "type": "Button",
+                    "id": "088143cc-ee3e-4e21-81af-d5722b5e917e",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "Press"
+                },
+                {
+                    "name": "LoadMap",
+                    "type": "Button",
+                    "id": "04ad959b-94fc-4559-b40b-2487d1624fb9",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "Press"
                 }
             ],
             "bindings": [
@@ -201,6 +225,39 @@
                     "processors": "",
                     "groups": "PC",
                     "action": "AddCenterTile",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "8e121375-92f9-4ff4-bba0-2e055048c5f6",
+                    "path": "<Keyboard>/backquote",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "DestroyAllTiles",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "c78681bf-fcd8-449e-89fd-81a1d8117432",
+                    "path": "<Keyboard>/q",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "SaveMap",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "b1870cef-dd83-4757-b648-0f1673d4b33c",
+                    "path": "<Keyboard>/e",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "LoadMap",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
