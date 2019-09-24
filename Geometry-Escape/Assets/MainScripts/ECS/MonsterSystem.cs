@@ -12,7 +12,7 @@ namespace GeometryEscape
     public class MonsterSystem : JobComponentSystem
     {
         #region Private
-        private static RenderSystem m_RenderSystem;
+        private static MeshRenderSystem m_RenderSystem;
         private static TileSystem m_TileSystem;
         private static WorldSystem m_WorldSystem;
         private static ControlSystem m_ControlSystem;
@@ -122,10 +122,10 @@ namespace GeometryEscape
             {
                 Value = 1
             };
-            var renderMaterialIndex = new RenderMaterialIndex
+            /*var renderMaterialIndex = new RenderMaterialIndex
             {
                Value = materialIndex
-            };
+            };*/
             //int maxIndex = 0;
             //switch (monsterInfo.MaterialIndex)
             //{
@@ -188,7 +188,7 @@ namespace GeometryEscape
             //up.Dispose();
             //down.Dispose();
 
-            EntityManager.SetSharedComponentData(instance, renderMaterialIndex);
+            //EntityManager.SetSharedComponentData(instance, renderMaterialIndex);
             EntityManager.SetComponentData(instance, initialCoordinate);
             EntityManager.SetComponentData(instance, color);
             EntityManager.SetComponentData(instance, textureInfo);

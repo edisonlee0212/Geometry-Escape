@@ -18,102 +18,195 @@ namespace GeometryEscape
      * ECS系统内OnUpdate在Monobehaviour之前执行。
      */
     [UpdateInGroup(typeof(PresentationSystemGroup))]
-    public class RenderSystem : JobComponentSystem
+    [UpdateBefore(typeof(MeshRenderSystem))]
+    public class CopyTextureIndexSystem : JobComponentSystem
     {
         #region Private
-        /// <summary>
-        /// The query to select array of tiles for rendering.
-        /// </summary>
-        private EntityQuery _TileQuery;
-        /// <summary>
-        /// Array to hold the result for query.
-        /// </summary>
-        private NativeArray<LocalToWorld> _TilesLocalToWorlds;
-        /// <summary>
-        /// Array to hold the texture info (tiling and offset).
-        /// </summary>
-        private NativeArray<TextureIndex> _TilesTextureInfos;
-        /// <summary>
-        /// Array to hold the result for query.
-        /// </summary>
-        private NativeArray<DefaultColor> _TilesColors;
-        /// <summary>
-        /// The buffer send to GPU for rendering.
-        /// </summary>
-        private ComputeBuffer[] _LocalToWorldBuffers, _ColorBuffers, _TextureInfoBuffers;
-        private ComputeBuffer[] _ArgsBuffers;
-        private uint[] args;
-        #endregion
-
-        #region Public
-        private static TileResources m_TileResources;
-
-        private UnityEngine.Material[] m_Materials;
-        private static int _MaterialAmount;
-        private Camera m_Camera;
-        private UnityEngine.Mesh m_TileMesh;
-        /// <summary>
-        /// The list of material for drawing a tile.
-        /// </summary>
-        public UnityEngine.Material[] Materials { get => m_Materials; set => m_Materials = value; }
-        /// <summary>
-        /// The mesh for a tile, which is just a quad.
-        /// </summary>
-        public UnityEngine.Mesh TileMesh { get => m_TileMesh; set => m_TileMesh = value; }
-        /// <summary>
-        /// The amount of different material types.
-        /// </summary>
-        public static int MaterialAmount { get => _MaterialAmount; set => _MaterialAmount = value; }
-        /// <summary>
-        /// The target camera for rendering.
-        /// </summary>
-        public Camera Camera { get => m_Camera; set => m_Camera = value; }
-        public static TileResources TileResources { get => m_TileResources; set => m_TileResources = value; }
-
+        private static EntityQuery _EntityQuery;
+        private static NativeArray<TextureIndex> _TextureIndices;
+        private static ComputeBuffer[] _ComputeBuffers;
+        private static List<RenderContent> _RenderContents;
         #endregion
 
         #region Managers
         protected override void OnCreate()
         {
             Enabled = false;
-            _TileQuery = GetEntityQuery(typeof(TextureIndex), typeof(LocalToWorld), typeof(DefaultColor), typeof(RenderMaterialIndex));
+            _RenderContents = new List<RenderContent>();
+            _EntityQuery = EntityManager.CreateEntityQuery(typeof(RenderContent), typeof(TextureIndex));
         }
 
         public void Init()
         {
             ShutDown();
-            m_TileResources = CentralSystem.TileResources;
-            _MaterialAmount = m_TileResources.GetMaterialAmount();
-            m_TileMesh = m_TileResources.TileMesh;
-            m_Materials = m_TileResources.Materials;
-            m_Camera = Camera.main;
-            _LocalToWorldBuffers = new ComputeBuffer[_MaterialAmount];
-            _TextureInfoBuffers = new ComputeBuffer[_MaterialAmount];
-            _ColorBuffers = new ComputeBuffer[_MaterialAmount];
-
-            args = new uint[5] { m_TileMesh.GetIndexCount(0), 0, 0, 0, 0 };
-            _ArgsBuffers = new ComputeBuffer[_MaterialAmount];
             Enabled = true;
         }
 
         public void ShutDown()
         {
             Enabled = false;
-            if (_TilesLocalToWorlds.IsCreated) _TilesLocalToWorlds.Dispose();
-            if (_TilesColors.IsCreated) _TilesColors.Dispose();
-            if (_TilesTextureInfos.IsCreated) _TilesTextureInfos.Dispose();
+            if (_ComputeBuffers != null)
+            {
+                foreach (var i in _ComputeBuffers)
+                {
+                    if (i != null) i.Release();
+                }
+            }
+            if (_TextureIndices.IsCreated) _TextureIndices.Dispose();
+        }
+        protected override void OnDestroy()
+        {
+            ShutDown();
+        }
+        #endregion
+
+        protected override JobHandle OnUpdate(JobHandle inputDeps)
+        {
+            EntityManager.GetAllUniqueSharedComponentData(_RenderContents);
+            int count = _RenderContents.Count;
+            if (_ComputeBuffers == null)
+            {
+                _ComputeBuffers = new ComputeBuffer[count - 1];
+            }else if(_ComputeBuffers.Length < count)
+            {
+                foreach (var i in _ComputeBuffers)
+                {
+                    if (i != null) i.Release();
+                }
+                _ComputeBuffers = new ComputeBuffer[count - 1];
+            }
+            for (int i = 1; i < count; i++)
+            {
+                _EntityQuery.SetFilter(_RenderContents[i]);
+                _TextureIndices = _EntityQuery.ToComponentDataArray<TextureIndex>(Allocator.TempJob);
+                Debug.Log(_TextureIndices.Length);
+                if (_TextureIndices.Length != 0)
+                {
+                    if (_ComputeBuffers[i - 1] != null) _ComputeBuffers[i - 1].Release();
+                    _ComputeBuffers[i - 1] = new ComputeBuffer(_TextureIndices.Length, 4);
+                    _ComputeBuffers[i - 1].SetData(_TextureIndices);
+                    _RenderContents[i].MeshMaterial.Material.SetBuffer("_TilingAndOffsetBuffer", _ComputeBuffers[i - 1]);
+                }
+                _TextureIndices.Dispose();
+            }
+            _RenderContents.Clear();
+            return inputDeps;
+        }
+    }
+
+    [UpdateInGroup(typeof(PresentationSystemGroup))]
+    [UpdateBefore(typeof(MeshRenderSystem))]
+    public class CopyDisplayColorSystem : JobComponentSystem
+    {
+        #region Private
+        private static EntityQuery _EntityQuery;
+        private static NativeArray<DefaultColor> _Colors;
+        private static ComputeBuffer[] _ComputeBuffers;
+        private static List<RenderContent> _RenderContents;
+        #endregion
+
+        #region Managers
+        protected override void OnCreate()
+        {
+            Enabled = false;
+            _RenderContents = new List<RenderContent>();
+            _EntityQuery = EntityManager.CreateEntityQuery(typeof(RenderContent), typeof(DefaultColor));
+        }
+
+        public void Init()
+        {
+            ShutDown();
+            Enabled = true;
+        }
+
+        public void ShutDown()
+        {
+            Enabled = false;
+            if (_ComputeBuffers != null)
+            {
+                foreach (var i in _ComputeBuffers)
+                {
+                    if (i != null) i.Release();
+                }
+            }
+            if (_Colors.IsCreated) _Colors.Dispose();
+        }
+        protected override void OnDestroy()
+        {
+            ShutDown();
+        }
+        #endregion
+
+        protected override JobHandle OnUpdate(JobHandle inputDeps)
+        {
+            EntityManager.GetAllUniqueSharedComponentData(_RenderContents);
+            int count = _RenderContents.Count;
+            if (_ComputeBuffers == null)
+            {
+                _ComputeBuffers = new ComputeBuffer[count - 1];
+            }
+            else if (_ComputeBuffers.Length < count)
+            {
+                foreach (var i in _ComputeBuffers)
+                {
+                    if (i != null) i.Release();
+                }
+                _ComputeBuffers = new ComputeBuffer[count - 1];
+            }
+            for (int i = 1; i < count; i++)
+            {
+                _EntityQuery.SetFilter(_RenderContents[i]);
+                _Colors = _EntityQuery.ToComponentDataArray<DefaultColor>(Allocator.TempJob);
+                Debug.Log(_Colors.Length);
+                if (_Colors.Length != 0)
+                {
+                    if (_ComputeBuffers[i - 1] != null) _ComputeBuffers[i - 1].Release();
+                    _ComputeBuffers[i - 1] = new ComputeBuffer(_Colors.Length, 16);
+                    _ComputeBuffers[i - 1].SetData(_Colors);
+                    _RenderContents[i].MeshMaterial.Material.SetBuffer("_ColorBuffer", _ComputeBuffers[i - 1]);
+                }
+                _Colors.Dispose();
+            }
+            _RenderContents.Clear();
+            return inputDeps;
+        }
+    }
+
+    [UpdateInGroup(typeof(PresentationSystemGroup))]
+    public class MeshRenderSystem : JobComponentSystem
+    {
+        #region Private
+        private EntityQuery _MeshRenderEntityQuery;
+        private NativeArray<LocalToWorld> _LocalToWorlds;
+        private List<RenderContent> _RenderMeshes;
+        private ComputeBuffer[] _ArgsBuffers, _LocalToWorldBuffers;
+        private uint[] args;
+        #endregion
+
+        #region Public
+        #endregion
+
+        #region Managers
+        protected override void OnCreate()
+        {
+            Enabled = false;
+            _ArgsBuffers = new ComputeBuffer[32];
+            _LocalToWorldBuffers = new ComputeBuffer[32];
+            _RenderMeshes = new List<RenderContent>();
+            _MeshRenderEntityQuery = EntityManager.CreateEntityQuery(typeof(RenderContent), typeof(LocalToWorld));
+        }
+        public void Init()
+        {
+            ShutDown();
+            args = new uint[5] { 0, 0, 0, 0, 0 };
+            Enabled = true;
+        }
+
+        public void ShutDown()
+        {
+            if (_LocalToWorlds.IsCreated) _LocalToWorlds.Dispose();
             if (_LocalToWorldBuffers != null)
                 foreach (var i in _LocalToWorldBuffers)
-                {
-                    if (i != null) i.Release();
-                }
-            if (_ColorBuffers != null)
-                foreach (var i in _ColorBuffers)
-                {
-                    if (i != null) i.Release();
-                }
-            if (_TextureInfoBuffers != null)
-                foreach (var i in _TextureInfoBuffers)
                 {
                     if (i != null) i.Release();
                 }
@@ -122,114 +215,44 @@ namespace GeometryEscape
                 {
                     if (i != null) i.Release();
                 }
+            Enabled = false;
         }
-
         protected override void OnDestroy()
         {
             ShutDown();
         }
-        #endregion
-
-        #region Methods
-
-        #region ToArray()
-        /// <summary>
-        /// The low-level method to convert NativeArray<DefaultColor> to float4[].
-        /// </summary>
-        /// <param name="colors">
-        /// Array of colors
-        /// </param>
-        /// <param name="count">
-        /// The amount of element to copy.
-        /// </param>
-        /// <param name="outMatrices">
-        /// Destination array.
-        /// </param>
-        /// <param name="offset">
-        /// The start index for copy.
-        /// </param>
-        public static unsafe void ToArray(NativeArray<DefaultColor> colors, int count, float4[] outMatrices, int offset)
-        {
-            fixed (float4* resultMatrices = outMatrices)
-            {
-                DefaultColor* sourceMatrices = (DefaultColor*)colors.GetUnsafeReadOnlyPtr();
-                UnsafeUtility.MemCpy(resultMatrices + offset, sourceMatrices, UnsafeUtility.SizeOf<float4>() * count);
-            }
-        }
-
-        public static unsafe void ToArray(NativeArray<TextureIndex> colors, int count, int[] outMatrices, int offset)
-        {
-            fixed (int* resultMatrices = outMatrices)
-            {
-                TextureIndex* sourceMatrices = (TextureIndex*)colors.GetUnsafeReadOnlyPtr();
-                UnsafeUtility.MemCpy(resultMatrices + offset, sourceMatrices, UnsafeUtility.SizeOf<int>() * count);
-            }
-        }
-
-        private static unsafe void ToArray(NativeArray<LocalToWorld> transforms, int count, float4x4[] outMatrices, int offset)
-        {
-            fixed (float4x4* resultMatrices = outMatrices)
-            {
-                LocalToWorld* sourceMatrices = (LocalToWorld*)transforms.GetUnsafeReadOnlyPtr();
-                UnsafeUtility.MemCpy(resultMatrices + offset, sourceMatrices, UnsafeUtility.SizeOf<float4x4>() * count);
-            }
-        }
-        #endregion
 
         #endregion
-
-        #region Jobs
-        #endregion
-
 
         protected override JobHandle OnUpdate(JobHandle inputDeps)
         {
-            for (int i = 0; i < _MaterialAmount; i++)
+            EntityManager.GetAllUniqueSharedComponentData(_RenderMeshes);
+            int count = _RenderMeshes.Count;
+            for (int i = 1; i < count; i++)
             {
-                //Set up query filter by material index. We render tiles in same material in batch.
-                _TileQuery.SetFilter(new RenderMaterialIndex { Value = i });
-
-                //Query matrix and colors.
-                _TilesLocalToWorlds = _TileQuery.ToComponentDataArray<LocalToWorld>(Allocator.TempJob);
-                _TilesColors = _TileQuery.ToComponentDataArray<DefaultColor>(Allocator.TempJob);
-                _TilesTextureInfos = _TileQuery.ToComponentDataArray<TextureIndex>(Allocator.TempJob);
-                int amount = _TilesLocalToWorlds.Length;
+                _MeshRenderEntityQuery.SetFilter(_RenderMeshes[i]);
+                _LocalToWorlds = _MeshRenderEntityQuery.ToComponentDataArray<LocalToWorld>(Allocator.TempJob);
+                int amount = _LocalToWorlds.Length;
                 if (amount != 0)
                 {
-                    //Reallocate ComputeBuffer.
-                    if (_LocalToWorldBuffers[i] != null) _LocalToWorldBuffers[i].Release();
-                    if (_ColorBuffers[i] != null) _ColorBuffers[i].Release();
-                    if (_TextureInfoBuffers[i] != null) _TextureInfoBuffers[i].Release();
-                    if (_ArgsBuffers[i] != null) _ArgsBuffers[i].Release();
-                    _LocalToWorldBuffers[i] = new ComputeBuffer(amount, 64);
-                    _ColorBuffers[i] = new ComputeBuffer(amount, 16);
-                    _TextureInfoBuffers[i] = new ComputeBuffer(amount, 4);
-                    _ArgsBuffers[i] = new ComputeBuffer(1, args.Length * sizeof(uint), ComputeBufferType.IndirectArguments);
-
-                    //Set up data for ComputeBuffer.
-                    _LocalToWorldBuffers[i].SetData(_TilesLocalToWorlds);
-                    _ColorBuffers[i].SetData(_TilesColors);
-                    _TextureInfoBuffers[i].SetData(_TilesTextureInfos);
-
-                    //Set up material.
-                    m_Materials[i].SetBuffer("_LocalToWorldBuffer", _LocalToWorldBuffers[i]);
-                    m_Materials[i].SetBuffer("_ColorBuffer", _ColorBuffers[i]);
-                    m_Materials[i].SetBuffer("_TilingAndOffsetBuffer", _TextureInfoBuffers[i]);
-
-                    //Set up args buffer, so the GPU knows how many meshes(tiles) we want to render in this draw call.
+                    if (_ArgsBuffers[i - 1] != null) _ArgsBuffers[i - 1].Release();
+                    if (_LocalToWorldBuffers[i - 1] != null) _LocalToWorldBuffers[i - 1].Release();
+                    args[0] = _RenderMeshes[i].MeshMaterial.Mesh.GetIndexCount(0);
                     args[1] = (uint)amount;
-                    _ArgsBuffers[i].SetData(args);
+                    _ArgsBuffers[i - 1] = new ComputeBuffer(1, args.Length * sizeof(uint), ComputeBufferType.IndirectArguments);
+                    _ArgsBuffers[i - 1].SetData(args);
 
-                    //Draw tiles.
-                    Graphics.DrawMeshInstancedIndirect(m_TileMesh, 0, m_Materials[i], new Bounds(Vector3.zero, Vector3.one * 60000), _ArgsBuffers[i], 0, null, 0, false, 0);
+                    _LocalToWorldBuffers[i - 1] = new ComputeBuffer(amount, 64);
+                    _LocalToWorldBuffers[i - 1].SetData(_LocalToWorlds);
+                    _RenderMeshes[i].MeshMaterial.Material.SetBuffer("_LocalToWorldBuffer", _LocalToWorldBuffers[i - 1]);
+
+                    Graphics.DrawMeshInstancedIndirect(_RenderMeshes[i].MeshMaterial.Mesh, 0, _RenderMeshes[i].MeshMaterial.Material, new Bounds(Vector3.zero, Vector3.one * 60000), _ArgsBuffers[i - 1], 0, null, 0, false, 0);
                 }
-                //Dispose resources.
-                _TilesLocalToWorlds.Dispose();
-                _TilesColors.Dispose();
-                _TilesTextureInfos.Dispose();
+                _LocalToWorlds.Dispose();
             }
-
+            _RenderMeshes.Clear();
             return inputDeps;
         }
     }
+
 }
