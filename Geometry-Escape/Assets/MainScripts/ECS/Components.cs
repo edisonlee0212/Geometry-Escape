@@ -17,18 +17,24 @@ namespace GeometryEscape
     }
 
     [Serializable]
-    public struct RenderMaterialIndex : ISharedComponentData, IEquatable<RenderMaterialIndex>
+    public struct RenderContent : ISharedComponentData, IEquatable<RenderContent>
     {
-        public int Value;
-
-        public bool Equals(RenderMaterialIndex other)
+        public MeshMaterial MeshMaterial;
+        public bool Equals(RenderContent other)
         {
-            return other.Value == Value;
+            return MeshMaterial == other.MeshMaterial;
         }
+
         public override int GetHashCode()
         {
             return base.GetHashCode();
         }
+    }
+    [Serializable]
+    public class MeshMaterial
+    {
+        public Mesh Mesh;
+        public Material Material;
     }
 
     public enum MonsterType
@@ -125,11 +131,15 @@ namespace GeometryEscape
     }
 
     [Serializable]
+    public struct TileTypeIndex : IComponentData
+    {
+        public TileType Value;
+    }
+
+    [Serializable]
     public struct TileProperties : IComponentData
     {
         public int Index;
-        public int MaterialIndex;
-        public TileType TileType;
     }
 
     [Serializable]

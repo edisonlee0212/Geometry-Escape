@@ -10,9 +10,8 @@ namespace GeometryEscape
 {
     public struct TileInfo
     {
-        public int MaterialIndex;
+        public int TileIndex;
         public Coordinate Coordinate;
-        public TileType TileType;
     }
 
     public struct MonsterInfo
@@ -53,9 +52,13 @@ namespace GeometryEscape
         private static bool _RemovingMonsts;
         private static int _TotalTileAmount;
         private static int _TotalMonstAmount;
+        private static TileResources m_TileResources;
+        private static MonsterResources m_MonsterResources;
         public static int TotalTileAmount { get => _TotalTileAmount; }
         public static bool AddingTiles { get => _AddingTiles; set => _AddingTiles = value; }
         public static bool RemovingTiles { get => _RemovingTiles; set => _RemovingTiles = value; }
+        public static TileResources TileResources { get => m_TileResources; set => m_TileResources = value; }
+        public static MonsterResources MonsterResources { get => m_MonsterResources; set => m_MonsterResources = value; }
         #endregion
 
         #region Managers
@@ -63,13 +66,14 @@ namespace GeometryEscape
         {
             _MonsterEntityArchetype = EntityManager.CreateArchetype(
                 typeof(MonsterTypeIndex),
-                typeof(RenderMaterialIndex),
+                typeof(RenderContent),
                 typeof(Coordinate),
                 typeof(Translation),
                 typeof(Rotation),
                 typeof(Scale),
                 typeof(Unity.Transforms.LocalToWorld),
                 typeof(MonsterProperties),
+                typeof(LocalToWorld),
                 typeof(DefaultColor),
                 typeof(TextureIndex),
                 typeof(TextureMaxIndex),
@@ -77,16 +81,17 @@ namespace GeometryEscape
                 );
 
             _TileEntityArchetype = EntityManager.CreateArchetype(
+                typeof(TileTypeIndex),
                 typeof(LeftTile),
                 typeof(RightTile),
                 typeof(UpTile),
                 typeof(DownTile),
-                typeof(RenderMaterialIndex),
+                typeof(RenderContent),
                 typeof(Coordinate),
                 typeof(Translation),
                 typeof(Rotation),
                 typeof(Scale),
-                typeof(Unity.Transforms.LocalToWorld),
+                typeof(LocalToWorld),
                 typeof(TileProperties),
                 typeof(DefaultColor),
                 typeof(TextureIndex),
@@ -105,6 +110,7 @@ namespace GeometryEscape
             _MonsterDestructionQueue = new NativeQueue<Entity>(Allocator.Persistent);
             _MaterialAmount = RenderSystem.MaterialAmount;
             _MonsterMaterAmount = RenderSystem.MonstMaterAmount;
+
             _TotalTileAmount = 0;
             _TotalMonstAmount = 0;
             Enabled = true;
@@ -151,14 +157,13 @@ namespace GeometryEscape
             }
         }
 
-        public static void AddTile(int materialIndex, Coordinate initialCoordinate = default, TileType tileType = TileType.Normal)
+        public static void AddTile(int tileIndex, Coordinate initialCoordinate = default)
         {
             _AddingTiles = true;
             _TileCreationQueue.Enqueue(new TileInfo
             {
-                MaterialIndex = materialIndex,
                 Coordinate = initialCoordinate,
-                TileType = tileType
+                TileIndex = tileIndex
             });
         }
 
@@ -347,7 +352,6 @@ namespace GeometryEscape
         private void DestroyTile(JobHandle inputDeps, Entity tileEntity)
         {
             Coordinate coordinate = EntityManager.GetComponentData<Coordinate>(tileEntity);
-
             NativeArray<LeftTile> left = new NativeArray<LeftTile>(1, Allocator.TempJob);
             NativeArray<RightTile> right = new NativeArray<RightTile>(1, Allocator.TempJob);
             NativeArray<UpTile> up = new NativeArray<UpTile>(1, Allocator.TempJob);
@@ -393,37 +397,16 @@ namespace GeometryEscape
 
         private void CreateTile(JobHandle inputDeps, TileInfo tileInfo)
         {
-            var materialIndex = tileInfo.MaterialIndex;
             var initialCoordinate = tileInfo.Coordinate;
-            var tileType = tileInfo.TileType;
-            if (materialIndex < 0 || materialIndex >= _MaterialAmount)
-            {
-                Debug.LogError("AddTile: Wrong material index: " + materialIndex);
-                return;
-            }
             var color = new DefaultColor { };
             color.Color = Vector4.one;
             var textureInfo = new TextureIndex
             {
                 Value = 1
             };
-            var renderMaterialIndex = new RenderMaterialIndex
-            {
-                Value = materialIndex
-            };
-            int maxIndex = 0;
-            switch (tileInfo.MaterialIndex)
-            {
-                case 2:
-                    maxIndex = 25;
-                    break;
-                case 3:
-                    maxIndex = 23;
-                    break;
-                default:
-                    maxIndex = 1;
-                    break;
-            }
+            
+            var tile = m_TileResources.GetTile(tileInfo.TileIndex);
+            int maxIndex = tile.MaxIndex;
             var maxTextureIndex = new TextureMaxIndex
             {
                 Value = (ushort)maxIndex
@@ -473,7 +456,7 @@ namespace GeometryEscape
             up.Dispose();
             down.Dispose();
 
-            EntityManager.SetSharedComponentData(instance, renderMaterialIndex);
+            EntityManager.SetSharedComponentData(instance, tile.RenderContent);
             EntityManager.SetComponentData(instance, initialCoordinate);
             EntityManager.SetComponentData(instance, color);
             EntityManager.SetComponentData(instance, textureInfo);
@@ -481,11 +464,15 @@ namespace GeometryEscape
             var properties = new TileProperties
             {
                 Index = TotalTileAmount,
-                TileType = tileType,
-                MaterialIndex = materialIndex
             };
-            _TotalTileAmount++;
+            
             EntityManager.SetComponentData(instance, properties);
+            var tileType = new TileTypeIndex
+            {
+                Value = tile.TileType
+            };
+            EntityManager.SetComponentData(instance, tileType);
+            _TotalTileAmount++;
         }
 
         private void CreateMonster(JobHandle inputDeps, MonsterInfo monsterInfo)

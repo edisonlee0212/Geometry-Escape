@@ -5,14 +5,12 @@ using System.Collections.Generic;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Utilities;
 
-namespace GeometryEscape
+public class Controls : IInputActionCollection
 {
-    public class Controls : IInputActionCollection
+    private InputActionAsset asset;
+    public Controls()
     {
-        private InputActionAsset asset;
-        public Controls()
-        {
-            asset = InputActionAsset.FromJson(@"{
+        asset = InputActionAsset.FromJson(@"{
     ""name"": ""Controls"",
     ""maps"": [
         {
@@ -499,279 +497,278 @@ namespace GeometryEscape
         }
     ]
 }");
-            // Map Editor
-            m_MapEditor = asset.GetActionMap("Map Editor");
-            m_MapEditor_Move = m_MapEditor.GetAction("Move");
-            m_MapEditor_Zoom = m_MapEditor.GetAction("Zoom");
-            m_MapEditor_RemoveCenterTile = m_MapEditor.GetAction("RemoveCenterTile");
-            m_MapEditor_AddCenterTile = m_MapEditor.GetAction("AddCenterTile");
-            // In-Game
-            m_InGame = asset.GetActionMap("In-Game");
-            m_InGame_Move = m_InGame.GetAction("Move");
-            m_InGame_Zoom = m_InGame.GetAction("Zoom");
-            // Menu
-            m_Menu = asset.GetActionMap("Menu");
-            m_Menu_Newaction = m_Menu.GetAction("New action");
-            // Beats Editor
-            m_BeatsEditor = asset.GetActionMap("Beats Editor");
-            m_BeatsEditor_StartRecording = m_BeatsEditor.GetAction("StartRecording");
-            m_BeatsEditor_NewBeat = m_BeatsEditor.GetAction("NewBeat");
-            m_BeatsEditor_EndRecording = m_BeatsEditor.GetAction("EndRecording");
-        }
-
-        ~Controls()
-        {
-            UnityEngine.Object.Destroy(asset);
-        }
-
-        public InputBinding? bindingMask
-        {
-            get => asset.bindingMask;
-            set => asset.bindingMask = value;
-        }
-
-        public ReadOnlyArray<InputDevice>? devices
-        {
-            get => asset.devices;
-            set => asset.devices = value;
-        }
-
-        public ReadOnlyArray<InputControlScheme> controlSchemes => asset.controlSchemes;
-
-        public bool Contains(InputAction action)
-        {
-            return asset.Contains(action);
-        }
-
-        public IEnumerator<InputAction> GetEnumerator()
-        {
-            return asset.GetEnumerator();
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
-
-        public void Enable()
-        {
-            asset.Enable();
-        }
-
-        public void Disable()
-        {
-            asset.Disable();
-        }
-
         // Map Editor
-        private readonly InputActionMap m_MapEditor;
-        private IMapEditorActions m_MapEditorActionsCallbackInterface;
-        private readonly InputAction m_MapEditor_Move;
-        private readonly InputAction m_MapEditor_Zoom;
-        private readonly InputAction m_MapEditor_RemoveCenterTile;
-        private readonly InputAction m_MapEditor_AddCenterTile;
-        public struct MapEditorActions
-        {
-            private Controls m_Wrapper;
-            public MapEditorActions(Controls wrapper) { m_Wrapper = wrapper; }
-            public InputAction @Move => m_Wrapper.m_MapEditor_Move;
-            public InputAction @Zoom => m_Wrapper.m_MapEditor_Zoom;
-            public InputAction @RemoveCenterTile => m_Wrapper.m_MapEditor_RemoveCenterTile;
-            public InputAction @AddCenterTile => m_Wrapper.m_MapEditor_AddCenterTile;
-            public InputActionMap Get() { return m_Wrapper.m_MapEditor; }
-            public void Enable() { Get().Enable(); }
-            public void Disable() { Get().Disable(); }
-            public bool enabled => Get().enabled;
-            public static implicit operator InputActionMap(MapEditorActions set) { return set.Get(); }
-            public void SetCallbacks(IMapEditorActions instance)
-            {
-                if (m_Wrapper.m_MapEditorActionsCallbackInterface != null)
-                {
-                    Move.started -= m_Wrapper.m_MapEditorActionsCallbackInterface.OnMove;
-                    Move.performed -= m_Wrapper.m_MapEditorActionsCallbackInterface.OnMove;
-                    Move.canceled -= m_Wrapper.m_MapEditorActionsCallbackInterface.OnMove;
-                    Zoom.started -= m_Wrapper.m_MapEditorActionsCallbackInterface.OnZoom;
-                    Zoom.performed -= m_Wrapper.m_MapEditorActionsCallbackInterface.OnZoom;
-                    Zoom.canceled -= m_Wrapper.m_MapEditorActionsCallbackInterface.OnZoom;
-                    RemoveCenterTile.started -= m_Wrapper.m_MapEditorActionsCallbackInterface.OnRemoveCenterTile;
-                    RemoveCenterTile.performed -= m_Wrapper.m_MapEditorActionsCallbackInterface.OnRemoveCenterTile;
-                    RemoveCenterTile.canceled -= m_Wrapper.m_MapEditorActionsCallbackInterface.OnRemoveCenterTile;
-                    AddCenterTile.started -= m_Wrapper.m_MapEditorActionsCallbackInterface.OnAddCenterTile;
-                    AddCenterTile.performed -= m_Wrapper.m_MapEditorActionsCallbackInterface.OnAddCenterTile;
-                    AddCenterTile.canceled -= m_Wrapper.m_MapEditorActionsCallbackInterface.OnAddCenterTile;
-                }
-                m_Wrapper.m_MapEditorActionsCallbackInterface = instance;
-                if (instance != null)
-                {
-                    Move.started += instance.OnMove;
-                    Move.performed += instance.OnMove;
-                    Move.canceled += instance.OnMove;
-                    Zoom.started += instance.OnZoom;
-                    Zoom.performed += instance.OnZoom;
-                    Zoom.canceled += instance.OnZoom;
-                    RemoveCenterTile.started += instance.OnRemoveCenterTile;
-                    RemoveCenterTile.performed += instance.OnRemoveCenterTile;
-                    RemoveCenterTile.canceled += instance.OnRemoveCenterTile;
-                    AddCenterTile.started += instance.OnAddCenterTile;
-                    AddCenterTile.performed += instance.OnAddCenterTile;
-                    AddCenterTile.canceled += instance.OnAddCenterTile;
-                }
-            }
-        }
-        public MapEditorActions @MapEditor => new MapEditorActions(this);
-
+        m_MapEditor = asset.FindActionMap("Map Editor", throwIfNotFound: true);
+        m_MapEditor_Move = m_MapEditor.FindAction("Move", throwIfNotFound: true);
+        m_MapEditor_Zoom = m_MapEditor.FindAction("Zoom", throwIfNotFound: true);
+        m_MapEditor_RemoveCenterTile = m_MapEditor.FindAction("RemoveCenterTile", throwIfNotFound: true);
+        m_MapEditor_AddCenterTile = m_MapEditor.FindAction("AddCenterTile", throwIfNotFound: true);
         // In-Game
-        private readonly InputActionMap m_InGame;
-        private IInGameActions m_InGameActionsCallbackInterface;
-        private readonly InputAction m_InGame_Move;
-        private readonly InputAction m_InGame_Zoom;
-        public struct InGameActions
-        {
-            private Controls m_Wrapper;
-            public InGameActions(Controls wrapper) { m_Wrapper = wrapper; }
-            public InputAction @Move => m_Wrapper.m_InGame_Move;
-            public InputAction @Zoom => m_Wrapper.m_InGame_Zoom;
-            public InputActionMap Get() { return m_Wrapper.m_InGame; }
-            public void Enable() { Get().Enable(); }
-            public void Disable() { Get().Disable(); }
-            public bool enabled => Get().enabled;
-            public static implicit operator InputActionMap(InGameActions set) { return set.Get(); }
-            public void SetCallbacks(IInGameActions instance)
-            {
-                if (m_Wrapper.m_InGameActionsCallbackInterface != null)
-                {
-                    Move.started -= m_Wrapper.m_InGameActionsCallbackInterface.OnMove;
-                    Move.performed -= m_Wrapper.m_InGameActionsCallbackInterface.OnMove;
-                    Move.canceled -= m_Wrapper.m_InGameActionsCallbackInterface.OnMove;
-                    Zoom.started -= m_Wrapper.m_InGameActionsCallbackInterface.OnZoom;
-                    Zoom.performed -= m_Wrapper.m_InGameActionsCallbackInterface.OnZoom;
-                    Zoom.canceled -= m_Wrapper.m_InGameActionsCallbackInterface.OnZoom;
-                }
-                m_Wrapper.m_InGameActionsCallbackInterface = instance;
-                if (instance != null)
-                {
-                    Move.started += instance.OnMove;
-                    Move.performed += instance.OnMove;
-                    Move.canceled += instance.OnMove;
-                    Zoom.started += instance.OnZoom;
-                    Zoom.performed += instance.OnZoom;
-                    Zoom.canceled += instance.OnZoom;
-                }
-            }
-        }
-        public InGameActions @InGame => new InGameActions(this);
-
+        m_InGame = asset.FindActionMap("In-Game", throwIfNotFound: true);
+        m_InGame_Move = m_InGame.FindAction("Move", throwIfNotFound: true);
+        m_InGame_Zoom = m_InGame.FindAction("Zoom", throwIfNotFound: true);
         // Menu
-        private readonly InputActionMap m_Menu;
-        private IMenuActions m_MenuActionsCallbackInterface;
-        private readonly InputAction m_Menu_Newaction;
-        public struct MenuActions
-        {
-            private Controls m_Wrapper;
-            public MenuActions(Controls wrapper) { m_Wrapper = wrapper; }
-            public InputAction @Newaction => m_Wrapper.m_Menu_Newaction;
-            public InputActionMap Get() { return m_Wrapper.m_Menu; }
-            public void Enable() { Get().Enable(); }
-            public void Disable() { Get().Disable(); }
-            public bool enabled => Get().enabled;
-            public static implicit operator InputActionMap(MenuActions set) { return set.Get(); }
-            public void SetCallbacks(IMenuActions instance)
-            {
-                if (m_Wrapper.m_MenuActionsCallbackInterface != null)
-                {
-                    Newaction.started -= m_Wrapper.m_MenuActionsCallbackInterface.OnNewaction;
-                    Newaction.performed -= m_Wrapper.m_MenuActionsCallbackInterface.OnNewaction;
-                    Newaction.canceled -= m_Wrapper.m_MenuActionsCallbackInterface.OnNewaction;
-                }
-                m_Wrapper.m_MenuActionsCallbackInterface = instance;
-                if (instance != null)
-                {
-                    Newaction.started += instance.OnNewaction;
-                    Newaction.performed += instance.OnNewaction;
-                    Newaction.canceled += instance.OnNewaction;
-                }
-            }
-        }
-        public MenuActions @Menu => new MenuActions(this);
-
+        m_Menu = asset.FindActionMap("Menu", throwIfNotFound: true);
+        m_Menu_Newaction = m_Menu.FindAction("New action", throwIfNotFound: true);
         // Beats Editor
-        private readonly InputActionMap m_BeatsEditor;
-        private IBeatsEditorActions m_BeatsEditorActionsCallbackInterface;
-        private readonly InputAction m_BeatsEditor_StartRecording;
-        private readonly InputAction m_BeatsEditor_NewBeat;
-        private readonly InputAction m_BeatsEditor_EndRecording;
-        public struct BeatsEditorActions
+        m_BeatsEditor = asset.FindActionMap("Beats Editor", throwIfNotFound: true);
+        m_BeatsEditor_StartRecording = m_BeatsEditor.FindAction("StartRecording", throwIfNotFound: true);
+        m_BeatsEditor_NewBeat = m_BeatsEditor.FindAction("NewBeat", throwIfNotFound: true);
+        m_BeatsEditor_EndRecording = m_BeatsEditor.FindAction("EndRecording", throwIfNotFound: true);
+    }
+
+    ~Controls()
+    {
+        UnityEngine.Object.Destroy(asset);
+    }
+
+    public InputBinding? bindingMask
+    {
+        get => asset.bindingMask;
+        set => asset.bindingMask = value;
+    }
+
+    public ReadOnlyArray<InputDevice>? devices
+    {
+        get => asset.devices;
+        set => asset.devices = value;
+    }
+
+    public ReadOnlyArray<InputControlScheme> controlSchemes => asset.controlSchemes;
+
+    public bool Contains(InputAction action)
+    {
+        return asset.Contains(action);
+    }
+
+    public IEnumerator<InputAction> GetEnumerator()
+    {
+        return asset.GetEnumerator();
+    }
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return GetEnumerator();
+    }
+
+    public void Enable()
+    {
+        asset.Enable();
+    }
+
+    public void Disable()
+    {
+        asset.Disable();
+    }
+
+    // Map Editor
+    private readonly InputActionMap m_MapEditor;
+    private IMapEditorActions m_MapEditorActionsCallbackInterface;
+    private readonly InputAction m_MapEditor_Move;
+    private readonly InputAction m_MapEditor_Zoom;
+    private readonly InputAction m_MapEditor_RemoveCenterTile;
+    private readonly InputAction m_MapEditor_AddCenterTile;
+    public struct MapEditorActions
+    {
+        private Controls m_Wrapper;
+        public MapEditorActions(Controls wrapper) { m_Wrapper = wrapper; }
+        public InputAction @Move => m_Wrapper.m_MapEditor_Move;
+        public InputAction @Zoom => m_Wrapper.m_MapEditor_Zoom;
+        public InputAction @RemoveCenterTile => m_Wrapper.m_MapEditor_RemoveCenterTile;
+        public InputAction @AddCenterTile => m_Wrapper.m_MapEditor_AddCenterTile;
+        public InputActionMap Get() { return m_Wrapper.m_MapEditor; }
+        public void Enable() { Get().Enable(); }
+        public void Disable() { Get().Disable(); }
+        public bool enabled => Get().enabled;
+        public static implicit operator InputActionMap(MapEditorActions set) { return set.Get(); }
+        public void SetCallbacks(IMapEditorActions instance)
         {
-            private Controls m_Wrapper;
-            public BeatsEditorActions(Controls wrapper) { m_Wrapper = wrapper; }
-            public InputAction @StartRecording => m_Wrapper.m_BeatsEditor_StartRecording;
-            public InputAction @NewBeat => m_Wrapper.m_BeatsEditor_NewBeat;
-            public InputAction @EndRecording => m_Wrapper.m_BeatsEditor_EndRecording;
-            public InputActionMap Get() { return m_Wrapper.m_BeatsEditor; }
-            public void Enable() { Get().Enable(); }
-            public void Disable() { Get().Disable(); }
-            public bool enabled => Get().enabled;
-            public static implicit operator InputActionMap(BeatsEditorActions set) { return set.Get(); }
-            public void SetCallbacks(IBeatsEditorActions instance)
+            if (m_Wrapper.m_MapEditorActionsCallbackInterface != null)
             {
-                if (m_Wrapper.m_BeatsEditorActionsCallbackInterface != null)
-                {
-                    StartRecording.started -= m_Wrapper.m_BeatsEditorActionsCallbackInterface.OnStartRecording;
-                    StartRecording.performed -= m_Wrapper.m_BeatsEditorActionsCallbackInterface.OnStartRecording;
-                    StartRecording.canceled -= m_Wrapper.m_BeatsEditorActionsCallbackInterface.OnStartRecording;
-                    NewBeat.started -= m_Wrapper.m_BeatsEditorActionsCallbackInterface.OnNewBeat;
-                    NewBeat.performed -= m_Wrapper.m_BeatsEditorActionsCallbackInterface.OnNewBeat;
-                    NewBeat.canceled -= m_Wrapper.m_BeatsEditorActionsCallbackInterface.OnNewBeat;
-                    EndRecording.started -= m_Wrapper.m_BeatsEditorActionsCallbackInterface.OnEndRecording;
-                    EndRecording.performed -= m_Wrapper.m_BeatsEditorActionsCallbackInterface.OnEndRecording;
-                    EndRecording.canceled -= m_Wrapper.m_BeatsEditorActionsCallbackInterface.OnEndRecording;
-                }
-                m_Wrapper.m_BeatsEditorActionsCallbackInterface = instance;
-                if (instance != null)
-                {
-                    StartRecording.started += instance.OnStartRecording;
-                    StartRecording.performed += instance.OnStartRecording;
-                    StartRecording.canceled += instance.OnStartRecording;
-                    NewBeat.started += instance.OnNewBeat;
-                    NewBeat.performed += instance.OnNewBeat;
-                    NewBeat.canceled += instance.OnNewBeat;
-                    EndRecording.started += instance.OnEndRecording;
-                    EndRecording.performed += instance.OnEndRecording;
-                    EndRecording.canceled += instance.OnEndRecording;
-                }
+                Move.started -= m_Wrapper.m_MapEditorActionsCallbackInterface.OnMove;
+                Move.performed -= m_Wrapper.m_MapEditorActionsCallbackInterface.OnMove;
+                Move.canceled -= m_Wrapper.m_MapEditorActionsCallbackInterface.OnMove;
+                Zoom.started -= m_Wrapper.m_MapEditorActionsCallbackInterface.OnZoom;
+                Zoom.performed -= m_Wrapper.m_MapEditorActionsCallbackInterface.OnZoom;
+                Zoom.canceled -= m_Wrapper.m_MapEditorActionsCallbackInterface.OnZoom;
+                RemoveCenterTile.started -= m_Wrapper.m_MapEditorActionsCallbackInterface.OnRemoveCenterTile;
+                RemoveCenterTile.performed -= m_Wrapper.m_MapEditorActionsCallbackInterface.OnRemoveCenterTile;
+                RemoveCenterTile.canceled -= m_Wrapper.m_MapEditorActionsCallbackInterface.OnRemoveCenterTile;
+                AddCenterTile.started -= m_Wrapper.m_MapEditorActionsCallbackInterface.OnAddCenterTile;
+                AddCenterTile.performed -= m_Wrapper.m_MapEditorActionsCallbackInterface.OnAddCenterTile;
+                AddCenterTile.canceled -= m_Wrapper.m_MapEditorActionsCallbackInterface.OnAddCenterTile;
+            }
+            m_Wrapper.m_MapEditorActionsCallbackInterface = instance;
+            if (instance != null)
+            {
+                Move.started += instance.OnMove;
+                Move.performed += instance.OnMove;
+                Move.canceled += instance.OnMove;
+                Zoom.started += instance.OnZoom;
+                Zoom.performed += instance.OnZoom;
+                Zoom.canceled += instance.OnZoom;
+                RemoveCenterTile.started += instance.OnRemoveCenterTile;
+                RemoveCenterTile.performed += instance.OnRemoveCenterTile;
+                RemoveCenterTile.canceled += instance.OnRemoveCenterTile;
+                AddCenterTile.started += instance.OnAddCenterTile;
+                AddCenterTile.performed += instance.OnAddCenterTile;
+                AddCenterTile.canceled += instance.OnAddCenterTile;
             }
         }
-        public BeatsEditorActions @BeatsEditor => new BeatsEditorActions(this);
-        private int m_PCSchemeIndex = -1;
-        public InputControlScheme PCScheme
+    }
+    public MapEditorActions @MapEditor => new MapEditorActions(this);
+
+    // In-Game
+    private readonly InputActionMap m_InGame;
+    private IInGameActions m_InGameActionsCallbackInterface;
+    private readonly InputAction m_InGame_Move;
+    private readonly InputAction m_InGame_Zoom;
+    public struct InGameActions
+    {
+        private Controls m_Wrapper;
+        public InGameActions(Controls wrapper) { m_Wrapper = wrapper; }
+        public InputAction @Move => m_Wrapper.m_InGame_Move;
+        public InputAction @Zoom => m_Wrapper.m_InGame_Zoom;
+        public InputActionMap Get() { return m_Wrapper.m_InGame; }
+        public void Enable() { Get().Enable(); }
+        public void Disable() { Get().Disable(); }
+        public bool enabled => Get().enabled;
+        public static implicit operator InputActionMap(InGameActions set) { return set.Get(); }
+        public void SetCallbacks(IInGameActions instance)
         {
-            get
+            if (m_Wrapper.m_InGameActionsCallbackInterface != null)
             {
-                if (m_PCSchemeIndex == -1) m_PCSchemeIndex = asset.GetControlSchemeIndex("PC");
-                return asset.controlSchemes[m_PCSchemeIndex];
+                Move.started -= m_Wrapper.m_InGameActionsCallbackInterface.OnMove;
+                Move.performed -= m_Wrapper.m_InGameActionsCallbackInterface.OnMove;
+                Move.canceled -= m_Wrapper.m_InGameActionsCallbackInterface.OnMove;
+                Zoom.started -= m_Wrapper.m_InGameActionsCallbackInterface.OnZoom;
+                Zoom.performed -= m_Wrapper.m_InGameActionsCallbackInterface.OnZoom;
+                Zoom.canceled -= m_Wrapper.m_InGameActionsCallbackInterface.OnZoom;
+            }
+            m_Wrapper.m_InGameActionsCallbackInterface = instance;
+            if (instance != null)
+            {
+                Move.started += instance.OnMove;
+                Move.performed += instance.OnMove;
+                Move.canceled += instance.OnMove;
+                Zoom.started += instance.OnZoom;
+                Zoom.performed += instance.OnZoom;
+                Zoom.canceled += instance.OnZoom;
             }
         }
-        public interface IMapEditorActions
+    }
+    public InGameActions @InGame => new InGameActions(this);
+
+    // Menu
+    private readonly InputActionMap m_Menu;
+    private IMenuActions m_MenuActionsCallbackInterface;
+    private readonly InputAction m_Menu_Newaction;
+    public struct MenuActions
+    {
+        private Controls m_Wrapper;
+        public MenuActions(Controls wrapper) { m_Wrapper = wrapper; }
+        public InputAction @Newaction => m_Wrapper.m_Menu_Newaction;
+        public InputActionMap Get() { return m_Wrapper.m_Menu; }
+        public void Enable() { Get().Enable(); }
+        public void Disable() { Get().Disable(); }
+        public bool enabled => Get().enabled;
+        public static implicit operator InputActionMap(MenuActions set) { return set.Get(); }
+        public void SetCallbacks(IMenuActions instance)
         {
-            void OnMove(InputAction.CallbackContext context);
-            void OnZoom(InputAction.CallbackContext context);
-            void OnRemoveCenterTile(InputAction.CallbackContext context);
-            void OnAddCenterTile(InputAction.CallbackContext context);
+            if (m_Wrapper.m_MenuActionsCallbackInterface != null)
+            {
+                Newaction.started -= m_Wrapper.m_MenuActionsCallbackInterface.OnNewaction;
+                Newaction.performed -= m_Wrapper.m_MenuActionsCallbackInterface.OnNewaction;
+                Newaction.canceled -= m_Wrapper.m_MenuActionsCallbackInterface.OnNewaction;
+            }
+            m_Wrapper.m_MenuActionsCallbackInterface = instance;
+            if (instance != null)
+            {
+                Newaction.started += instance.OnNewaction;
+                Newaction.performed += instance.OnNewaction;
+                Newaction.canceled += instance.OnNewaction;
+            }
         }
-        public interface IInGameActions
+    }
+    public MenuActions @Menu => new MenuActions(this);
+
+    // Beats Editor
+    private readonly InputActionMap m_BeatsEditor;
+    private IBeatsEditorActions m_BeatsEditorActionsCallbackInterface;
+    private readonly InputAction m_BeatsEditor_StartRecording;
+    private readonly InputAction m_BeatsEditor_NewBeat;
+    private readonly InputAction m_BeatsEditor_EndRecording;
+    public struct BeatsEditorActions
+    {
+        private Controls m_Wrapper;
+        public BeatsEditorActions(Controls wrapper) { m_Wrapper = wrapper; }
+        public InputAction @StartRecording => m_Wrapper.m_BeatsEditor_StartRecording;
+        public InputAction @NewBeat => m_Wrapper.m_BeatsEditor_NewBeat;
+        public InputAction @EndRecording => m_Wrapper.m_BeatsEditor_EndRecording;
+        public InputActionMap Get() { return m_Wrapper.m_BeatsEditor; }
+        public void Enable() { Get().Enable(); }
+        public void Disable() { Get().Disable(); }
+        public bool enabled => Get().enabled;
+        public static implicit operator InputActionMap(BeatsEditorActions set) { return set.Get(); }
+        public void SetCallbacks(IBeatsEditorActions instance)
         {
-            void OnMove(InputAction.CallbackContext context);
-            void OnZoom(InputAction.CallbackContext context);
+            if (m_Wrapper.m_BeatsEditorActionsCallbackInterface != null)
+            {
+                StartRecording.started -= m_Wrapper.m_BeatsEditorActionsCallbackInterface.OnStartRecording;
+                StartRecording.performed -= m_Wrapper.m_BeatsEditorActionsCallbackInterface.OnStartRecording;
+                StartRecording.canceled -= m_Wrapper.m_BeatsEditorActionsCallbackInterface.OnStartRecording;
+                NewBeat.started -= m_Wrapper.m_BeatsEditorActionsCallbackInterface.OnNewBeat;
+                NewBeat.performed -= m_Wrapper.m_BeatsEditorActionsCallbackInterface.OnNewBeat;
+                NewBeat.canceled -= m_Wrapper.m_BeatsEditorActionsCallbackInterface.OnNewBeat;
+                EndRecording.started -= m_Wrapper.m_BeatsEditorActionsCallbackInterface.OnEndRecording;
+                EndRecording.performed -= m_Wrapper.m_BeatsEditorActionsCallbackInterface.OnEndRecording;
+                EndRecording.canceled -= m_Wrapper.m_BeatsEditorActionsCallbackInterface.OnEndRecording;
+            }
+            m_Wrapper.m_BeatsEditorActionsCallbackInterface = instance;
+            if (instance != null)
+            {
+                StartRecording.started += instance.OnStartRecording;
+                StartRecording.performed += instance.OnStartRecording;
+                StartRecording.canceled += instance.OnStartRecording;
+                NewBeat.started += instance.OnNewBeat;
+                NewBeat.performed += instance.OnNewBeat;
+                NewBeat.canceled += instance.OnNewBeat;
+                EndRecording.started += instance.OnEndRecording;
+                EndRecording.performed += instance.OnEndRecording;
+                EndRecording.canceled += instance.OnEndRecording;
+            }
         }
-        public interface IMenuActions
+    }
+    public BeatsEditorActions @BeatsEditor => new BeatsEditorActions(this);
+    private int m_PCSchemeIndex = -1;
+    public InputControlScheme PCScheme
+    {
+        get
         {
-            void OnNewaction(InputAction.CallbackContext context);
+            if (m_PCSchemeIndex == -1) m_PCSchemeIndex = asset.FindControlSchemeIndex("PC");
+            return asset.controlSchemes[m_PCSchemeIndex];
         }
-        public interface IBeatsEditorActions
-        {
-            void OnStartRecording(InputAction.CallbackContext context);
-            void OnNewBeat(InputAction.CallbackContext context);
-            void OnEndRecording(InputAction.CallbackContext context);
-        }
+    }
+    public interface IMapEditorActions
+    {
+        void OnMove(InputAction.CallbackContext context);
+        void OnZoom(InputAction.CallbackContext context);
+        void OnRemoveCenterTile(InputAction.CallbackContext context);
+        void OnAddCenterTile(InputAction.CallbackContext context);
+    }
+    public interface IInGameActions
+    {
+        void OnMove(InputAction.CallbackContext context);
+        void OnZoom(InputAction.CallbackContext context);
+    }
+    public interface IMenuActions
+    {
+        void OnNewaction(InputAction.CallbackContext context);
+    }
+    public interface IBeatsEditorActions
+    {
+        void OnStartRecording(InputAction.CallbackContext context);
+        void OnNewBeat(InputAction.CallbackContext context);
+        void OnEndRecording(InputAction.CallbackContext context);
     }
 }
