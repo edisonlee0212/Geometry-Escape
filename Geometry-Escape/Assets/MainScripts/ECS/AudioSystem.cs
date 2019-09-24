@@ -44,7 +44,7 @@ namespace GeometryEscape
         //public static AudioSource BeatsAudioSource { get => m_BeatsAudioSource; set => m_BeatsAudioSource = value; }
         //public static AudioSource KeyAudioSource { get => m_KeyAudioSource; set => m_KeyAudioSource = value; }
 
-        
+
         public static float Deviation { get => _Deviation; set => _Deviation = value; }
         public static AudioResources.Music Music { get => m_Music; set => m_Music = value; }
         //public static MusicResources.Music Beats { get => m_Beats; set => m_Beats = value; }
@@ -79,10 +79,22 @@ namespace GeometryEscape
             _Deviation = m_Music.MusicInfo.MusicBeatsTime / 4;
         }
 
+        public void Pause()
+        {
+            m_MusicAudioSource.Pause();
+            Enabled = false;
+        }
+
+        public void Resume()
+        {
+            m_MusicAudioSource.Play();
+            Enabled = true;
+        }
+
         public void ShutDown()
         {
             Enabled = false;
-
+            if (m_MusicAudioSource != null) m_MusicAudioSource.Stop();
         }
 
         protected override void OnDestroy()
@@ -102,7 +114,7 @@ namespace GeometryEscape
 
         public static void AddBeats()
         {
-            if(m_MusicRecordingInfo.BeatCounter == 0)
+            if (m_MusicRecordingInfo.BeatCounter == 0)
             {
                 m_MusicRecordingInfo.StartTime = m_MusicAudioSource.time;
             }
@@ -152,7 +164,7 @@ namespace GeometryEscape
         public static void CreateSoundEffects(AudioClip[] audioClips)
         {
             int amount = audioClips.Length;
-            for(int i = 0; i < amount; i++)
+            for (int i = 0; i < amount; i++)
             {
                 m_SoundEffectAudioSources[i] = m_MusicResources.InstanciateAudioSource(audioClips[i]);
             }
@@ -162,7 +174,7 @@ namespace GeometryEscape
         #region Reload Audio Sources
         public static void ReloadMusic(AudioClip audioClip)
         {
-            if(m_MusicAudioSource == null)
+            if (m_MusicAudioSource == null)
             {
                 Debug.Log("Music AudioSource doesn't exists! Use CreateMusic instead!");
                 return;

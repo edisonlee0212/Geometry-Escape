@@ -27,28 +27,40 @@ namespace GeometryEscape
         private static NativeQueue<MonsterInfo> _MonsterCreationQueue;
         #endregion
 
-        #region Methods
+        #region Managers
         protected override void OnCreate()
         {
-            
+
         }
 
- 
         public void Init()
         {
             ShutDown();
         }
+        public void Pause()
+        {
+            Enabled = false;
+        }
 
+        public void Resume()
+        {
+            Enabled = true;
+        }
 
         public void ShutDown()
         {
 
         }
-
         protected override void OnDestroy()
         {
             ShutDown();
         }
+        #endregion
+
+        #region Methods
+
+
+
         public void RouteOnCall(Entity entity) {
             /** need an algorithm to calculate 
             https://medium.com/@jimmy0x52/making-smarter-monsters-adding-pathfinding-to-unitys-2d-roguelike-tutorial-5c004207a7a3

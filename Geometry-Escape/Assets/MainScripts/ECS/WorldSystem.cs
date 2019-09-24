@@ -110,6 +110,36 @@ namespace GeometryEscape
             _TotalTileAmount = 0;
             _TotalMonsterAmmount = 0;
 
+            int _TileCount = 10;
+            for (int i = 0; i < _TileCount; i++)
+            {
+                for (int j = 0; j < _TileCount; j++)
+                {
+                    int index = i * _TileCount + j;
+                    AddTile(index % 2, new Coordinate { X = i, Y = j, Z = 0 });
+                }
+            }
+            /*
+            int mapDimension = _TileCount;
+            int monsterNumber = MonsterNumber(mapDimension);
+            Vector3[] MonsterPosiArray = MonsterPosiGenerator(mapDimension, monsterNumber);
+            for (int i = 0; i < monsterNumber; i++)
+            {
+                // generate random coordinate
+
+                Coordinate thisPosi = new Coordinate { };
+                thisPosi.X = 1;//(int)MonsterPosiArray[i].x;
+                thisPosi.Y = 1; //(int)MonsterPosiArray[i].y;
+                thisPosi.Z = 1; //(int)MonsterPosiArray[i].z;
+                Debug.Log("Check monster init");
+                WorldSystem.AddMonster(0, thisPosi);
+            }
+            */
+
+            AddMonster(0, new Coordinate { X = 0, Y = 0, Z = -1 });
+            AddMonster(0, new Coordinate { X = 1, Y = 0, Z = -1 });
+            AddMonster(0, new Coordinate { X = 2, Y = 0, Z = -1 });
+            AddMonster(0, new Coordinate { X = 3, Y = 1, Z = -1 });
             Enabled = true;
         }
 
@@ -130,6 +160,32 @@ namespace GeometryEscape
 
         #region Methods
 
+        public int MonsterNumber(int mapDimension)
+        {
+            return mapDimension / 10;
+        }
+        public Vector3[] MonsterPosiGenerator(int mapDimension, int MonsterNumber)
+        {
+            Vector3[] MonstPosiArray = new Vector3[MonsterNumber];
+            float z = 1.0f;
+            float randomx = 0.0f;
+            float randomy = 0.0f;
+            // need to revise to check viability
+            for (int i = 0; i < MonsterNumber; i++)
+            {
+                Vector3 thisVec = new Vector3 { };
+                randomx = UnityEngine.Random.Range(1, mapDimension);
+                randomy = UnityEngine.Random.Range(1, mapDimension);
+                thisVec.x = randomx;
+                thisVec.y = randomy;
+                thisVec.z = z;
+                MonstPosiArray[i] = thisVec;
+            }
+            return MonstPosiArray;
+
+
+
+        }
         public static void AddCenterTile()
         {
             if (!_AddingTiles && !CentralSystem.Moving && TileSystem.CenterEntity == Entity.Null)

@@ -41,6 +41,7 @@ namespace GeometryEscape
         {
             //在这里我们设置EnittyManager，因为EntityManager全局只有一个并且在程序运行时自动创建，在这里我们是存储一下它的reference。
             m_EntityManager = EntityManager;
+            Enabled = false;
         }
 
         public void Init()
@@ -61,7 +62,15 @@ namespace GeometryEscape
              */
             Enabled = true;
         }
+        public void Pause()
+        {
+            Enabled = false;
+        }
 
+        public void Resume()
+        {
+            Enabled = true;
+        }
         public void ShutDown()
         {
             /*内存清理，”如果_CenterEntity这上面被分配了内存，我们就清理它。“

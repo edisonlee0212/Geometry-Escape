@@ -21,6 +21,16 @@ namespace GeometryEscape
             _HealthPoints = 100;
         }
 
+        public void Pause()
+        {
+            m_Animator.enabled = false;
+        }
+
+        public void Resume()
+        {
+            m_Animator.enabled = true;
+        }
+
         public void MoveLeft()
         {
             var scale = transform.localScale;
