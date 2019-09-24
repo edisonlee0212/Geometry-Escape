@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 namespace GeometryEscape
@@ -8,16 +9,26 @@ namespace GeometryEscape
     {
         #region Public
         [SerializeField]
-        private UnityEngine.Mesh _MonsterMesh;
-        [SerializeField]
-        private UnityEngine.Material[] _Materials;
-        public Mesh MonsterMesh { get => _MonsterMesh; set => _MonsterMesh = value; }
-        public Material[] Materials { get => _Materials; set => _Materials = value; }
-        public int GetMaterialAmount()
+        private Monster[] _Monsters;
+        public int GetMonsterAmount()
         {
-            return Materials.Length;
+            return _Monsters.Length;
         }
+
+        public Monster GetMonster(int index)
+        {
+            return _Monsters[index];
+        }
+
         #endregion
+        [Serializable]
+        public struct Monster
+        {
+            public int MonsterIndex;
+            public MonsterType MonsterType;
+            public RenderContent RenderContent;
+            public TextureMaxIndex TextureMaxIndex;
+        }
     }
 
 }

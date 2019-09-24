@@ -207,7 +207,7 @@ namespace GeometryEscape
                     WorldSystem.AddTile(index % 2, new Coordinate { X = i, Y = j, Z = 0 });
                 }
             }
-            int mapDimension = CentralSystem.Count;
+            /*int mapDimension = CentralSystem.Count;
             int MonsterNumber = MonstNumber(mapDimension);
             Vector3[] MonstPosiArray = MonstPosiGenerator(mapDimension, MonsterNumber);
             for (int i = 0; i < MonsterNumber; i++)
@@ -220,7 +220,11 @@ namespace GeometryEscape
                 thisPosi.Z = 1; //(int)MonstPosiArray[i].z;
                 Debug.Log("Check monster init");
                 WorldSystem.AddMonster(0, thisPosi);
-            }
+            }*/
+            WorldSystem.AddMonster(0, new Coordinate { X = 0, Y = 0, Z = -1 });
+            WorldSystem.AddMonster(0, new Coordinate { X = 1, Y = 0, Z = -1 });
+            WorldSystem.AddMonster(0, new Coordinate { X = 2, Y = 0, Z = -1 });
+            WorldSystem.AddMonster(0, new Coordinate { X = 3, Y = 1, Z = -1 });
         }
         public int MonstNumber(int mapDimension)
         {

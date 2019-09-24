@@ -16,14 +16,15 @@ namespace GeometryEscape
 
     public struct MonsterInfo
     {
-        public MonsterType MonsterType;
-        public Coordinate Coordinate;       // position
-        public int MaterialIndex;
+        //public MonsterType MonsterType;
+        //public Coordinate Coordinate;       // position
+        //public int MaterialIndex;
         // default route
         // mechanic trigger
         // view scope check 
         // monster hp
-
+        public int MonsterIndex;
+        public Coordinate Coordinate;
     }
 
     /// <summary>
@@ -45,10 +46,10 @@ namespace GeometryEscape
         #region Public
         private static bool _AddingTiles;
         private static bool _RemovingTiles;
-        private static bool _AddingMonsts;
+        private static bool _AddingMonsters;
         private static bool _RemovingMonsts;
         private static int _TotalTileAmount;
-        private static int _TotalMonstAmmount;
+        private static int _TotalMonsterAmmount;
         private static TileResources m_TileResources;
         private static MonsterResources m_MonsterResources;
         public static int TotalTileAmount { get => _TotalTileAmount; }
@@ -56,6 +57,7 @@ namespace GeometryEscape
         public static bool RemovingTiles { get => _RemovingTiles; set => _RemovingTiles = value; }
         public static TileResources TileResources { get => m_TileResources; set => m_TileResources = value; }
         public static MonsterResources MonsterResources { get => m_MonsterResources; set => m_MonsterResources = value; }
+        public static int TotalMonsterAmmount { get => _TotalMonsterAmmount; set => _TotalMonsterAmmount = value; }
         #endregion
 
         #region Managers
@@ -70,7 +72,7 @@ namespace GeometryEscape
                 typeof(Scale),
                 typeof(LocalToWorld),
                 typeof(MonsterProperties),
-                typeof(DefaultColor),
+                typeof(DisplayColor),
                 typeof(TextureIndex),
                 typeof(TextureMaxIndex),
                 typeof(MonsterHP)
@@ -106,7 +108,7 @@ namespace GeometryEscape
             _MonsterCreationQueue = new NativeQueue<MonsterInfo>(Allocator.Persistent);
             _MonsterDestructionQueue = new NativeQueue<Entity>(Allocator.Persistent);
             _TotalTileAmount = 0;
-            _TotalMonstAmmount = 0;
+            _TotalMonsterAmmount = 0;
 
             Enabled = true;
         }
@@ -116,6 +118,8 @@ namespace GeometryEscape
             Enabled = false;
             if (_TileCreationQueue.IsCreated) _TileCreationQueue.Dispose();
             if (_TileDestructionQueue.IsCreated) _TileDestructionQueue.Dispose();
+            if (_MonsterCreationQueue.IsCreated) _MonsterCreationQueue.Dispose();
+            if (_MonsterDestructionQueue.IsCreated) _MonsterDestructionQueue.Dispose();
         }
 
         protected override void OnDestroy()
@@ -166,7 +170,7 @@ namespace GeometryEscape
             _TileDestructionQueue.Enqueue(tileEntity);
         }
 
-        public static void AddMonster(int materialIndex, Coordinate initialCoordinate = default, MonsterType monsterType = MonsterType.Green)
+        /*public static void AddMonster(int materialIndex, Coordinate initialCoordinate = default, MonsterType monsterType = MonsterType.Green)
         {
             _AddingMonsts = true;
             _MonsterCreationQueue.Enqueue(new MonsterInfo
@@ -174,6 +178,16 @@ namespace GeometryEscape
                 MaterialIndex = materialIndex,
                 Coordinate = initialCoordinate,
                 MonsterType = monsterType
+            });
+        }*/
+
+        public static void AddMonster(int monsterIndex, Coordinate initialCoordinate = default)
+        {
+            _AddingMonsters = true;
+            _MonsterCreationQueue.Enqueue(new MonsterInfo
+            {
+                Coordinate = initialCoordinate,
+                MonsterIndex = monsterIndex
             });
         }
 
@@ -321,6 +335,18 @@ namespace GeometryEscape
                 }
                 if (_TileDestructionQueue.Count == 0) _RemovingTiles = false;
             }
+
+            if(_AddingMonsters && _MonsterCreationQueue.Count != 0)
+            {
+                int count = _MonsterCreationQueue.Count;
+                for (int i = 0; i < 10 && i < count; i++)
+                {
+                    var monsterInfo = _MonsterCreationQueue.Dequeue();
+                    CreateMonster(inputDeps, monsterInfo);
+                }
+                if (_MonsterCreationQueue.Count == 0) _AddingMonsters = false;
+            }
+
             return inputDeps;
         }
 
@@ -451,6 +477,7 @@ namespace GeometryEscape
         }
         private void CreateMonster(JobHandle inputDeps, MonsterInfo monsterInfo)
         {
+            /*
             // TODO ->
             var materialIndex = monsterInfo.MaterialIndex;
             var initialCoordinate = monsterInfo.Coordinate;
@@ -466,6 +493,7 @@ namespace GeometryEscape
             {
                 Value = materialIndex
             };
+
             var maxTextureIndex = new TextureMaxIndex
             {
                 Value = 1
@@ -483,11 +511,38 @@ namespace GeometryEscape
                 //Coordinate = 
                 MaterialIndex = materialIndex
             };
-            _TotalMonstAmmount++;
-            EntityManager.SetComponentData(instance, properties);
+            _TotalMonsterAmmount++;
+            EntityManager.SetComponentData(instance, properties);*/
+            var monster = m_MonsterResources.GetMonster(monsterInfo.MonsterIndex);
+            /*typeof(MonsterTypeIndex),
+                typeof(RenderContent),
+                typeof(Coordinate),
+                typeof(Translation),
+                typeof(Rotation),
+                typeof(Scale),
+                typeof(LocalToWorld),
+                typeof(MonsterProperties),
+                typeof(DefaultColor),
+                typeof(TextureIndex),
+                typeof(TextureMaxIndex),
+                typeof(MonsterHP)*/
+            var instance = EntityManager.CreateEntity(_MonsterEntityArchetype);
+            EntityManager.SetComponentData(instance, new MonsterTypeIndex
+            {
+                Value = monster.MonsterType
+            });
+            EntityManager.SetSharedComponentData(instance, monster.RenderContent);
+            EntityManager.SetComponentData(instance, monsterInfo.Coordinate);
+
+            EntityManager.SetComponentData(instance, new DisplayColor
+            {
+                Value = Vector4.one
+            });
+            EntityManager.SetComponentData(instance, monster.TextureMaxIndex);
+            EntityManager.SetComponentData(instance, new Scale
+            {
+                Value = 1
+            });
         }
-
-
-
     }
 }

@@ -146,10 +146,7 @@ namespace GeometryEscape
     [Serializable]
     public struct MonsterProperties : IComponentData
     {
-        //public int Index;
-        public int MaterialIndex;
-        public MonsterType MonsterType;
-
+        public int Index;
     }
 
     [Serializable]
