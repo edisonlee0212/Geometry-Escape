@@ -15,6 +15,7 @@ namespace GeometryEscape
         public Material[] Materials { get => _Materials; set => _Materials = value; }
         public int GetMaterialAmount()
         {
+            Debug.Log("material length"+ Materials.Length);
             return Materials.Length;
         }
         #endregion

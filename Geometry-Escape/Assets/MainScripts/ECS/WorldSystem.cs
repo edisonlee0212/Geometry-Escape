@@ -38,6 +38,8 @@ namespace GeometryEscape
         private static EntityArchetype _MonsterEntityArchetype;
 
         private int _MaterialAmount;
+        private int _MonsterMaterAmount;
+
         private static NativeQueue<TileInfo> _TileCreationQueue;
         private static NativeQueue<Entity> _TileDestructionQueue;
         private static NativeQueue<MonsterInfo> _MonsterCreationQueue;
@@ -47,7 +49,10 @@ namespace GeometryEscape
         #region Public
         private static bool _AddingTiles;
         private static bool _RemovingTiles;
+        private static bool _AddingMonsts;
+        private static bool _RemovingMonsts;
         private static int _TotalTileAmount;
+        private static int _TotalMonstAmount;
         public static int TotalTileAmount { get => _TotalTileAmount; }
         public static bool AddingTiles { get => _AddingTiles; set => _AddingTiles = value; }
         public static bool RemovingTiles { get => _RemovingTiles; set => _RemovingTiles = value; }
@@ -64,7 +69,7 @@ namespace GeometryEscape
                 typeof(Rotation),
                 typeof(Scale),
                 typeof(Unity.Transforms.LocalToWorld),
-                typeof(TileProperties),
+                typeof(MonsterProperties),
                 typeof(DefaultColor),
                 typeof(TextureIndex),
                 typeof(TextureMaxIndex),
@@ -96,8 +101,12 @@ namespace GeometryEscape
             ShutDown();
             _TileCreationQueue = new NativeQueue<TileInfo>(Allocator.Persistent);
             _TileDestructionQueue = new NativeQueue<Entity>(Allocator.Persistent);
+            _MonsterCreationQueue = new NativeQueue<MonsterInfo>(Allocator.Persistent);
+            _MonsterDestructionQueue = new NativeQueue<Entity>(Allocator.Persistent);
             _MaterialAmount = RenderSystem.MaterialAmount;
+            _MonsterMaterAmount = RenderSystem.MonstMaterAmount;
             _TotalTileAmount = 0;
+            _TotalMonstAmount = 0;
             Enabled = true;
         }
 
@@ -106,6 +115,8 @@ namespace GeometryEscape
             Enabled = false;
             if (_TileCreationQueue.IsCreated) _TileCreationQueue.Dispose();
             if (_TileDestructionQueue.IsCreated) _TileDestructionQueue.Dispose();
+            if (_MonsterCreationQueue.IsCreated) _MonsterCreationQueue.Dispose();
+            if (_MonsterDestructionQueue.IsCreated) _MonsterDestructionQueue.Dispose();
         }
 
         protected override void OnDestroy()
@@ -157,6 +168,16 @@ namespace GeometryEscape
             _TileDestructionQueue.Enqueue(tileEntity);
         }
 
+        public static void AddMonster(int materialIndex, Coordinate initialCoordinate = default, MonsterType monsterType = MonsterType.Green)
+        {
+            _AddingMonsts = true;
+            _MonsterCreationQueue.Enqueue(new MonsterInfo
+            {
+                MaterialIndex = materialIndex,
+                Coordinate = initialCoordinate,
+                MonsterType = monsterType
+            });
+        }
         #endregion
 
 
@@ -299,6 +320,27 @@ namespace GeometryEscape
                 }
                 if (_TileDestructionQueue.Count == 0) _RemovingTiles = false;
             }
+            if (_AddingMonsts && _MonsterCreationQueue.Count != 0)
+            {
+                int count = _MonsterCreationQueue.Count;
+                for (int i = 0; i < 10 && i < count; i++)
+                {
+                    var monsterInfo = _MonsterCreationQueue.Dequeue();
+                    CreateMonster(inputDeps, monsterInfo);
+                }
+                if (_MonsterCreationQueue.Count == 0) _AddingMonsts = false;
+            }
+            if (_RemovingMonsts && _MonsterDestructionQueue.Count != 0)
+            {
+                int count = _MonsterDestructionQueue.Count;
+                for (int i = 0; i < 10 && i < count; i++)
+                {
+                    var tileEntity = _MonsterDestructionQueue.Dequeue();
+                    DestroyTile(inputDeps, tileEntity);
+                }
+                if (_MonsterDestructionQueue.Count == 0) _RemovingTiles = false;
+            }
+
             return inputDeps;
         }
 
@@ -445,5 +487,104 @@ namespace GeometryEscape
             _TotalTileAmount++;
             EntityManager.SetComponentData(instance, properties);
         }
+
+        private void CreateMonster(JobHandle inputDeps, MonsterInfo monsterInfo)
+        {
+            var materialIndex = monsterInfo.MaterialIndex;
+            var initialCoordinate = monsterInfo.Coordinate;
+            var monsterType = monsterInfo.MonsterType;
+            if (materialIndex < 0 || materialIndex >= _MonsterMaterAmount)
+            {
+                Debug.LogError("Create Monster: Wrong material index: " + materialIndex +"   "+_MonsterMaterAmount);
+                return;
+            }
+            var color = new DefaultColor { };
+            //color.Color = Vector4.one;
+            var textureInfo = new TextureIndex
+            {
+                Value = 1
+            };
+            var renderMaterialIndex = new RenderMaterialIndex
+            {
+                Value = materialIndex
+            };
+            //int maxIndex = 0;
+            //switch (monsterInfo.MaterialIndex)
+            //{
+            //    case 2:
+            //        maxIndex = 25;
+            //        break;
+            //    case 3:
+            //        maxIndex = 23;
+            //        break;
+            //    default:
+            //        maxIndex = 1;
+            //        break;
+            //}
+            var maxTextureIndex = new TextureMaxIndex
+            {
+                Value = 1
+            };
+            Entity instance = EntityManager.CreateEntity(_MonsterEntityArchetype);
+            //NativeArray<LeftTile> left = new NativeArray<LeftTile>(1, Allocator.TempJob);
+            //NativeArray<RightTile> right = new NativeArray<RightTile>(1, Allocator.TempJob);
+            //NativeArray<UpTile> up = new NativeArray<UpTile>(1, Allocator.TempJob);
+            //NativeArray<DownTile> down = new NativeArray<DownTile>(1, Allocator.TempJob);
+            //inputDeps = new LocateLeftTilesJob
+            //{
+            //    leftTile = left,
+            //    coordinate = initialCoordinate,
+            //    originEntity = instance,
+            //    mode = 1
+            //}.Schedule(this, inputDeps);
+            //inputDeps = new LocateRightTilesJob
+            //{
+            //    rightTile = right,
+            //    coordinate = initialCoordinate,
+            //    originEntity = instance,
+            //    mode = 1
+            //}.Schedule(this, inputDeps);
+            //inputDeps = new LocateUpTilesJob
+            //{
+            //    upTile = up,
+            //    coordinate = initialCoordinate,
+            //    originEntity = instance,
+            //    mode = 1
+            //}.Schedule(this, inputDeps);
+            //inputDeps = new LocateDownTilesJob
+            //{
+            //    downTile = down,
+            //    coordinate = initialCoordinate,
+            //    originEntity = instance,
+            //    mode = 1
+            //}.Schedule(this, inputDeps);
+            //inputDeps.Complete();
+
+
+            //EntityManager.SetComponentData(instance, left[0]);
+            //EntityManager.SetComponentData(instance, right[0]);
+            //EntityManager.SetComponentData(instance, up[0]);
+            //EntityManager.SetComponentData(instance, down[0]);
+            //left.Dispose();
+            //right.Dispose();
+            //up.Dispose();
+            //down.Dispose();
+
+            EntityManager.SetSharedComponentData(instance, renderMaterialIndex);
+            EntityManager.SetComponentData(instance, initialCoordinate);
+            EntityManager.SetComponentData(instance, color);
+            EntityManager.SetComponentData(instance, textureInfo);
+            EntityManager.SetComponentData(instance, maxTextureIndex);
+            var properties = new MonsterProperties
+            {
+                MonsterType = monsterType,
+                //Coordinate = 
+                MaterialIndex = materialIndex
+            };
+            _TotalMonstAmount++;
+            EntityManager.SetComponentData(instance, properties);
+        }
+
+
     }
 }

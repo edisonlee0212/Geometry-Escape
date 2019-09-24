@@ -48,11 +48,12 @@ namespace GeometryEscape
         /// tile resources 存储各类砖块材质，我们以后设计不同的砖块最后就放到这个里面。
         /// </summary>
         private static TileResources m_TileResources;
+        private static MonsterResources monsterResources;
         /// <summary>
         /// music resources 存储各种音乐素材和对应beats
         /// </summary>
         private static AudioResources m_AudioResources;
-        private static AudioResources m_MonsterResources;
+        private static MonsterResources m_MonsterResources;
 
         /*
          * 下面是各种系统的引用，虽然系统内大部分成员变量都是static全局的变量，但是系统本身不是static的，因为unity允许多个相同系统的存在。所以在这里建立和各个子系统的链接。
@@ -63,6 +64,7 @@ namespace GeometryEscape
         public static ControlSystem ControlSystem { get => m_ControlSystem; set => m_ControlSystem = value; }
         public static LightResources LightResources { get => m_LightResources; set => m_LightResources = value; }
         public static TileResources TileResources { get => m_TileResources; set => m_TileResources = value; }
+        public static MonsterResources MonsterResources { get => m_MonsterResources; set => m_MonsterResources = value; }
         public static AudioResources AudioResources { get => m_AudioResources; set => m_AudioResources = value; }
         public static AudioSystem AudioSystem { get => m_AudioSystem; set => m_AudioSystem = value; }
         public static MonsterSystem MonsterSystem { get => m_MonsterSystem; set => m_MonsterSystem = value; }
@@ -88,7 +90,7 @@ namespace GeometryEscape
             m_LightResources = Resources.Load<LightResources>("ScriptableObjects/LightResources");
             m_TileResources = Resources.Load<TileResources>("ScriptableObjects/TileResources");
             m_AudioResources = Resources.Load<AudioResources>("ScriptableObjects/AudioResources");
-            m_MonsterResources = Resources.Load<AudioResources>("ScriptableObjects/MonsterResources");
+            m_MonsterResources = Resources.Load<MonsterResources>("ScriptableObjects/MonsterResources");
 
             /* 设置灯光，因为地图具有缩放功能，在地图缩放的时候灯光范围也应该随之更改，所以在这里加入引用。
              */
@@ -131,6 +133,44 @@ namespace GeometryEscape
                     WorldSystem.AddTile(index % 4, new Coordinate { X = i, Y = j, Z = 0 });
                 }
             }
+            int mapDimension = CentralSystem.Count;
+            int MonsterNumber = MonstNumber(mapDimension);
+            Vector3[] MonstPosiArray = MonstPosiGenerator(mapDimension, MonsterNumber);
+            for (int i = 0; i < MonsterNumber; i++)
+            {
+                // generate random coordinate
+
+                Coordinate thisPosi = new Coordinate { };
+                thisPosi.X = 1;//(int)MonstPosiArray[i].x;
+                thisPosi.Y = 1; //(int)MonstPosiArray[i].y;
+                thisPosi.Z = 1; //(int)MonstPosiArray[i].z;
+                Debug.Log("Check monster init");
+                WorldSystem.AddMonster(0, thisPosi);
+            }
+        }
+        public int MonstNumber(int mapDimension)
+        {
+            return mapDimension / 10;
+        }
+        public Vector3[] MonstPosiGenerator(int mapDimension, int MonsterNumber)
+        {
+            Vector3[] MonstPosiArray = new Vector3[MonsterNumber];
+            float z = 1.0f;
+            float randomx = 0.0f;
+            float randomy = 0.0f;
+            // need to revise to check viability
+            for (int i = 0; i < MonsterNumber; i++)
+            {
+                Vector3 thisVec = new Vector3 { };
+                randomx = UnityEngine.Random.Range(1, mapDimension);
+                randomy = UnityEngine.Random.Range(1, mapDimension);
+                thisVec.x = randomx;
+                thisVec.y = randomy;
+                thisVec.z = z;
+                MonstPosiArray[i] = thisVec;
+            }
+            return MonstPosiArray;
+
         }
         /// <summary>
         /// 所有系统包含shutdown函数，这个函数包括Init是我的习惯，这两个函数对应”不希望删除整个系统只是中止运行或者恢复运行“这种需求。

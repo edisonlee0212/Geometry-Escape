@@ -25,6 +25,7 @@ namespace GeometryEscape
         /// The query to select array of tiles for rendering.
         /// </summary>
         private EntityQuery _TileQuery;
+        private EntityQuery _MonstQuery;
         /// <summary>
         /// Array to hold the result for query.
         /// </summary>
@@ -47,9 +48,10 @@ namespace GeometryEscape
 
         #region Public
         private static TileResources m_TileResources;
-
+        private static MonsterResources m_MonsterResources;
         private UnityEngine.Material[] m_Materials;
         private static int _MaterialAmount;
+        private static int _MonstMaterAmount;
         private Camera m_Camera;
         private UnityEngine.Mesh m_TileMesh;
         /// <summary>
@@ -64,6 +66,8 @@ namespace GeometryEscape
         /// The amount of different material types.
         /// </summary>
         public static int MaterialAmount { get => _MaterialAmount; set => _MaterialAmount = value; }
+        
+        public static int MonstMaterAmount { get => _MonstMaterAmount; set => _MonstMaterAmount = value; }
         /// <summary>
         /// The target camera for rendering.
         /// </summary>
@@ -83,7 +87,9 @@ namespace GeometryEscape
         {
             ShutDown();
             m_TileResources = CentralSystem.TileResources;
+            m_MonsterResources = CentralSystem.MonsterResources;
             _MaterialAmount = m_TileResources.GetMaterialAmount();
+            _MonstMaterAmount = m_MonsterResources.GetMaterialAmount();
             m_TileMesh = m_TileResources.TileMesh;
             m_Materials = m_TileResources.Materials;
             m_Camera = Camera.main;
