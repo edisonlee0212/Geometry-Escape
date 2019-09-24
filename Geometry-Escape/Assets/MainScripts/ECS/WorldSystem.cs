@@ -87,6 +87,7 @@ namespace GeometryEscape
                 typeof(LocalToWorld),
                 typeof(TileProperties),
                 typeof(DefaultColor),
+                typeof(DisplayColor),
                 typeof(TextureIndex),
                 typeof(TextureMaxIndex)
                 );
@@ -353,7 +354,7 @@ namespace GeometryEscape
         {
             var initialCoordinate = tileInfo.Coordinate;
             var color = new DefaultColor { };
-            color.Color = Vector4.one;
+            color.Value = Vector4.one;
             var textureInfo = new TextureIndex
             {
                 Value = 1

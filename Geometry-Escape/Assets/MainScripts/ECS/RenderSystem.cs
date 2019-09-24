@@ -79,7 +79,6 @@ namespace GeometryEscape
             {
                 _EntityQuery.SetFilter(_RenderContents[i]);
                 _TextureIndices = _EntityQuery.ToComponentDataArray<TextureIndex>(Allocator.TempJob);
-                Debug.Log(_TextureIndices.Length);
                 if (_TextureIndices.Length != 0)
                 {
                     if (_ComputeBuffers[i - 1] != null) _ComputeBuffers[i - 1].Release();
@@ -100,7 +99,7 @@ namespace GeometryEscape
     {
         #region Private
         private static EntityQuery _EntityQuery;
-        private static NativeArray<DefaultColor> _Colors;
+        private static NativeArray<DisplayColor> _Colors;
         private static ComputeBuffer[] _ComputeBuffers;
         private static List<RenderContent> _RenderContents;
         #endregion
@@ -110,7 +109,7 @@ namespace GeometryEscape
         {
             Enabled = false;
             _RenderContents = new List<RenderContent>();
-            _EntityQuery = EntityManager.CreateEntityQuery(typeof(RenderContent), typeof(DefaultColor));
+            _EntityQuery = EntityManager.CreateEntityQuery(typeof(RenderContent), typeof(DisplayColor));
         }
 
         public void Init()
@@ -156,8 +155,7 @@ namespace GeometryEscape
             for (int i = 1; i < count; i++)
             {
                 _EntityQuery.SetFilter(_RenderContents[i]);
-                _Colors = _EntityQuery.ToComponentDataArray<DefaultColor>(Allocator.TempJob);
-                Debug.Log(_Colors.Length);
+                _Colors = _EntityQuery.ToComponentDataArray<DisplayColor>(Allocator.TempJob);
                 if (_Colors.Length != 0)
                 {
                     if (_ComputeBuffers[i - 1] != null) _ComputeBuffers[i - 1].Release();

@@ -7,7 +7,20 @@ namespace GeometryEscape
     {
         [SerializeField]
         private Animator m_Animator;
-        // Start is called before the first frame update
+
+        private UISystem m_UISystem;
+
+
+        private int _HealthPoints;
+
+        public int HealthPoints { get => _HealthPoints; }
+        public UISystem UISystem { get => m_UISystem; set => m_UISystem = value; }
+
+        public void Start()
+        {
+            _HealthPoints = 100;
+        }
+
         public void MoveLeft()
         {
             var scale = transform.localScale;
@@ -42,6 +55,12 @@ namespace GeometryEscape
         public void Attack()
         {
             m_Animator.Play("Attack");
+        }
+
+        public void ChangeHealth(int amount)
+        {
+            _HealthPoints += amount;
+            UISystem.ChangeHealth(_HealthPoints);
         }
     }
 }

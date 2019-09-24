@@ -32,12 +32,8 @@ namespace GeometryEscape
         #endregion
 
         #region Public
-
-        
         private static NativeArray<Entity> _CenterEntity;
-        
         public static Entity CenterEntity { get => _CenterEntity[0]; set => _CenterEntity[0] = value; }
-
         #endregion
 
         #region Managers
@@ -88,9 +84,6 @@ namespace GeometryEscape
         #endregion
 
         #region Methods
-
-
-
         #endregion
 
         #region Jobs
@@ -135,12 +128,10 @@ namespace GeometryEscape
                     //如果这个砖块处于中心，我们把它存到container里面
                     selectedEntity[0] = entity;
                     //并且高亮这个砖块
-                    c1.Color = new float4(1);
+                    c1.Value = new float4(1);
                 }
             }
         }
-
-        
 
         [BurstCompile]
         struct RotateTileTest1 : IJobForEach<Coordinate, TileProperties>
@@ -164,7 +155,7 @@ namespace GeometryEscape
                 color.y = (offset * 32 + 64) % 256 / 256f;
                 color.z = (offset * 32 + 128) % 256 / 256f;
                 color.w = 1;
-                c1.Color = color;
+                c1.Value = color;
             }
         }
 
@@ -177,17 +168,41 @@ namespace GeometryEscape
                 c0.Value = counter % c1.Value;
             }
         }
+
+        [BurstCompile]
+        struct CopyDisplayColor : IJobForEach<TileProperties, DefaultColor, DisplayColor>
+        {
+            public void Execute(ref TileProperties c0, ref DefaultColor c1, ref DisplayColor c2)
+            {
+                c2.Value = c1.Value;
+            }
+        }
+        [BurstCompile]
+        struct SetAllNailTrap : IJobForEach<TileTypeIndex, TextureIndex>
+        {
+            public int mode;
+            public void Execute(ref TileTypeIndex c0, ref TextureIndex c1)
+            {
+                if (c0.Value == TileType.NailTrap) c1.Value = mode;
+            }
+        }
+
         #endregion
 
         public JobHandle OnBeatUpdate(ref JobHandle inputDeps, int beatCounter)
         {
-            inputDeps = new RotateTileTest1
+            /*inputDeps = new RotateTileTest1
             {
                 counter = beatCounter,
             }.Schedule(this, inputDeps);
             inputDeps = new ChangeColorTest
             {
                 counter = beatCounter,
+            }.Schedule(this, inputDeps);
+            */
+            inputDeps = new SetAllNailTrap
+            {
+                mode = beatCounter % 2
             }.Schedule(this, inputDeps);
 
             inputDeps.Complete();
@@ -196,10 +211,10 @@ namespace GeometryEscape
 
         public JobHandle OnFixedUpdate(ref JobHandle inputDeps, int counter)
         {
-            inputDeps = new ChangeTextureInfoTest
+            /*inputDeps = new ChangeTextureInfoTest
             {
                 counter = counter,
-            }.Schedule(this, inputDeps);
+            }.Schedule(this, inputDeps);*/
             inputDeps.Complete();
             return inputDeps;
         }
@@ -215,9 +230,9 @@ namespace GeometryEscape
                 selectedEntity = _CenterEntity
             }.Schedule(this, inputDeps);
             inputDeps.Complete();
+
+            inputDeps = new CopyDisplayColor { }.Schedule(this, inputDeps);
             return inputDeps;
         }
-
-        
     }
 }

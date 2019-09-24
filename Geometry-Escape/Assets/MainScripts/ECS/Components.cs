@@ -9,7 +9,8 @@ namespace GeometryEscape
 {
     public enum TileType
     {
-        Normal, 
+        Normal,
+        NailTrap,
         MusicAccleratorTrap,
         FreezeTrap,
         InverseTrap,
@@ -151,10 +152,15 @@ namespace GeometryEscape
 
     }
 
+    [Serializable]
+    public struct DisplayColor : IComponentData
+    {
+        public Vector4 Value;
+    }
 
     [Serializable]
     public struct DefaultColor : IComponentData
     {
-        public Vector4 Color;
+        public Vector4 Value;
     }
 }

@@ -70,7 +70,7 @@ Material:
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
-    - _TileSplit: 0
+    - _TileSplit: 1
     - _TileSplitX: 1
     - _TileSplitY: 1
     - _UVSec: 0

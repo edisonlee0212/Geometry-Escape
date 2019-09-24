@@ -27,7 +27,7 @@ namespace GeometryEscape
             public int TileIndex;
             public TileType TileType;
             public RenderContent RenderContent;
-            public int TilingX, TilingY, MaxIndex;
+            public int MaxIndex;
         }
     }
 }

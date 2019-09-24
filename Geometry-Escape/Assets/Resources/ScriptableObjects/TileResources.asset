@@ -14,31 +14,25 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _Tiles:
   - TileIndex: 0
-    TileType: 3
+    TileType: 0
     RenderContent:
       MeshMaterial:
         Mesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
         Material: {fileID: 2100000, guid: 2f7626e6a21e6d947b26a774973205fb, type: 2}
-    TilingX: 1
-    TilingY: 1
     MaxIndex: 1
   - TileIndex: 1
-    TileType: 0
+    TileType: 1
     RenderContent:
       MeshMaterial:
         Mesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
-        Material: {fileID: 2100000, guid: fd52611b40a505945b8d70e7200e94e1, type: 2}
-    TilingX: 1
-    TilingY: 1
-    MaxIndex: 1
+        Material: {fileID: 2100000, guid: 913f0284a10c0bc4785660114e886834, type: 2}
+    MaxIndex: 2
   - TileIndex: 0
     TileType: 0
     RenderContent:
       MeshMaterial:
-        Mesh: {fileID: 0}
+        Mesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
         Material: {fileID: 0}
-    TilingX: 0
-    TilingY: 0
     MaxIndex: 0
   - TileIndex: 0
     TileType: 0
@@ -46,6 +40,4 @@ MonoBehaviour:
       MeshMaterial:
         Mesh: {fileID: 0}
         Material: {fileID: 0}
-    TilingX: 0
-    TilingY: 0
     MaxIndex: 0

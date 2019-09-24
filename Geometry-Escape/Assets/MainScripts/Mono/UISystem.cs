@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 
 public class UISystem : MonoBehaviour
@@ -9,7 +10,10 @@ public class UISystem : MonoBehaviour
     private GameObject m_Hit_300;
     [SerializeField]
     private GameObject m_Miss;
+    [SerializeField]
+    private TextMeshProUGUI m_HealthStatusText;
 
+    public static TextMeshProUGUI _HealthStatusText;
     public static GameObject hit_300;
     public static GameObject miss;
     // Start is called before the first frame update
@@ -23,6 +27,9 @@ public class UISystem : MonoBehaviour
         //miss = GameObject.Find("Miss");
         hit_300 = m_Hit_300;
         miss = m_Miss;
+
+        _HealthStatusText = m_HealthStatusText;
+
         Debug.Log("init");
         HideHit_300();
         HideMiss();
@@ -59,4 +66,8 @@ public class UISystem : MonoBehaviour
         hit_300.SetActive(false);
     }
 
+    public static void ChangeHealth(int points)
+    {
+        _HealthStatusText.text = "Health: " + points;
+    }
 }
