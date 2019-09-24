@@ -445,17 +445,32 @@ namespace GeometryEscape
 
         protected JobHandle OnFixedUpdate(ref JobHandle inputDeps)
         {
+            #region Update Systems
             m_AudioSystem.OnFixedUpdate(ref inputDeps, _BeatCounter);
             m_TileSystem.OnFixedUpdate(ref inputDeps, _Counter);
             m_MonsterSystem.OnFixedUpdate(ref inputDeps, _Counter);
+            #endregion
+
             return inputDeps;
         }
 
         protected JobHandle OnBeatUpdate(ref JobHandle inputDeps)
         {
+            #region Update Systems
             m_AudioSystem.OnBeatUpdate(ref inputDeps, _BeatCounter);
             m_TileSystem.OnBeatUpdate(ref inputDeps, _BeatCounter);
             m_MonsterSystem.OnBeatUpdate(ref inputDeps, _BeatCounter);
+            #endregion
+
+            if (TileSystem.CenterEntity != null)
+            {
+                switch (EntityManager.GetComponentData<TileTypeIndex>(TileSystem.CenterEntity).Value)
+                {
+                    case TileType.NailTrap:
+                        if (EntityManager.GetComponentData<TextureIndex>(TileSystem.CenterEntity).Value == 1) m_MainCharacterController.ChangeHealth(-1);
+                        break;
+                }
+            }
             return inputDeps;
         }
 
