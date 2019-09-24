@@ -462,7 +462,7 @@ namespace GeometryEscape
             m_MonsterSystem.OnBeatUpdate(ref inputDeps, _BeatCounter);
             #endregion
 
-            if (TileSystem.CenterEntity != null)
+            if (TileSystem.CenterEntity != Entity.Null)
             {
                 switch (EntityManager.GetComponentData<TileTypeIndex>(TileSystem.CenterEntity).Value)
                 {
