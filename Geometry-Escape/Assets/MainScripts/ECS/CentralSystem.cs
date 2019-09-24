@@ -207,6 +207,46 @@ namespace GeometryEscape
                     WorldSystem.AddTile(index % 2, new Coordinate { X = i, Y = j, Z = 0 });
                 }
             }
+            int mapDimension = CentralSystem.Count;
+            int MonsterNumber = MonstNumber(mapDimension);
+            Vector3[] MonstPosiArray = MonstPosiGenerator(mapDimension, MonsterNumber);
+            for (int i = 0; i < MonsterNumber; i++)
+            {
+                // generate random coordinate
+
+                Coordinate thisPosi = new Coordinate { };
+                thisPosi.X = 1;//(int)MonstPosiArray[i].x;
+                thisPosi.Y = 1; //(int)MonstPosiArray[i].y;
+                thisPosi.Z = 1; //(int)MonstPosiArray[i].z;
+                Debug.Log("Check monster init");
+                WorldSystem.AddMonster(0, thisPosi);
+            }
+        }
+        public int MonstNumber(int mapDimension)
+        {
+            return mapDimension / 10;
+        }
+        public Vector3[] MonstPosiGenerator(int mapDimension, int MonsterNumber)
+        {
+            Vector3[] MonstPosiArray = new Vector3[MonsterNumber];
+            float z = 1.0f;
+            float randomx = 0.0f;
+            float randomy = 0.0f;
+            // need to revise to check viability
+            for (int i = 0; i < MonsterNumber; i++)
+            {
+                Vector3 thisVec = new Vector3 { };
+                randomx = UnityEngine.Random.Range(1, mapDimension);
+                randomy = UnityEngine.Random.Range(1, mapDimension);
+                thisVec.x = randomx;
+                thisVec.y = randomy;
+                thisVec.z = z;
+                MonstPosiArray[i] = thisVec;
+            }
+            return MonstPosiArray;
+
+
+
         }
         /// <summary>
         /// 所有系统包含shutdown函数，这个函数包括Init是我的习惯，这两个函数对应”不希望删除整个系统只是中止运行或者恢复运行“这种需求。

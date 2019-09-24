@@ -45,7 +45,10 @@ namespace GeometryEscape
         #region Public
         private static bool _AddingTiles;
         private static bool _RemovingTiles;
+        private static bool _AddingMonsts;
+        private static bool _RemovingMonsts;
         private static int _TotalTileAmount;
+        private static int _TotalMonstAmmount;
         private static TileResources m_TileResources;
         private static MonsterResources m_MonsterResources;
         public static int TotalTileAmount { get => _TotalTileAmount; }
@@ -66,7 +69,7 @@ namespace GeometryEscape
                 typeof(Rotation),
                 typeof(Scale),
                 typeof(LocalToWorld),
-                typeof(TileProperties),
+                typeof(MonsterProperties),
                 typeof(DefaultColor),
                 typeof(TextureIndex),
                 typeof(TextureMaxIndex),
@@ -100,7 +103,11 @@ namespace GeometryEscape
             ShutDown();
             _TileCreationQueue = new NativeQueue<TileInfo>(Allocator.Persistent);
             _TileDestructionQueue = new NativeQueue<Entity>(Allocator.Persistent);
+            _MonsterCreationQueue = new NativeQueue<MonsterInfo>(Allocator.Persistent);
+            _MonsterDestructionQueue = new NativeQueue<Entity>(Allocator.Persistent);
             _TotalTileAmount = 0;
+            _TotalMonstAmmount = 0;
+
             Enabled = true;
         }
 
@@ -158,6 +165,19 @@ namespace GeometryEscape
             _RemovingTiles = true;
             _TileDestructionQueue.Enqueue(tileEntity);
         }
+
+        public static void AddMonster(int materialIndex, Coordinate initialCoordinate = default, MonsterType monsterType = MonsterType.Green)
+        {
+            _AddingMonsts = true;
+            _MonsterCreationQueue.Enqueue(new MonsterInfo
+            {
+                MaterialIndex = materialIndex,
+                Coordinate = initialCoordinate,
+                MonsterType = monsterType
+            });
+        }
+
+
 
         #endregion
 
@@ -429,5 +449,45 @@ namespace GeometryEscape
             EntityManager.SetComponentData(instance, tileType);
             _TotalTileAmount++;
         }
+        private void CreateMonster(JobHandle inputDeps, MonsterInfo monsterInfo)
+        {
+            // TODO ->
+            var materialIndex = monsterInfo.MaterialIndex;
+            var initialCoordinate = monsterInfo.Coordinate;
+            var monsterType = monsterInfo.MonsterType;
+
+            var color = new DefaultColor { };
+            //color.Color = Vector4.one;
+            var textureInfo = new TextureIndex
+            {
+                Value = 1
+            };
+            var renderMaterialIndex = new RenderMaterialIndex
+            {
+                Value = materialIndex
+            };
+            var maxTextureIndex = new TextureMaxIndex
+            {
+                Value = 1
+            };
+            Entity instance = EntityManager.CreateEntity(_MonsterEntityArchetype);
+
+            EntityManager.SetSharedComponentData(instance, renderMaterialIndex);
+            EntityManager.SetComponentData(instance, initialCoordinate);
+            EntityManager.SetComponentData(instance, color);
+            EntityManager.SetComponentData(instance, textureInfo);
+            EntityManager.SetComponentData(instance, maxTextureIndex);
+            var properties = new MonsterProperties
+            {
+                MonsterType = monsterType,
+                //Coordinate = 
+                MaterialIndex = materialIndex
+            };
+            _TotalMonstAmmount++;
+            EntityManager.SetComponentData(instance, properties);
+        }
+
+
+
     }
 }
