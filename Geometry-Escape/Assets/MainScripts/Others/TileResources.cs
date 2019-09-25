@@ -24,10 +24,9 @@ namespace GeometryEscape
         [Serializable]
         public struct Tile
         {
-            public int TileIndex;
             public TileType TileType;
             public RenderContent RenderContent;
-            public int MaxIndex;
+            public ushort MaxIndex;
         }
     }
 }

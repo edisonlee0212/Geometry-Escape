@@ -48,6 +48,30 @@ public class Controls : IInputActionCollection
                     ""expectedControlType"": """",
                     ""processors"": """",
                     ""interactions"": ""Press""
+                },
+                {
+                    ""name"": ""DestroyAllTiles"",
+                    ""type"": ""Button"",
+                    ""id"": ""30721afd-8f6d-4b02-9290-6729597987f9"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": ""Press""
+                },
+                {
+                    ""name"": ""SaveMap"",
+                    ""type"": ""Button"",
+                    ""id"": ""088143cc-ee3e-4e21-81af-d5722b5e917e"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": ""Press""
+                },
+                {
+                    ""name"": ""LoadMap"",
+                    ""type"": ""Button"",
+                    ""id"": ""04ad959b-94fc-4559-b40b-2487d1624fb9"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": ""Press""
                 }
             ],
             ""bindings"": [
@@ -213,6 +237,39 @@ public class Controls : IInputActionCollection
                     ""processors"": """",
                     ""groups"": ""PC"",
                     ""action"": ""AddCenterTile"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""8e121375-92f9-4ff4-bba0-2e055048c5f6"",
+                    ""path"": ""<Keyboard>/backquote"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""DestroyAllTiles"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""c78681bf-fcd8-449e-89fd-81a1d8117432"",
+                    ""path"": ""<Keyboard>/q"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""SaveMap"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""b1870cef-dd83-4757-b648-0f1673d4b33c"",
+                    ""path"": ""<Keyboard>/e"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""LoadMap"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -503,6 +560,9 @@ public class Controls : IInputActionCollection
         m_MapEditor_Zoom = m_MapEditor.FindAction("Zoom", throwIfNotFound: true);
         m_MapEditor_RemoveCenterTile = m_MapEditor.FindAction("RemoveCenterTile", throwIfNotFound: true);
         m_MapEditor_AddCenterTile = m_MapEditor.FindAction("AddCenterTile", throwIfNotFound: true);
+        m_MapEditor_DestroyAllTiles = m_MapEditor.FindAction("DestroyAllTiles", throwIfNotFound: true);
+        m_MapEditor_SaveMap = m_MapEditor.FindAction("SaveMap", throwIfNotFound: true);
+        m_MapEditor_LoadMap = m_MapEditor.FindAction("LoadMap", throwIfNotFound: true);
         // In-Game
         m_InGame = asset.FindActionMap("In-Game", throwIfNotFound: true);
         m_InGame_Move = m_InGame.FindAction("Move", throwIfNotFound: true);
@@ -568,6 +628,9 @@ public class Controls : IInputActionCollection
     private readonly InputAction m_MapEditor_Zoom;
     private readonly InputAction m_MapEditor_RemoveCenterTile;
     private readonly InputAction m_MapEditor_AddCenterTile;
+    private readonly InputAction m_MapEditor_DestroyAllTiles;
+    private readonly InputAction m_MapEditor_SaveMap;
+    private readonly InputAction m_MapEditor_LoadMap;
     public struct MapEditorActions
     {
         private Controls m_Wrapper;
@@ -576,6 +639,9 @@ public class Controls : IInputActionCollection
         public InputAction @Zoom => m_Wrapper.m_MapEditor_Zoom;
         public InputAction @RemoveCenterTile => m_Wrapper.m_MapEditor_RemoveCenterTile;
         public InputAction @AddCenterTile => m_Wrapper.m_MapEditor_AddCenterTile;
+        public InputAction @DestroyAllTiles => m_Wrapper.m_MapEditor_DestroyAllTiles;
+        public InputAction @SaveMap => m_Wrapper.m_MapEditor_SaveMap;
+        public InputAction @LoadMap => m_Wrapper.m_MapEditor_LoadMap;
         public InputActionMap Get() { return m_Wrapper.m_MapEditor; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -597,6 +663,15 @@ public class Controls : IInputActionCollection
                 AddCenterTile.started -= m_Wrapper.m_MapEditorActionsCallbackInterface.OnAddCenterTile;
                 AddCenterTile.performed -= m_Wrapper.m_MapEditorActionsCallbackInterface.OnAddCenterTile;
                 AddCenterTile.canceled -= m_Wrapper.m_MapEditorActionsCallbackInterface.OnAddCenterTile;
+                DestroyAllTiles.started -= m_Wrapper.m_MapEditorActionsCallbackInterface.OnDestroyAllTiles;
+                DestroyAllTiles.performed -= m_Wrapper.m_MapEditorActionsCallbackInterface.OnDestroyAllTiles;
+                DestroyAllTiles.canceled -= m_Wrapper.m_MapEditorActionsCallbackInterface.OnDestroyAllTiles;
+                SaveMap.started -= m_Wrapper.m_MapEditorActionsCallbackInterface.OnSaveMap;
+                SaveMap.performed -= m_Wrapper.m_MapEditorActionsCallbackInterface.OnSaveMap;
+                SaveMap.canceled -= m_Wrapper.m_MapEditorActionsCallbackInterface.OnSaveMap;
+                LoadMap.started -= m_Wrapper.m_MapEditorActionsCallbackInterface.OnLoadMap;
+                LoadMap.performed -= m_Wrapper.m_MapEditorActionsCallbackInterface.OnLoadMap;
+                LoadMap.canceled -= m_Wrapper.m_MapEditorActionsCallbackInterface.OnLoadMap;
             }
             m_Wrapper.m_MapEditorActionsCallbackInterface = instance;
             if (instance != null)
@@ -613,6 +688,15 @@ public class Controls : IInputActionCollection
                 AddCenterTile.started += instance.OnAddCenterTile;
                 AddCenterTile.performed += instance.OnAddCenterTile;
                 AddCenterTile.canceled += instance.OnAddCenterTile;
+                DestroyAllTiles.started += instance.OnDestroyAllTiles;
+                DestroyAllTiles.performed += instance.OnDestroyAllTiles;
+                DestroyAllTiles.canceled += instance.OnDestroyAllTiles;
+                SaveMap.started += instance.OnSaveMap;
+                SaveMap.performed += instance.OnSaveMap;
+                SaveMap.canceled += instance.OnSaveMap;
+                LoadMap.started += instance.OnLoadMap;
+                LoadMap.performed += instance.OnLoadMap;
+                LoadMap.canceled += instance.OnLoadMap;
             }
         }
     }
@@ -755,6 +839,9 @@ public class Controls : IInputActionCollection
         void OnZoom(InputAction.CallbackContext context);
         void OnRemoveCenterTile(InputAction.CallbackContext context);
         void OnAddCenterTile(InputAction.CallbackContext context);
+        void OnDestroyAllTiles(InputAction.CallbackContext context);
+        void OnSaveMap(InputAction.CallbackContext context);
+        void OnLoadMap(InputAction.CallbackContext context);
     }
     public interface IInGameActions
     {

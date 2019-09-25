@@ -85,11 +85,13 @@ namespace GeometryEscape
             Enabled = false;
         }
 
+
         public void Resume()
         {
             m_MusicAudioSource.Play();
             Enabled = true;
         }
+
 
         public void ShutDown()
         {

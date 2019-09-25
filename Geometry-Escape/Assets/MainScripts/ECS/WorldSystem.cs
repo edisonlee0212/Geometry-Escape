@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using Unity.Burst;
 using Unity.Collections;
@@ -8,12 +9,13 @@ using Unity.Transforms;
 using UnityEngine;
 namespace GeometryEscape
 {
-    public struct TileInfo
+    [Serializable]
+    public struct TileCreationInfo
     {
-        public int TileIndex;
+        public TileProperties TileProperties;
         public Coordinate Coordinate;
     }
-
+    [Serializable]
     public struct MonsterInfo
     {
         //public MonsterType MonsterType;
@@ -31,19 +33,23 @@ namespace GeometryEscape
     /// The system manages the creation and destruction of all world entities.
     /// </summary>
     [UpdateInGroup(typeof(InitializationSystemGroup))]
+    [AlwaysUpdateSystem]
     public class WorldSystem : JobComponentSystem
     {
         #region Private
-        private static EntityArchetype _TileEntityArchetype;
-        private static EntityArchetype _MonsterEntityArchetype;
-
-        private static NativeQueue<TileInfo> _TileCreationQueue;
+        private FileSystem m_FileSystem;
+        private static EntityManager m_EntityManager;
+        private static NativeQueue<TileCreationInfo> _TileCreationQueue;
         private static NativeQueue<Entity> _TileDestructionQueue;
+
+
         private static NativeQueue<MonsterInfo> _MonsterCreationQueue;
         private static NativeQueue<Entity> _MonsterDestructionQueue;
         #endregion
 
         #region Public
+        private static EntityArchetype _TileEntityArchetype;
+        private static EntityArchetype _MonsterEntityArchetype;
         private static bool _AddingTiles;
         private static bool _RemovingTiles;
         private static bool _AddingMonsters;
@@ -58,12 +64,14 @@ namespace GeometryEscape
         public static TileResources TileResources { get => m_TileResources; set => m_TileResources = value; }
         public static MonsterResources MonsterResources { get => m_MonsterResources; set => m_MonsterResources = value; }
         public static int TotalMonsterAmmount { get => _TotalMonsterAmmount; set => _TotalMonsterAmmount = value; }
+        public static EntityArchetype TileEntityArchetype { get => _TileEntityArchetype; set => _TileEntityArchetype = value; }
+        public static EntityArchetype MonsterEntityArchetype { get => _MonsterEntityArchetype; set => _MonsterEntityArchetype = value; }
         #endregion
 
         #region Managers
         protected override void OnCreate()
         {
-            _MonsterEntityArchetype = EntityManager.CreateArchetype(
+            MonsterEntityArchetype = EntityManager.CreateArchetype(
                 typeof(MonsterTypeIndex),
                 typeof(RenderContent),
                 typeof(Coordinate),
@@ -79,7 +87,7 @@ namespace GeometryEscape
                 typeof(MonsterHP)
                 );
 
-            _TileEntityArchetype = EntityManager.CreateArchetype(
+            TileEntityArchetype = EntityManager.CreateArchetype(
                 typeof(TileTypeIndex),
                 typeof(LeftTile),
                 typeof(RightTile),
@@ -97,14 +105,15 @@ namespace GeometryEscape
                 typeof(TextureIndex),
                 typeof(TextureMaxIndex)
                 );
-            
+            m_EntityManager = World.Active.EntityManager;
+            m_FileSystem = new FileSystem();
             Enabled = false;
         }
 
         public void Init()
         {
             ShutDown();
-            _TileCreationQueue = new NativeQueue<TileInfo>(Allocator.Persistent);
+            _TileCreationQueue = new NativeQueue<TileCreationInfo>(Allocator.Persistent);
             _TileDestructionQueue = new NativeQueue<Entity>(Allocator.Persistent);
             _MonsterCreationQueue = new NativeQueue<MonsterInfo>(Allocator.Persistent);
             _MonsterDestructionQueue = new NativeQueue<Entity>(Allocator.Persistent);
@@ -117,7 +126,9 @@ namespace GeometryEscape
                 for (int j = 0; j < _TileCount; j++)
                 {
                     int index = i * _TileCount + j;
-                    AddTile(index % 2, new Coordinate { X = i, Y = j, Z = 0 });
+
+                    AddTileCreationInfo(new TileCreationInfo { TileProperties = new TileProperties { Index = index % 2 }, Coordinate = new Coordinate { X = i, Y = j, Z = 0 } });
+
                 }
             }
             /*
@@ -138,6 +149,20 @@ namespace GeometryEscape
             */
 
             AddMonster(0, new Coordinate { X = 0, Y = 0, Z = -1 });
+
+            AddMonster(0, new Coordinate { X = 1, Y = 0, Z = -1 });
+            AddMonster(0, new Coordinate { X = 2, Y = 0, Z = -1 });
+            AddMonster(0, new Coordinate { X = 3, Y = 1, Z = -1 });
+            Enabled = true;
+        }
+
+        public void Pause()
+        {
+            Enabled = false;
+        }
+
+        public void Resume()
+        {
 
             Enabled = true;
         }
@@ -189,11 +214,15 @@ namespace GeometryEscape
         {
             if (!_AddingTiles && !CentralSystem.Moving && TileSystem.CenterEntity == Entity.Null)
             {
-                AddTile(0, new Coordinate
+                AddTileCreationInfo(new TileCreationInfo
                 {
-                    X = (int)-CentralSystem.CurrentCenterPosition.x,
-                    Y = (int)-CentralSystem.CurrentCenterPosition.y,
-                    Z = (int)-CentralSystem.CurrentCenterPosition.z,
+                    TileProperties = new TileProperties { Index = 0 },
+                    Coordinate = new Coordinate
+                    {
+                        X = (int)-CentralSystem.CurrentCenterPosition.x,
+                        Y = (int)-CentralSystem.CurrentCenterPosition.y,
+                        Z = (int)-CentralSystem.CurrentCenterPosition.z,
+                    }
                 });
                 Debug.Log("Inserted a new tile at " + (-CentralSystem.CurrentCenterPosition));
             }
@@ -209,15 +238,13 @@ namespace GeometryEscape
             }
         }
 
-        public static void AddTile(int tileIndex, Coordinate initialCoordinate = default)
+        public static void AddTileCreationInfo(TileCreationInfo tileCreationInfo)
         {
             _AddingTiles = true;
-            _TileCreationQueue.Enqueue(new TileInfo
-            {
-                Coordinate = initialCoordinate,
-                TileIndex = tileIndex
-            });
+            _TileCreationQueue.Enqueue(tileCreationInfo);
         }
+
+
 
         public static void DeleteTile(Entity tileEntity)
         {
@@ -246,8 +273,27 @@ namespace GeometryEscape
             });
         }
 
+        public static void DestroyAllTiles()
+        {
+            var query = m_EntityManager.CreateEntityQuery(typeof(TileProperties));
+            var list = query.ToEntityArray(Allocator.TempJob);
+            foreach (var i in list)
+            {
+                _TileDestructionQueue.Enqueue(i);
+            }
+            _RemovingTiles = true;
+            list.Dispose();
+        }
 
+        public static void SaveMap(string mapName)
+        {
+            FileSystem.SaveNewMap(mapName);
+        }
 
+        public static void LoadMap(string mapName)
+        {
+            FileSystem.LoadMap(mapName);
+        }
         #endregion
 
 
@@ -265,7 +311,8 @@ namespace GeometryEscape
             public void Execute(Entity entity, int index, ref TileProperties c0, ref Coordinate c1, ref RightTile c2)
             {
                 LeftTile left = default;
-                if (c1.X == coordinate.X - 1 && c1.Y == coordinate.Y) {
+                if (c1.X == coordinate.X - 1 && c1.Y == coordinate.Y)
+                {
                     switch (mode)
                     {
                         case 1:
@@ -370,10 +417,10 @@ namespace GeometryEscape
 
         protected override JobHandle OnUpdate(JobHandle inputDeps)
         {
-            if(_AddingTiles && _TileCreationQueue.Count != 0)
+            if (_AddingTiles && _TileCreationQueue.Count != 0)
             {
                 int count = _TileCreationQueue.Count;
-                for(int i = 0; i < 10 && i < count; i++)
+                for (int i = 0; i < 10 && i < count; i++)
                 {
                     var tileInfo = _TileCreationQueue.Dequeue();
                     CreateTile(inputDeps, tileInfo);
@@ -391,7 +438,8 @@ namespace GeometryEscape
                 if (_TileDestructionQueue.Count == 0) _RemovingTiles = false;
             }
 
-            if(_AddingMonsters && _MonsterCreationQueue.Count != 0)
+
+            if (_AddingMonsters && _MonsterCreationQueue.Count != 0)
             {
                 int count = _MonsterCreationQueue.Count;
                 for (int i = 0; i < 10 && i < count; i++)
@@ -451,7 +499,7 @@ namespace GeometryEscape
             _TotalTileAmount--;
         }
 
-        private void CreateTile(JobHandle inputDeps, TileInfo tileInfo)
+        private void CreateTile(JobHandle inputDeps, TileCreationInfo tileInfo)
         {
             var initialCoordinate = tileInfo.Coordinate;
             var color = new DefaultColor { };
@@ -460,14 +508,13 @@ namespace GeometryEscape
             {
                 Value = 1
             };
-            
-            var tile = m_TileResources.GetTile(tileInfo.TileIndex);
-            int maxIndex = tile.MaxIndex;
+
+            var tile = m_TileResources.GetTile(tileInfo.TileProperties.Index);
             var maxTextureIndex = new TextureMaxIndex
             {
-                Value = (ushort)maxIndex
+                Value = tile.MaxIndex
             };
-            Entity instance = EntityManager.CreateEntity(_TileEntityArchetype);
+            Entity instance = EntityManager.CreateEntity(TileEntityArchetype);
             NativeArray<LeftTile> left = new NativeArray<LeftTile>(1, Allocator.TempJob);
             NativeArray<RightTile> right = new NativeArray<RightTile>(1, Allocator.TempJob);
             NativeArray<UpTile> up = new NativeArray<UpTile>(1, Allocator.TempJob);
@@ -502,7 +549,7 @@ namespace GeometryEscape
             }.Schedule(this, inputDeps);
             inputDeps.Complete();
 
-            
+
             EntityManager.SetComponentData(instance, left[0]);
             EntityManager.SetComponentData(instance, right[0]);
             EntityManager.SetComponentData(instance, up[0]);
@@ -517,12 +564,8 @@ namespace GeometryEscape
             EntityManager.SetComponentData(instance, color);
             EntityManager.SetComponentData(instance, textureInfo);
             EntityManager.SetComponentData(instance, maxTextureIndex);
-            var properties = new TileProperties
-            {
-                Index = TotalTileAmount,
-            };
-            
-            EntityManager.SetComponentData(instance, properties);
+
+            EntityManager.SetComponentData(instance, tileInfo.TileProperties);
             var tileType = new TileTypeIndex
             {
                 Value = tile.TileType
@@ -581,7 +624,7 @@ namespace GeometryEscape
                 typeof(TextureIndex),
                 typeof(TextureMaxIndex),
                 typeof(MonsterHP)*/
-            var instance = EntityManager.CreateEntity(_MonsterEntityArchetype);
+            var instance = EntityManager.CreateEntity(MonsterEntityArchetype);
             EntityManager.SetComponentData(instance, new MonsterTypeIndex
             {
                 Value = monster.MonsterType

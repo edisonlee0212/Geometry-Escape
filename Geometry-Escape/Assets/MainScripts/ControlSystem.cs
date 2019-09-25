@@ -93,7 +93,9 @@ namespace GeometryEscape
             _InputSystem.MapEditor.Zoom.performed += ctx => ZoomMap(ctx);
             _InputSystem.MapEditor.AddCenterTile.performed += ctx => MapEditorAddCenterTile(ctx);
             _InputSystem.MapEditor.RemoveCenterTile.performed += ctx => MapEditorRemoveCenterTile(ctx);
-
+            _InputSystem.MapEditor.DestroyAllTiles.performed += ctx => MapEditorDestroyAllTiles(ctx);
+            _InputSystem.MapEditor.SaveMap.performed += ctx => MapEditorSaveMap(ctx);
+            _InputSystem.MapEditor.LoadMap.performed += ctx => MapEditorLoadMap(ctx);
             //Menu
             _InputSystem.Menu.Disable();
 
@@ -101,6 +103,21 @@ namespace GeometryEscape
             _InputSystem.BeatsEditor.StartRecording.performed += ctx => BeatsEditorStartRecording(ctx);
             _InputSystem.BeatsEditor.NewBeat.performed += ctx => BeatsEditorNewBeat(ctx);
             _InputSystem.BeatsEditor.EndRecording.performed += ctx => BeatsEditorEndRecording(ctx);
+        }
+
+        private static void MapEditorSaveMap(InputAction.CallbackContext ctx)
+        {
+            WorldSystem.SaveMap("temp");
+        }
+
+        private static void MapEditorLoadMap(InputAction.CallbackContext ctx)
+        {
+            WorldSystem.LoadMap("temp");
+        }
+
+        private static void MapEditorDestroyAllTiles(InputAction.CallbackContext ctx)
+        {
+            WorldSystem.DestroyAllTiles();
         }
 
         private static void BeatsEditorStartRecording(InputAction.CallbackContext ctx)
