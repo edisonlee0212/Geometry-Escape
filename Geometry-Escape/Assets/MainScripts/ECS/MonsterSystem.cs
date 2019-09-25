@@ -22,11 +22,19 @@ namespace GeometryEscape
         private static CentralSystem m_CentralSystem;
 
         private static EntityArchetype _MonsterEntityArchetype;
-        
+
+        private static float _Timer; 
+        private static int _Counter;
+        private static float _TimeStep;
         private int _MonsterCount;
         private int _MonsterMaterAmount;
         private static float _beatTime;
+        private float _currentTime;
         private static NativeQueue<MonsterInfo> _MonsterCreationQueue;
+        private static Vector3 startPoint;
+        private static Vector3 endPoint;
+        private static Vector3 lerp;
+
 
         //public float beatTime { get => _beatTime; set => _beatTime=value; }
         #endregion
@@ -40,6 +48,7 @@ namespace GeometryEscape
         public void Init()
         {
             ShutDown();
+            _TimeStep = 0.5f;
         }
         public void Pause()
         {
@@ -64,6 +73,13 @@ namespace GeometryEscape
         #region Methods
 
 
+        public void MonsterRoute() {
+
+            float distCovered = (_currentTime - _beatTime) * 2.0f;
+            float fractionOfJourney=distCovered/ Vector3.Distance(startPoint, endPoint);
+            lerp = Vector3.Lerp(startPoint, endPoint, fractionOfJourney);
+            Debug.Log("in monsterRoute "+startPoint);
+        }
 
         public void RouteOnCall(Entity entity) {
             /** need an algorithm to calculate 
@@ -82,33 +98,49 @@ namespace GeometryEscape
         public JobHandle OnBeatUpdate(ref JobHandle inputDeps, int beatCounter)
         {
             //Schedule your job for every beat here.
-            //Coordinate startPoint = new Coordinate { X=c1.X, Y=c1.Y, Z=c1.Z };
-            //Coordinate endPoint=new Coordinate {X=c1.X2,Y=c1.Y2,Z=c1.Z2 };
-            _beatTime = Time.time;
 
+            return inputDeps;
+        }
+
+        public JobHandle MonsterFixedUpdate(ref JobHandle inputDeps) {
+            
+            _beatTime = Time.time;
+            inputDeps = new MonsterPositionUpdate
+            {
+            }.Schedule(this, inputDeps);
+            inputDeps.Complete();
             return inputDeps;
         }
 
         public JobHandle OnFixedUpdate(ref JobHandle inputDeps, int counter)
         {
             //Schedule your job for every time step here. Time step is defined in central system.
+            //Coordinate startPoint = new Coordinate { X=c1.X, Y=c1.Y, Z=c1.Z };
+            //Coordinate endPoint=new Coordinate {X=c1.X2,Y=c1.Y2,Z=c1.Z2 };
+
             return inputDeps;
         }
         protected override JobHandle OnUpdate(JobHandle inputDeps)
         {
-          
 
-            inputDeps = new MonsterPositionUpdate
+            _currentTime = Time.time;
+            _Timer += Time.deltaTime;
+            if (_Timer >= _TimeStep)
             {
-                //c0.X = lerp.X;
-                //c0.Y = lerp.Y;
-                //c0.Z = lerp.Z;
+                Debug.Log("**********");
+                _Counter += (int)(_Timer / _TimeStep);
+                _Timer = 0;
+                MonsterFixedUpdate(ref inputDeps);
+            }
+            MonsterRoute();
 
-                
+            inputDeps = new SetRoutePosition
+            {
             }.Schedule(this, inputDeps);
             inputDeps.Complete();
-
             return inputDeps;
+
+
         }
         #region Jobs
 
@@ -128,28 +160,32 @@ namespace GeometryEscape
             }
         }
 
-        struct MonsterPositionUpdate : IJobForEach<Coordinate, MonsterMovingCoordinate, MonsterTypeIndex>
+        struct MonsterPositionUpdate : IJobForEach<Coordinate,  MonsterTypeIndex>
         {
-            public void Execute(ref Coordinate c0, ref MonsterMovingCoordinate c1,ref MonsterTypeIndex c2)
+            public void Execute(ref Coordinate c0, ref MonsterTypeIndex c2)
             {
                 if (c2.Value == MonsterType.Green)
                 {
-                    System.Numerics.Vector3 startPoint = new System.Numerics.Vector3(c1.X, c1.Y, c1.Z);
-                    System.Numerics.Vector3 endPoint = new System.Numerics.Vector3(c1.X2, c1.Y2, c1.Z2);
-                    float dev = Mathf.Abs((m_MusicAudioSource.time - m_Music.MusicInfo.MusicStartTime) % m_Music.MusicInfo.MusicBeatsTime);
-                    float fractionOfJourney = (dev) / AudioSystem.Music.MusicInfo.MusicBeatsTime;
-                    //float JourneyLength = System.Numerics.Vector3.Distance(startPoint, endPoint);
-                    System.Numerics.Vector3 lerp = System.Numerics.Vector3.Lerp(startPoint, endPoint, fractionOfJourney);
-                    c1.X = c0.X;
-                    c1.Y = c0.Y;
-                    c1.Z = c0.Z;
-                    c1.X2 = c0.X;
-                    c1.Y2 = c0.Y;
-                    c1.Z2 = c0.Z;
-                    c1.X2 += 1;
-                    c1.Y2 += 1;
-                    c1.Z2 += 1;
+                    startPoint.x = c0.X;
+                    startPoint.y = c0.Y;
+                    startPoint.z = c0.Z;
+
+                    endPoint.x = c0.X + 1;
+                    endPoint.y = c0.Y;
+                    endPoint.z = c0.Z;
                 }
+
+            }
+
+        }
+        struct SetRoutePosition : IJobForEach<Coordinate>
+        {
+            public void Execute(ref Coordinate c0)
+            {
+                c0.X = lerp.x;
+                c0.Y = lerp.y;
+                c0.Z = lerp.z;
+                Debug.Log("monster current coordinate:" + (c0.X));
             }
 
         }

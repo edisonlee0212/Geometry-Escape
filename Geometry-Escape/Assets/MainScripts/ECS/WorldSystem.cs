@@ -75,7 +75,6 @@ namespace GeometryEscape
                 typeof(MonsterTypeIndex),
                 typeof(RenderContent),
                 typeof(Coordinate),
-                typeof(MonsterMovingCoordinate),
                 typeof(Translation),
                 typeof(Rotation),
                 typeof(Scale),
@@ -149,10 +148,6 @@ namespace GeometryEscape
             */
 
             AddMonster(0, new Coordinate { X = 0, Y = 0, Z = -1 });
-
-            AddMonster(0, new Coordinate { X = 1, Y = 0, Z = -1 });
-            AddMonster(0, new Coordinate { X = 2, Y = 0, Z = -1 });
-            AddMonster(0, new Coordinate { X = 3, Y = 1, Z = -1 });
             Enabled = true;
         }
 
@@ -631,7 +626,6 @@ namespace GeometryEscape
             });
             EntityManager.SetSharedComponentData(instance, monster.RenderContent);
             EntityManager.SetComponentData(instance, monsterInfo.Coordinate);
-            EntityManager.SetComponentData(instance, new MonsterMovingCoordinate {});
             EntityManager.SetComponentData(instance, new DisplayColor
             {
                 Value = Vector4.one
