@@ -85,11 +85,13 @@ namespace GeometryEscape
             Enabled = false;
         }
 
+
         public void Resume()
         {
             m_MusicAudioSource.Play();
             Enabled = true;
         }
+
 
         public void ShutDown()
         {
@@ -203,6 +205,7 @@ namespace GeometryEscape
         public static bool OnBeats()
         {
             float dev = Mathf.Abs((m_MusicAudioSource.time - m_Music.MusicInfo.MusicStartTime) % m_Music.MusicInfo.MusicBeatsTime);
+
             Debug.Log("dev: " + dev);
             return dev <= _Deviation || dev >= m_Music.MusicInfo.MusicBeatsTime - _Deviation;
         }

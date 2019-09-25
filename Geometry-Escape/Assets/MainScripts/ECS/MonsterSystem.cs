@@ -17,14 +17,18 @@ namespace GeometryEscape
         private static WorldSystem m_WorldSystem;
         private static ControlSystem m_ControlSystem;
         private static AudioSystem m_AudioSystem;
+        private static AudioSource m_MusicAudioSource;
+        private static AudioResources.Music m_Music;
         private static CentralSystem m_CentralSystem;
 
         private static EntityArchetype _MonsterEntityArchetype;
-
+        
         private int _MonsterCount;
         private int _MonsterMaterAmount;
-
+        private static float _beatTime;
         private static NativeQueue<MonsterInfo> _MonsterCreationQueue;
+
+        //public float beatTime { get => _beatTime; set => _beatTime=value; }
         #endregion
 
         #region Managers
@@ -67,6 +71,7 @@ namespace GeometryEscape
                        
             */
 
+
         }
 
 
@@ -77,6 +82,10 @@ namespace GeometryEscape
         public JobHandle OnBeatUpdate(ref JobHandle inputDeps, int beatCounter)
         {
             //Schedule your job for every beat here.
+            //Coordinate startPoint = new Coordinate { X=c1.X, Y=c1.Y, Z=c1.Z };
+            //Coordinate endPoint=new Coordinate {X=c1.X2,Y=c1.Y2,Z=c1.Z2 };
+            _beatTime = Time.time;
+
             return inputDeps;
         }
 
@@ -87,6 +96,18 @@ namespace GeometryEscape
         }
         protected override JobHandle OnUpdate(JobHandle inputDeps)
         {
+          
+
+            inputDeps = new MonsterPositionUpdate
+            {
+                //c0.X = lerp.X;
+                //c0.Y = lerp.Y;
+                //c0.Z = lerp.Z;
+
+                
+            }.Schedule(this, inputDeps);
+            inputDeps.Complete();
+
             return inputDeps;
         }
         #region Jobs
@@ -104,8 +125,33 @@ namespace GeometryEscape
         struct CheckDamage : IJobForEach<Coordinate> {
             public void Execute(ref Coordinate c0)
             {
-
             }
+        }
+
+        struct MonsterPositionUpdate : IJobForEach<Coordinate, MonsterMovingCoordinate, MonsterTypeIndex>
+        {
+            public void Execute(ref Coordinate c0, ref MonsterMovingCoordinate c1,ref MonsterTypeIndex c2)
+            {
+                if (c2.Value == MonsterType.Green)
+                {
+                    System.Numerics.Vector3 startPoint = new System.Numerics.Vector3(c1.X, c1.Y, c1.Z);
+                    System.Numerics.Vector3 endPoint = new System.Numerics.Vector3(c1.X2, c1.Y2, c1.Z2);
+                    float dev = Mathf.Abs((m_MusicAudioSource.time - m_Music.MusicInfo.MusicStartTime) % m_Music.MusicInfo.MusicBeatsTime);
+                    float fractionOfJourney = (dev) / AudioSystem.Music.MusicInfo.MusicBeatsTime;
+                    //float JourneyLength = System.Numerics.Vector3.Distance(startPoint, endPoint);
+                    System.Numerics.Vector3 lerp = System.Numerics.Vector3.Lerp(startPoint, endPoint, fractionOfJourney);
+                    c1.X = c0.X;
+                    c1.Y = c0.Y;
+                    c1.Z = c0.Z;
+                    c1.X2 = c0.X;
+                    c1.Y2 = c0.Y;
+                    c1.Z2 = c0.Z;
+                    c1.X2 += 1;
+                    c1.Y2 += 1;
+                    c1.Z2 += 1;
+                }
+            }
+
         }
         #endregion
 

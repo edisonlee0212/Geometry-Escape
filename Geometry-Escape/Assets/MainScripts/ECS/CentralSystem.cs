@@ -18,6 +18,7 @@ namespace GeometryEscape
         private static EntityManager m_EntityManager;
         private static Transform m_Light;
         
+
         private static ControlMode _SavedControlMode;
         #endregion
 
@@ -76,6 +77,7 @@ namespace GeometryEscape
         private static int _BeatCounter;
         private static CharacterController m_MainCharacterController;
         private static float _Timer;
+
         private static bool _Running;
 
         #endregion
@@ -123,7 +125,9 @@ namespace GeometryEscape
         public static int Counter { get => _Counter; set => _Counter = value; }
         public static float Timer { get => _Timer; set => _Timer = value; }
         public static float TimeStep { get => _TimeStep; set => _TimeStep = value; }
+
         public static bool Running { get => _Running; set => _Running = value; }
+
         #endregion
 
         #endregion
@@ -190,18 +194,22 @@ namespace GeometryEscape
             //确认所有必须设置的初始参数设置完毕，我们可以启动各个子系统。
             RenderSystem.Init();//启动这个系统
             TileSystem.Init();
+
             MonsterSystem.Init();
             WorldSystem.TileResources = m_TileResources;
             WorldSystem.MonsterResources = m_MonsterResources;
             WorldSystem.Init();
             AudioSystem.Init();
+
             ControlSystem = new ControlSystem();//control system并不是一个真正的ECS的系统，所以我们通过这种方式建立。
             CopyTextureIndexSystem.Init();
             CopyDisplayColorSystem.Init();
             #endregion
             //这个地方设置操作模式，不同操作模式对应不同场景。
+
             ControlSystem.ControlMode = ControlMode.MapEditor;
             Running = true;
+
             Enabled = true;
         }
 
@@ -210,15 +218,19 @@ namespace GeometryEscape
         /// </summary>
         public static void Pause()
         {
+
             if (!Running) return;
             _SavedControlMode = ControlSystem.ControlMode;
             ControlSystem.ControlMode = ControlMode.NoControl;
             Running = false;
+
             MainCharacterController.Pause();
             TileSystem.Pause();
             MonsterSystem.Pause();
             AudioSystem.Pause();
+
             WorldSystem.Pause();
+
         }
 
         /// <summary>
@@ -226,14 +238,18 @@ namespace GeometryEscape
         /// </summary>
         public static void Resume()
         {
+
             if (Running) return;
             ControlSystem.ControlMode = _SavedControlMode;
             Running = true;
+
             MainCharacterController.Resume();
             TileSystem.Resume();
             MonsterSystem.Resume();
             AudioSystem.Resume();
+
             WorldSystem.Resume();
+
         }
 
         /// <summary>
