@@ -99,6 +99,21 @@ namespace GeometryEscape
         public float X, Y, Z, Direction;
     }
 
+    [Serializable]
+    public struct PreviousCoordinate : IComponentData
+    {
+        public float X, Y, Z, Direction;
+    }
+    [Serializable]
+    public struct TargetCoordinate : IComponentData
+    {
+        public float X, Y, Z, Direction;
+    }
+    [Serializable]
+    public struct Timer : IComponentData
+    {
+        public float T, maxT;
+    }
 
     [Serializable]
     public struct CustomLocalToWorld : IComponentData

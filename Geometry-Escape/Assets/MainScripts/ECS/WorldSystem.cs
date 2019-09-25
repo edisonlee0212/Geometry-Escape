@@ -75,6 +75,9 @@ namespace GeometryEscape
                 typeof(MonsterTypeIndex),
                 typeof(RenderContent),
                 typeof(Coordinate),
+                typeof(Timer),
+                typeof(PreviousCoordinate),
+                typeof(TargetCoordinate),
                 typeof(Translation),
                 typeof(Rotation),
                 typeof(Scale),
@@ -148,6 +151,7 @@ namespace GeometryEscape
             */
 
             AddMonster(0, new Coordinate { X = 0, Y = 0, Z = -1 });
+            AddMonster(1, new Coordinate { X = 2, Y = 2, Z = -1 });
             Enabled = true;
         }
 

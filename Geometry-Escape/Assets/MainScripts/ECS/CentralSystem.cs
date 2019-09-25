@@ -12,6 +12,7 @@ namespace GeometryEscape
     /// <summary>
     /// The system that control all other systems.
     /// </summary>
+    [AlwaysUpdateSystem]
     public class CentralSystem : JobComponentSystem
     {
         #region Private
@@ -462,6 +463,20 @@ namespace GeometryEscape
         }
         #endregion
 
+        #region Jobs
+        [BurstCompile]
+        protected struct TimerJob : IJobForEach<Timer>
+        {
+            [ReadOnly] public float deltaTime;
+            public void Execute(ref Timer c0)
+            {
+                if (c0.T == c0.maxT) return;
+                c0.T += deltaTime;
+                if (c0.T > c0.maxT) c0.T = c0.maxT;
+            }
+        }
+        #endregion
+
         protected JobHandle OnFixedUpdate(ref JobHandle inputDeps)
         {
             #region Update Systems
@@ -497,6 +512,11 @@ namespace GeometryEscape
         {
             if (Running)
             {
+                inputDeps = new TimerJob
+                {
+                    deltaTime = Time.deltaTime
+                }.Schedule(this, inputDeps);
+
                 #region Special System Update
                 #region Fixed Time Step
                 _Timer += Time.deltaTime;
