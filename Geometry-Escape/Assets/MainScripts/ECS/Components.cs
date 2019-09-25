@@ -100,6 +100,12 @@ namespace GeometryEscape
     }
 
     [Serializable]
+    public struct MonsterMovingCoordinate : IComponentData
+    {
+        public float X, Y, Z, Direction, X2, Y2, Z2, Direction2;
+    }
+
+    [Serializable]
     public struct CustomLocalToWorld : IComponentData
     {
         public float4x4 Value;
