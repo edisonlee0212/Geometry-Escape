@@ -21,3 +21,11 @@ MonoBehaviour:
         Material: {fileID: 2100000, guid: 6ba0ba325c6eb4a279aa3534284a6aff, type: 2}
     TextureMaxIndex:
       Value: 0
+  - MonsterIndex: 0
+    MonsterType: 1
+    RenderContent:
+      MeshMaterial:
+        Mesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
+        Material: {fileID: 2100000, guid: 7c95ecaafa712de42abc04bc306909e1, type: 2}
+    TextureMaxIndex:
+      Value: 25

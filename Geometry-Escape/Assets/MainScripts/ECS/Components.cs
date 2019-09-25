@@ -100,9 +100,19 @@ namespace GeometryEscape
     }
 
     [Serializable]
-    public struct MonsterMovingCoordinate : IComponentData
+    public struct PreviousCoordinate : IComponentData
     {
-        public float X, Y, Z, Direction, X2, Y2, Z2, Direction2;
+        public float X, Y, Z, Direction;
+    }
+    [Serializable]
+    public struct TargetCoordinate : IComponentData
+    {
+        public float X, Y, Z, Direction;
+    }
+    [Serializable]
+    public struct Timer : IComponentData
+    {
+        public float T, maxT;
     }
 
     [Serializable]
