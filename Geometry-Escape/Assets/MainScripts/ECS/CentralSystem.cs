@@ -470,7 +470,7 @@ namespace GeometryEscape
             [ReadOnly] public float deltaTime;
             public void Execute(ref Timer c0)
             {
-                if (c0.T == c0.maxT) return;
+                if (!c0.isOn || c0.T == c0.maxT) return;
                 c0.T += deltaTime;
                 if (c0.T > c0.maxT) c0.T = c0.maxT;
             }

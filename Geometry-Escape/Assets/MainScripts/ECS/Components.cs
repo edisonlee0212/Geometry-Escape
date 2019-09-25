@@ -113,6 +113,7 @@ namespace GeometryEscape
     public struct Timer : IComponentData
     {
         public float T, maxT;
+        public bool isOn;
     }
 
     [Serializable]

@@ -103,12 +103,16 @@ namespace GeometryEscape
         {
             public void Execute(ref Coordinate c0, ref PreviousCoordinate c1, ref TargetCoordinate c2, ref Timer c3)
             {
-                if (c3.T == c3.maxT) return;
+                if (!c3.isOn) return;
                 var proportion = c3.T / c3.maxT;
                 c0.X = math.lerp(c1.X, c2.X, proportion);
                 c0.Y = math.lerp(c1.Y, c2.Y, proportion);
                 c0.Z = math.lerp(c1.Z, c2.Z, proportion);
                 c0.Direction = math.lerp(c1.Direction, c2.Direction, proportion);
+                if (c3.T == c3.maxT)
+                {
+                    c3.isOn = false;
+                }
             }
         }
 
@@ -242,6 +246,7 @@ namespace GeometryEscape
                 }
                 c5.T = 0;
                 c5.maxT = 0.2f;
+                c5.isOn = true;
             }
         }
         #endregion
