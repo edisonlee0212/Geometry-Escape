@@ -501,7 +501,12 @@ namespace GeometryEscape
                 switch (EntityManager.GetComponentData<TileTypeIndex>(TileSystem.CenterEntity).Value)
                 {
                     case TileType.NailTrap:
-                        if (EntityManager.GetComponentData<TextureIndex>(TileSystem.CenterEntity).Value == 1) m_MainCharacterController.ChangeHealth(-1);
+                        if (EntityManager.GetComponentData<TextureIndex>(TileSystem.CenterEntity).Value == 1)
+                        {
+                            m_MainCharacterController.ChangeHealth(-1);
+                            m_AudioSystem.PlayTrapSound();
+
+                        }
                         break;
                 }
             }
@@ -582,6 +587,7 @@ namespace GeometryEscape
             {
                 _Moving = false;
                 _CurrentCenterPosition = _TargetOriginPosition;
+                // TODO
                 MainCharacterController.Idle();
             }
             //设置以在移动完成之后进行操作。
