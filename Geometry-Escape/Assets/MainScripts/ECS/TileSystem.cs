@@ -200,15 +200,6 @@ namespace GeometryEscape
 
         public JobHandle OnBeatUpdate(ref JobHandle inputDeps, int beatCounter)
         {
-            /*inputDeps = new RotateTileTest1
-            {
-                counter = beatCounter,
-            }.Schedule(this, inputDeps);
-            inputDeps = new ChangeColorTest
-            {
-                counter = beatCounter,
-            }.Schedule(this, inputDeps);
-            */
             inputDeps = new SetAllNailTrap
             {
                 mode = beatCounter % 2
@@ -220,10 +211,6 @@ namespace GeometryEscape
 
         public JobHandle OnFixedUpdate(ref JobHandle inputDeps, int counter)
         {
-            /*inputDeps = new ChangeTextureInfoTest
-            {
-                counter = counter,
-            }.Schedule(this, inputDeps);*/
             inputDeps.Complete();
             return inputDeps;
         }

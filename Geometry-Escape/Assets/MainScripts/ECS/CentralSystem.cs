@@ -495,7 +495,7 @@ namespace GeometryEscape
             m_TileSystem.OnBeatUpdate(ref inputDeps, _BeatCounter);
             m_MonsterSystem.OnBeatUpdate(ref inputDeps, _BeatCounter);
             #endregion
-
+            m_AudioSystem.StopTrapSound();
             if (TileSystem.CenterEntity != Entity.Null)
             {
                 switch (EntityManager.GetComponentData<TileTypeIndex>(TileSystem.CenterEntity).Value)

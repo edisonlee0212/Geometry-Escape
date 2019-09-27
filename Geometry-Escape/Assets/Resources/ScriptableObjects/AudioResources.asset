@@ -28,5 +28,6 @@ MonoBehaviour:
   m_SoundEffects:
   - {fileID: 8300000, guid: 8b8697a82ea5c704ca08719b3be33b1a, type: 3}
   - {fileID: 8300000, guid: d835453e477ff8649ae8f35f5985c2ef, type: 3}
+  - {fileID: 8300000, guid: 51b528bcd981741e9b674d56193d646d, type: 3}
   m_AudioSourcePrefab: {fileID: 4990169705052737863, guid: 5bb49094aaac7904f9c5f8d5a9942104,
     type: 3}

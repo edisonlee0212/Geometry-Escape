@@ -125,7 +125,7 @@ namespace GeometryEscape
             _TotalTileAmount = 0;
             _TotalMonsterAmmount = 0;
 
-            int _TileCount = 100;
+            int _TileCount = 50;
             for (int i = 0; i < _TileCount; i++)
             {
                 for (int j = 0; j < _TileCount; j++)
@@ -423,7 +423,7 @@ namespace GeometryEscape
             if (_AddingTiles && _TileCreationQueue.Count != 0)
             {
                 int count = _TileCreationQueue.Count;
-                for (int i = 0; i < 10 && i < count; i++)
+                for (int i = 0; i < 100 && i < count; i++)
                 {
                     var tileInfo = _TileCreationQueue.Dequeue();
                     CreateTile(inputDeps, tileInfo);
@@ -433,7 +433,7 @@ namespace GeometryEscape
             if (_RemovingTiles && _TileDestructionQueue.Count != 0)
             {
                 int count = _TileDestructionQueue.Count;
-                for (int i = 0; i < 10 && i < count; i++)
+                for (int i = 0; i < 100 && i < count; i++)
                 {
                     var tileEntity = _TileDestructionQueue.Dequeue();
                     DestroyTile(inputDeps, tileEntity);
@@ -445,7 +445,7 @@ namespace GeometryEscape
             if (_AddingMonsters && _MonsterCreationQueue.Count != 0)
             {
                 int count = _MonsterCreationQueue.Count;
-                for (int i = 0; i < 10 && i < count; i++)
+                for (int i = 0; i < 100 && i < count; i++)
                 {
                     var monsterInfo = _MonsterCreationQueue.Dequeue();
                     CreateMonster(inputDeps, monsterInfo);

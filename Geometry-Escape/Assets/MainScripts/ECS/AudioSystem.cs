@@ -199,6 +199,11 @@ namespace GeometryEscape
         {
             m_SoundEffectAudioSources[2].Play();
         }
+
+        public void StopTrapSound()
+        {
+            m_SoundEffectAudioSources[2].Stop();
+        }
         #endregion
 
         public static void PrintMusicTime()
