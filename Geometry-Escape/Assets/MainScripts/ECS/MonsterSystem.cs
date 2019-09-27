@@ -161,9 +161,9 @@ namespace GeometryEscape
             //这个struct会被传到SetRoute里面，你可以在这里设计怪物行走路线，下面是两个示例，你可以设置更多传入参数，比如说怪物的生命值之类的来丰富你的pattern
 
             //左右横移
-            public TargetCoordinate LeftAndRight(PreviousCoordinate previousCoordinate)
+            public Coordinate LeftAndRight(PreviousCoordinate previousCoordinate)
             {
-                TargetCoordinate targetCoordinate = default;
+                Coordinate targetCoordinate = default;
                 switch (Counter % 2)
                 {
                     case 0:
@@ -182,9 +182,9 @@ namespace GeometryEscape
                 return targetCoordinate;
             }
             //原地转圈
-            public TargetCoordinate SmallCircle(PreviousCoordinate previousCoordinate)
+            public Coordinate SmallCircle(PreviousCoordinate previousCoordinate)
             {
-                TargetCoordinate targetCoordinate = default;
+                Coordinate targetCoordinate = default;
                 switch(Counter % 4)
                 {
                     case 0:
@@ -220,33 +220,48 @@ namespace GeometryEscape
         struct SetRoutePosition : IJobForEach<MonsterProperties, MonsterTypeIndex, Coordinate, PreviousCoordinate, TargetCoordinate, Timer>
         {
             [ReadOnly] public MonsterMovePattern MonsterMovePattern;
+            [ReadOnly] public NativeHashMap<Coordinate, TileType> TileHashMap;
             public void Execute(ref MonsterProperties c0, ref MonsterTypeIndex c1, ref Coordinate c2, ref PreviousCoordinate c3, ref TargetCoordinate c4, ref Timer c5)
             {
                 c3.X = c2.X;
                 c3.Y = c2.Y;
                 c3.Z = c2.Z;
                 c3.Direction = c2.Direction;
+                Coordinate nextMove = default;
                 switch (c1.Value)
                 {
                     case MonsterType.Blue:
-                        c4 = MonsterMovePattern.SmallCircle(c3);
+                        nextMove = MonsterMovePattern.SmallCircle(c3);
                         break;
                     case MonsterType.Green:
-                        c4 = MonsterMovePattern.LeftAndRight(c3);
+                        nextMove = MonsterMovePattern.LeftAndRight(c3);
                         break;
                     case MonsterType.Skeleton:
-                        c4 = MonsterMovePattern.SmallCircle(c3);
+                        nextMove = MonsterMovePattern.SmallCircle(c3);
                         break;
                     default:
-                        c4.X = c3.X;
-                        c4.Y = c3.Y;
-                        c4.Z = c3.Z;
-                        c4.Direction = c3.Direction;
+                        nextMove = c2;
+                        break;
+                }
+                TileType tileType;
+                if (!TileHashMap.TryGetValue(nextMove, out tileType))
+                {
+                    return;
+                }
+                switch (tileType)
+                {
+                    case TileType.Blocked:
+                        return;
+                    default:
                         break;
                 }
                 c5.T = 0;
                 c5.maxT = 0.2f;
                 c5.isOn = true;
+                c4.X = nextMove.X;
+                c4.Y = nextMove.Y;
+                c4.Z = nextMove.Z;
+                c4.Direction = nextMove.Direction;
             }
         }
         #endregion
@@ -259,7 +274,8 @@ namespace GeometryEscape
                 MonsterMovePattern = new MonsterMovePattern
                 {
                     Counter = beatCounter
-                }
+                },
+                TileHashMap = WorldSystem.TileHashMap
             }.Schedule(this, inputDeps);
             inputDeps.Complete();
             return inputDeps;

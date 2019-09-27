@@ -9,6 +9,7 @@ namespace GeometryEscape
 {
     public enum TileType
     {
+        Blocked,
         Normal,
         NailTrap,
         MusicAccleratorTrap,
@@ -94,9 +95,19 @@ namespace GeometryEscape
     }
 
     [Serializable]
-    public struct Coordinate : IComponentData
+    public struct Coordinate : IComponentData, IEquatable<Coordinate>
     {
         public float X, Y, Z, Direction;
+
+        public bool Equals(Coordinate other)
+        {
+            return this.X == other.X && this.Y == other.Y;
+        }
+
+        public override int GetHashCode()
+        {
+            return (int)(X * 100 + Y);
+        }
     }
 
     [Serializable]

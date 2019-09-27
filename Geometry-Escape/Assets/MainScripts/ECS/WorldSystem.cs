@@ -50,6 +50,7 @@ namespace GeometryEscape
         #region Public
         private static EntityArchetype _TileEntityArchetype;
         private static EntityArchetype _MonsterEntityArchetype;
+        private static NativeHashMap<Coordinate, TileType> _TileHashMap;
         private static bool _AddingTiles;
         private static bool _RemovingTiles;
         private static bool _AddingMonsters;
@@ -66,6 +67,7 @@ namespace GeometryEscape
         public static int TotalMonsterAmmount { get => _TotalMonsterAmmount; set => _TotalMonsterAmmount = value; }
         public static EntityArchetype TileEntityArchetype { get => _TileEntityArchetype; set => _TileEntityArchetype = value; }
         public static EntityArchetype MonsterEntityArchetype { get => _MonsterEntityArchetype; set => _MonsterEntityArchetype = value; }
+        public static NativeHashMap<Coordinate, TileType> TileHashMap { get => _TileHashMap; set => _TileHashMap = value; }
         #endregion
 
         #region Managers
@@ -119,10 +121,11 @@ namespace GeometryEscape
             _TileDestructionQueue = new NativeQueue<Entity>(Allocator.Persistent);
             _MonsterCreationQueue = new NativeQueue<MonsterInfo>(Allocator.Persistent);
             _MonsterDestructionQueue = new NativeQueue<Entity>(Allocator.Persistent);
+            _TileHashMap = new NativeHashMap<Coordinate, TileType>(10000, Allocator.Persistent);
             _TotalTileAmount = 0;
             _TotalMonsterAmmount = 0;
 
-            int _TileCount = 10;
+            int _TileCount = 100;
             for (int i = 0; i < _TileCount; i++)
             {
                 for (int j = 0; j < _TileCount; j++)
@@ -151,7 +154,7 @@ namespace GeometryEscape
             */
 
             AddMonster(0, new Coordinate { X = 0, Y = 0, Z = -1 });
-            AddMonster(1, new Coordinate { X = 2, Y = 2, Z = -1 });
+            AddMonster(1, new Coordinate { X = 0, Y = 0, Z = -1 });
             Enabled = true;
         }
 
@@ -173,6 +176,7 @@ namespace GeometryEscape
             if (_TileDestructionQueue.IsCreated) _TileDestructionQueue.Dispose();
             if (_MonsterCreationQueue.IsCreated) _MonsterCreationQueue.Dispose();
             if (_MonsterDestructionQueue.IsCreated) _MonsterDestructionQueue.Dispose();
+            if (_TileHashMap.IsCreated) _TileHashMap.Dispose();
         }
 
         protected override void OnDestroy()
@@ -455,6 +459,7 @@ namespace GeometryEscape
         private void DestroyTile(JobHandle inputDeps, Entity tileEntity)
         {
             Coordinate coordinate = EntityManager.GetComponentData<Coordinate>(tileEntity);
+            _TileHashMap.Remove(coordinate);
             NativeArray<LeftTile> left = new NativeArray<LeftTile>(1, Allocator.TempJob);
             NativeArray<RightTile> right = new NativeArray<RightTile>(1, Allocator.TempJob);
             NativeArray<UpTile> up = new NativeArray<UpTile>(1, Allocator.TempJob);
@@ -501,6 +506,7 @@ namespace GeometryEscape
         private void CreateTile(JobHandle inputDeps, TileCreationInfo tileInfo)
         {
             var initialCoordinate = tileInfo.Coordinate;
+            
             var color = new DefaultColor { };
             color.Value = Vector4.one;
             var textureInfo = new TextureIndex
@@ -509,6 +515,7 @@ namespace GeometryEscape
             };
 
             var tile = m_TileResources.GetTile(tileInfo.TileProperties.Index);
+            _TileHashMap.TryAdd(initialCoordinate, tile.TileType);
             var maxTextureIndex = new TextureMaxIndex
             {
                 Value = tile.MaxIndex
