@@ -91,6 +91,8 @@ namespace GeometryEscape
         private static int _FreezeCount;
         private static float3 _CurrentCenterPosition;
         private static Coordinate _CharacterCurrentPosition;
+        private static bool _HurtMonster;
+        private static int _CurrentMonsterIndex;        // the monster that currently interact with character
         private static float _CurrentZoomFactor;
         private static float _Scale;
 
@@ -101,6 +103,8 @@ namespace GeometryEscape
         #endregion
 
         #region Getters and Setters
+        public static bool HurtMonster { get => _HurtMonster; set => _HurtMonster = value; }
+        public static int CurrentMonsterIndex { get => _CurrentMonsterIndex; set => _CurrentMonsterIndex = value; }
         public static CharacterHead CharacterHead { get => m_CharacterHead; set => m_CharacterHead = value; }
         public static MeshRenderSystem RenderSystem { get => m_RenderSystem; set => m_RenderSystem = value; }
         public static TileSystem TileSystem { get => m_TileSystem; set => m_TileSystem = value; }
@@ -521,8 +525,9 @@ namespace GeometryEscape
             Coordinate characterPosition = _CharacterCurrentPosition;
             // monster coordinates
             Coordinate[] monsterPosition = m_MonsterSystem.MonsterCurrentPosition;
-            Debug.Log("character position"+characterPosition.X+characterPosition.Y+characterPosition.Z);
-            Debug.Log("monster position"+monsterPosition[0].X+ monsterPosition[0].Y+ monsterPosition[0].Z);
+            //Debug.Log("character position"+characterPosition.X+characterPosition.Y+characterPosition.Z);
+            //Debug.Log("monster position"+monsterPosition[0].X+ monsterPosition[0].Y+ monsterPosition[0].Z);
+            
 
             // check direction and coordinate
             for (int i = 0; i < m_MonsterSystem.MonsterCount; i++)
@@ -530,7 +535,9 @@ namespace GeometryEscape
                 if (characterPosition.X == monsterPosition[i].X&&characterPosition.Y==monsterPosition[i].Y)
                 {
                     m_MainCharacterController.ChangeHealth(-1);
+                    _CurrentMonsterIndex = i;
                     //  m_MonsterSystem.ChangeHealth(-10);
+                    _HurtMonster = true;
                 }
             }
             return inputDeps;

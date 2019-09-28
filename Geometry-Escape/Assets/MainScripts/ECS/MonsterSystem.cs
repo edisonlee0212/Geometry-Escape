@@ -107,9 +107,9 @@ namespace GeometryEscape
         #region Jobs
 
        // [BurstCompile]
-        protected struct MoveMonster : IJobForEach<Coordinate, PreviousCoordinate, TargetCoordinate, Timer,MonsterProperties>
+        protected struct MoveMonster : IJobForEach<Coordinate, PreviousCoordinate, TargetCoordinate, Timer,MonsterProperties,MonsterHP>
         {
-            public void Execute(ref Coordinate c0, ref PreviousCoordinate c1, ref TargetCoordinate c2, ref Timer c3,ref MonsterProperties c4)
+            public void Execute(ref Coordinate c0, ref PreviousCoordinate c1, ref TargetCoordinate c2, ref Timer c3,ref MonsterProperties c4,ref MonsterHP c5)
             {
                 _MonsterCurrentPosition[c4.Index].X = c1.X;
                 _MonsterCurrentPosition[c4.Index].Y = c1.Y;
@@ -124,6 +124,12 @@ namespace GeometryEscape
                 if (c3.T == c3.maxT)
                 {
                     c3.isOn = false;
+                }
+                if (c4.Index == CentralSystem.CurrentMonsterIndex&&CentralSystem.HurtMonster)
+                {
+                    c5.Value -= 10;
+                    CentralSystem.HurtMonster = false;
+                    Debug.Log("Monster hp "+c5.Value);
                 }
             }
         }

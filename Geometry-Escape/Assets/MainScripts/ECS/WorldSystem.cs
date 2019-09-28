@@ -162,7 +162,8 @@ namespace GeometryEscape
 
                 CentralSystem.MonsterSystem.MonsterCurrentPosition[i] = new Coordinate { X=0,Y=0,Z=-1};
             }
-
+            CentralSystem.CurrentMonsterIndex = -1;      // default -1
+            CentralSystem.HurtMonster = false;
             Enabled = true;
         }
 
@@ -659,6 +660,10 @@ namespace GeometryEscape
             EntityManager.SetComponentData(instance, new MonsterProperties
             {
                 Index = i
+            }) ;
+            EntityManager.SetComponentData(instance, new MonsterHP
+            {
+                Value = 100
             }) ;
         }
     }

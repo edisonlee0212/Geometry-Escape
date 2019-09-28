@@ -68,7 +68,7 @@ namespace GeometryEscape
     [Serializable]
     public struct MonsterHP : IComponentData
     {
-        public Entity Value;
+        public int Value;
     }
 
     [Serializable]
