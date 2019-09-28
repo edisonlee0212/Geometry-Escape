@@ -66,6 +66,7 @@ namespace GeometryEscape
         /// 这里面存储所有主角相关的GameObject。
         /// </summary>
         private static MainCharacterResources m_MainCharacterResources;
+        private static CharacterHead m_CharacterHead;
 
         #endregion
 
@@ -505,7 +506,7 @@ namespace GeometryEscape
                         {
                             m_MainCharacterController.ChangeHealth(-1);
                             m_AudioSystem.PlayTrapSound();
-
+                            m_CharacterHead.ChangeColor();
                         }
                         break;
                 }
