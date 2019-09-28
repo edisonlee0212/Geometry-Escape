@@ -111,9 +111,9 @@ namespace GeometryEscape
         {
             public void Execute(ref Coordinate c0, ref PreviousCoordinate c1, ref TargetCoordinate c2, ref Timer c3,ref MonsterProperties c4)
             {
-                _MonsterCurrentPosition[c4.Index].X = c2.X;
-                _MonsterCurrentPosition[c4.Index].Y = c2.Y;
-                _MonsterCurrentPosition[c4.Index].Z = c2.Z;
+                _MonsterCurrentPosition[c4.Index].X = c1.X;
+                _MonsterCurrentPosition[c4.Index].Y = c1.Y;
+                _MonsterCurrentPosition[c4.Index].Z = c1.Z;
 
                 if (!c3.isOn) return;
                 var proportion = c3.T / c3.maxT;

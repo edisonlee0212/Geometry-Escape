@@ -154,9 +154,9 @@ namespace GeometryEscape
             }
             */
             
-            CentralSystem.MonsterSystem.MonsterCurrentPosition = new Coordinate[1];     // hardcode number of monsters
+            CentralSystem.MonsterSystem.MonsterCurrentPosition = new Coordinate[2];     // hardcode number of monsters
 
-            for (int i = 0; i < 1; i++)      // hardcode number of monsters
+            for (int i = 0; i < 2; i++)      // hardcode number of monsters
             {
                 AddMonster(i, new Coordinate { X = 0, Y = 0, Z = -1 });
 
