@@ -36,6 +36,10 @@ namespace GeometryEscape
         private static Vector3 startPoint;
         private static Vector3 endPoint;
         private static Vector3 lerp;
+        private static Coordinate[] _MonsterCurrentPosition;
+
+        public int MonsterCount { get => _MonsterCount; set => _MonsterCount = value; }
+        public Coordinate[] MonsterCurrentPosition { get => _MonsterCurrentPosition; set => _MonsterCurrentPosition = value; }
 
 
         //public float beatTime { get => _beatTime; set => _beatTime=value; }
@@ -103,6 +107,7 @@ namespace GeometryEscape
         {
             public void Execute(ref Coordinate c0, ref PreviousCoordinate c1, ref TargetCoordinate c2, ref Timer c3)
             {
+
                 if (!c3.isOn) return;
                 var proportion = c3.T / c3.maxT;
                 c0.X = math.lerp(c1.X, c2.X, proportion);

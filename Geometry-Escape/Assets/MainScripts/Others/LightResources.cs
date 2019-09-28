@@ -20,6 +20,14 @@ namespace GeometryEscape
             }
         }
 
+        public void TrapColor()
+        {
+            m_ViewLight.GetComponent<Light>().color = Color.red;
+        }
+        public void StopTrapColor()
+        {
+            m_ViewLight.GetComponent<Light>().color = Color.white;
+        }
         public void Init()
         {
             m_ViewLight = Instantiate(m_ViewLightPrefab);

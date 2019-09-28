@@ -100,6 +100,7 @@ namespace GeometryEscape
         #endregion
 
         #region Getters and Setters
+        public static CharacterHead CharacterHead { get => m_CharacterHead; set => m_CharacterHead = value; }
         public static MeshRenderSystem RenderSystem { get => m_RenderSystem; set => m_RenderSystem = value; }
         public static TileSystem TileSystem { get => m_TileSystem; set => m_TileSystem = value; }
         public static WorldSystem WorldSystem { get => m_WorldSystem; set => m_WorldSystem = value; }
@@ -202,7 +203,7 @@ namespace GeometryEscape
             WorldSystem.MonsterResources = m_MonsterResources;
             WorldSystem.Init();
             AudioSystem.Init();
-
+            CharacterHead = new CharacterHead();
             ControlSystem = new ControlSystem();//control system并不是一个真正的ECS的系统，所以我们通过这种方式建立。
             CopyTextureIndexSystem.Init();
             CopyDisplayColorSystem.Init();
@@ -497,6 +498,7 @@ namespace GeometryEscape
             m_MonsterSystem.OnBeatUpdate(ref inputDeps, _BeatCounter);
             #endregion
             m_AudioSystem.StopTrapSound();
+            m_LightResources.StopTrapColor();
             if (TileSystem.CenterEntity != Entity.Null)
             {
                 switch (EntityManager.GetComponentData<TileTypeIndex>(TileSystem.CenterEntity).Value)
@@ -506,11 +508,21 @@ namespace GeometryEscape
                         {
                             m_MainCharacterController.ChangeHealth(-1);
                             m_AudioSystem.PlayTrapSound();
-                            m_CharacterHead.ChangeColor();
+                            m_LightResources.TrapColor();
+                           // m_CharacterHead.ChangeColor();
                         }
                         break;
                 }
             }
+            // character coordinate
+            //_CurrentCenterPosition;
+            // monster coordinates
+
+           // inputDeps = new MoveMonster
+          //  {
+
+          //  }.Schedule(MonsterSystem,inputDeps);
+            // check direction and coordinate
             return inputDeps;
         }
 

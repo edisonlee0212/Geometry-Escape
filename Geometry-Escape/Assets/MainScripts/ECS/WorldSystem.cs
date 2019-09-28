@@ -59,6 +59,7 @@ namespace GeometryEscape
         private static int _TotalMonsterAmmount;
         private static TileResources m_TileResources;
         private static MonsterResources m_MonsterResources;
+
         public static int TotalTileAmount { get => _TotalTileAmount; }
         public static bool AddingTiles { get => _AddingTiles; set => _AddingTiles = value; }
         public static bool RemovingTiles { get => _RemovingTiles; set => _RemovingTiles = value; }
@@ -152,9 +153,15 @@ namespace GeometryEscape
                 WorldSystem.AddMonster(0, thisPosi);
             }
             */
+            
+            CentralSystem.MonsterSystem.MonsterCurrentPosition = new Coordinate[2];     // hardcode number of monsters
 
-            AddMonster(0, new Coordinate { X = 0, Y = 0, Z = -1 });
-            AddMonster(1, new Coordinate { X = 0, Y = 0, Z = -1 });
+            for (int i = 0; i < 2; i++)      // hardcode number of monsters
+            {
+                AddMonster(i, new Coordinate { X = 0, Y = 0, Z = -1 });
+                CentralSystem.MonsterSystem.MonsterCurrentPosition[i] = new Coordinate { X=0,Y=0,Z=-1};
+            }
+
             Enabled = true;
         }
 
@@ -268,6 +275,7 @@ namespace GeometryEscape
 
         public static void AddMonster(int monsterIndex, Coordinate initialCoordinate = default)
         {
+           CentralSystem.MonsterSystem.MonsterCount++;
             _AddingMonsters = true;
             _MonsterCreationQueue.Enqueue(new MonsterInfo
             {
