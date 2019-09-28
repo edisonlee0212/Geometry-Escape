@@ -18,7 +18,7 @@ namespace GeometryEscape
         #region Private
         private static EntityManager m_EntityManager;
         private static Transform m_Light;
-        
+
 
         private static ControlMode _SavedControlMode;
         #endregion
@@ -92,10 +92,10 @@ namespace GeometryEscape
         private static float3 _CurrentCenterPosition;
         private static float _CurrentZoomFactor;
         private static float _Scale;
-
+        private static float _MovementTime;
         private static float _MovementTimer, _ZoomingTimer;
         private static float _PreviousZoomFactor, _TargetZoomFactor;
-        private static Vector3 _PreviousOriginPosition, _TargetOriginPosition;
+        private static float3 _PreviousOriginPosition, _TargetOriginPosition;
 
         #endregion
 
@@ -147,7 +147,7 @@ namespace GeometryEscape
             //如果你观察所有其他系统的OnCreate函数，
             //你会发现它们都只包含Enabled = false，即所有子系统虽然在程序开始时都被自动建立，但是所有子系统在开始时都会中止运行。
             //直到centralsystem结束所有必要设置后由centralsystem开启各个子系统，这些初始设置及启动子系统的步骤包含在Init内。
-            
+
             #region Connect other systems
             UISystem = Object.FindObjectOfType<UISystem>();
             RenderSystem = World.Active.GetOrCreateSystem<MeshRenderSystem>();//从unity获取当前已经存在的系统
@@ -166,7 +166,7 @@ namespace GeometryEscape
         }
         public void Init()
         {
-            
+
             #region Load Resources
             //首先我们载入resources，准备好要分配给各个子系统的资源
             m_LightResources = Resources.Load<LightResources>("ScriptableObjects/LightResources");
@@ -266,7 +266,7 @@ namespace GeometryEscape
             CopyTextureIndexSystem.ShutDown();
             FloatingOriginSystem.ShutDown();
             ControlSystem.ControlMode = ControlMode.NoControl;
-            
+
         }
         /// <summary>
         /// 当中央系统被删除时，它需要先中止其他系统运行。
@@ -278,7 +278,7 @@ namespace GeometryEscape
         #endregion
 
         #region Methods
-        
+
         public static void Zoom(float direction)
         {
             if (!_Zooming)
@@ -311,24 +311,25 @@ namespace GeometryEscape
             Right
         }
 
-        public static void Move(Vector2 moveVec)
+        public static void Move(Vector2 moveVec, bool avoidCheck = false, float time = 0.2f)
         {
-            if (_FreezeCount > 0)
+            if (!avoidCheck && _FreezeCount > 0)
             {
                 _FreezeCount--;
                 Debug.Log("Freezed! Need " + _FreezeCount + " more try to make another move.");
                 return;
             }
-            if (!_Moving && (ControlSystem.ControlMode == ControlMode.MapEditor || FloatingOriginSystem.CenterTileEntity != Entity.Null))
+            if (avoidCheck || (!_Moving && (ControlSystem.ControlMode == ControlMode.MapEditor || FloatingOriginSystem.CenterTileEntity != Entity.Null)))
             {
                 Debug.Log(AudioSystem.OnBeats());
-                if ((AudioSystem.OnBeats() || ControlSystem.ControlMode == ControlMode.MapEditor) && moveVec != Vector2.zero && moveVec.x * moveVec.y == 0)
+                if (avoidCheck || (AudioSystem.OnBeats() || ControlSystem.ControlMode == ControlMode.MapEditor) && moveVec != Vector2.zero && moveVec.x * moveVec.y == 0)
                 {
                     Direction characterMovingDirection = default;
                     _Moving = true;
+                    _MovementTime = time;
                     _MovementTimer = 0;
                     _PreviousOriginPosition = _CurrentCenterPosition;
-                    _TargetOriginPosition = _PreviousOriginPosition;
+                        _TargetOriginPosition = (float3)(int3)_PreviousOriginPosition;
 
                     #region Decide Direction
                     if (moveVec.x > 0)
@@ -461,7 +462,7 @@ namespace GeometryEscape
 
         #region Jobs
 
-        
+
 
 
         [BurstCompile]
@@ -513,7 +514,7 @@ namespace GeometryEscape
         {
             if (Running)
             {
-                
+
 
                 if (_Moving) OnMoving();
 
@@ -546,7 +547,7 @@ namespace GeometryEscape
                 #endregion
 
                 #region Movement
-                
+
 
                 #endregion
             }
@@ -587,9 +588,9 @@ namespace GeometryEscape
         private void OnMoving()
         {
             _MovementTimer += Time.deltaTime;
-            if (_MovementTimer < 0.2f)
+            if (_MovementTimer < _MovementTime)
             {
-                _CurrentCenterPosition = Vector3.Lerp(_PreviousOriginPosition, _TargetOriginPosition, _MovementTimer / 0.2f);
+                _CurrentCenterPosition = Vector3.Lerp(_PreviousOriginPosition, _TargetOriginPosition, _MovementTimer / _MovementTime);
             }
             else
             {
@@ -627,6 +628,7 @@ namespace GeometryEscape
         private float3 _PreviousCenterPosition;
         private static NativeArray<Entity> _CenterTileEntity;
         private static NativeArray<Entity> _CenterMonsterEntity;
+        private static float _PushTimer;
         #endregion
 
         #region Public
@@ -698,6 +700,7 @@ namespace GeometryEscape
             [ReadOnly] public float scale;
             [NativeDisableParallelForRestriction]
             [WriteOnly] public NativeArray<Entity> centerTileEntity;
+            [NativeDisableParallelForRestriction]
             [WriteOnly] public NativeArray<Entity> centerMonsterEntity;
             public void Execute(Entity entity, int index, [ReadOnly] ref Translation c0, [ReadOnly] ref TypeOfEntity c1)
             {
@@ -737,7 +740,32 @@ namespace GeometryEscape
             }.Schedule(this, inputDeps);
             inputDeps.Complete();
 
-            if (_CenterMonsterEntity[0] != Entity.Null) Debug.Log("Hit!");
+            if(_PushTimer <= 0.1f)
+            {
+                _PushTimer += Time.deltaTime;
+            }
+
+            if (CenterMonsterEntity != Entity.Null && _PushTimer > 0.1f)
+            {
+                var position = EntityManager.GetComponentData<Translation>(CenterMonsterEntity).Value;
+                if (position.x < 0)
+                {
+                    CentralSystem.Move(new Vector2(1, 0), true, 0.1f);
+                }
+                else if(position.x > 0)
+                {
+                    CentralSystem.Move(new Vector2(-1, 0), true, 0.1f);
+                }
+                else if (position.y < 0)
+                {
+                    CentralSystem.Move(new Vector2(0, 1), true, 0.1f);
+                }
+                else if(position.y > 0)
+                {
+                    CentralSystem.Move(new Vector2(0, -1), true, 0.1f);
+                }
+                _PushTimer = 0;
+            }
             return inputDeps;
         }
     }

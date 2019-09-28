@@ -147,7 +147,7 @@ namespace GeometryEscape
                 }
             }
 
-            for (int i = 0; i < 10; i++)      // hardcode number of monsters
+            for (int i = 1; i < 10; i++)      // hardcode number of monsters
             {
                 AddMonster(i % 2, new Coordinate { X = i, Y = i, Z = -1 });
 
