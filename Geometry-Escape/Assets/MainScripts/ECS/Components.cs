@@ -18,6 +18,18 @@ namespace GeometryEscape
         Bonus,
     }
 
+    public enum EntityType
+    {
+        Tile,
+        Monster
+    }
+
+    [Serializable]
+    public struct TypeOfEntity : IComponentData
+    {
+        public EntityType Value;
+    }
+
     [Serializable]
     public struct RenderContent : ISharedComponentData, IEquatable<RenderContent>
     {
@@ -47,7 +59,7 @@ namespace GeometryEscape
     }
 
     [Serializable]
-    public struct MonsterTypeIndex : IComponentData
+    public struct TypeOfMonster : IComponentData
     {
         public MonsterType Value;
     }
@@ -160,7 +172,7 @@ namespace GeometryEscape
     }
 
     [Serializable]
-    public struct TileTypeIndex : IComponentData
+    public struct TypeOfTile : IComponentData
     {
         public TileType Value;
     }

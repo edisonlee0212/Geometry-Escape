@@ -22,11 +22,11 @@ namespace GeometryEscape
         private static AudioSource m_MusicAudioSource;
         private static AudioResources.Music m_Music;
         private static CentralSystem m_CentralSystem;
-        
-
+        private static EntityQuery _MonsterEntityQuery;
+        private static MonsterMovePattern m_MonsterMovePattern;
         private static EntityArchetype _MonsterEntityArchetype;
 
-        private static float _Timer; 
+        private static float _Timer;
         private static int _Counter;
         private static float _TimeStep;
         private int _MonsterMaterAmount;
@@ -35,19 +35,18 @@ namespace GeometryEscape
         private static NativeQueue<MonsterInfo> _MonsterCreationQueue;
         private static Vector3 startPoint;
         private static Vector3 endPoint;
-        private static int _MonsterIsDeadIndex;      // index of monster which hp<=0
-        private static Coordinate[] _MonsterCurrentPosition;
 
-        public Coordinate[] MonsterCurrentPosition { get => _MonsterCurrentPosition; set => _MonsterCurrentPosition = value; }
-        public  int MonsterIsDeadIndex { get => _MonsterIsDeadIndex; set => _MonsterIsDeadIndex = value; }
 
         //public float beatTime { get => _beatTime; set => _beatTime=value; }
+        #endregion
+
+        #region Public
         #endregion
 
         #region Managers
         protected override void OnCreate()
         {
-
+            _MonsterEntityQuery = EntityManager.CreateEntityQuery(typeof(MonsterProperties));
         }
 
         public void ChangeHealth()
@@ -57,6 +56,7 @@ namespace GeometryEscape
         public void Init()
         {
             ShutDown();
+            m_MonsterMovePattern = default;
             _TimeStep = 0.5f;
         }
         public void Pause()
@@ -71,7 +71,6 @@ namespace GeometryEscape
 
         public void ShutDown()
         {
-
         }
         protected override void OnDestroy()
         {
@@ -90,7 +89,8 @@ namespace GeometryEscape
             Debug.Log("in monsterRoute "+startPoint);
         }*/
 
-        public void RouteOnCall(Entity entity) {
+        public void RouteOnCall(Entity entity)
+        {
             /** need an algorithm to calculate 
             https://medium.com/@jimmy0x52/making-smarter-monsters-adding-pathfinding-to-unitys-2d-roguelike-tutorial-5c004207a7a3
                        
@@ -105,15 +105,12 @@ namespace GeometryEscape
 
         #region Jobs
 
-       // [BurstCompile]
-        protected struct MoveMonster : IJobForEach<Coordinate, PreviousCoordinate, TargetCoordinate, Timer,MonsterProperties,MonsterHP>
+        [BurstCompile]
+        protected struct MoveMonster : IJobForEach<Coordinate, PreviousCoordinate, TargetCoordinate, Timer, MonsterProperties, MonsterHP>
         {
-            public void Execute(ref Coordinate c0, ref PreviousCoordinate c1, ref TargetCoordinate c2, ref Timer c3,ref MonsterProperties c4,ref MonsterHP c5)
+            [ReadOnly] public Vector3 position;
+            public void Execute(ref Coordinate c0, ref PreviousCoordinate c1, ref TargetCoordinate c2, ref Timer c3, ref MonsterProperties c4, ref MonsterHP c5)
             {
-                _MonsterCurrentPosition[c4.Index].X = c1.X;
-                _MonsterCurrentPosition[c4.Index].Y = c1.Y;
-                _MonsterCurrentPosition[c4.Index].Z = c1.Z;
-
                 if (!c3.isOn) return;
                 var proportion = c3.T / c3.maxT;
                 c0.X = math.lerp(c1.X, c2.X, proportion);
@@ -123,24 +120,6 @@ namespace GeometryEscape
                 if (c3.T == c3.maxT)
                 {
                     c3.isOn = false;
-                }
-                if (c4.Index == CentralSystem.CurrentMonsterIndex && CentralSystem.HurtMonster)
-                {
-                    if (c5.Value - 10 <= 0)
-                    {
-                        _MonsterIsDeadIndex = c4.Index;
-
-                        Debug.Log("monster dead"+ _MonsterIsDeadIndex);
-                        // TODO  destroy game object
-
-                        // TODO    destroy entity
-                    }
-                    else
-                    {
-                        c5.Value -= 10;
-                        CentralSystem.HurtMonster = false;
-                        Debug.Log("Monster hp " + c5.Value);
-                    }
                 }
             }
         }
@@ -161,25 +140,7 @@ namespace GeometryEscape
             {
             }
         }
-        [BurstCompile]
-        struct MonsterPositionUpdate : IJobForEach<Coordinate, MonsterTypeIndex>
-        {
-            public void Execute(ref Coordinate c0, ref MonsterTypeIndex c2)
-            {
-                if (c2.Value == MonsterType.Green)
-                {
-                    startPoint.x = c0.X;
-                    startPoint.y = c0.Y;
-                    startPoint.z = c0.Z;
 
-                    endPoint.x = c0.X + 1;
-                    endPoint.y = c0.Y;
-                    endPoint.z = c0.Z;
-                }
-
-            }
-
-        }
         //看完这段请把这段代码挪到合适的位置。
         public struct MonsterMovePattern
         {
@@ -214,7 +175,7 @@ namespace GeometryEscape
             public Coordinate SmallCircle(PreviousCoordinate previousCoordinate)
             {
                 Coordinate targetCoordinate = default;
-                switch(Counter % 4)
+                switch (Counter % 4)
                 {
                     case 0:
                         targetCoordinate.X = previousCoordinate.X + 1;
@@ -246,11 +207,11 @@ namespace GeometryEscape
         }
 
         [BurstCompile]
-        struct SetRoutePosition : IJobForEach<MonsterProperties, MonsterTypeIndex, Coordinate, PreviousCoordinate, TargetCoordinate, Timer>
+        struct SetRoutePosition : IJobForEach<MonsterProperties, TypeOfMonster, Coordinate, PreviousCoordinate, TargetCoordinate, Timer>
         {
             [ReadOnly] public MonsterMovePattern MonsterMovePattern;
             [ReadOnly] public NativeHashMap<Coordinate, TileType> TileHashMap;
-            public void Execute(ref MonsterProperties c0, ref MonsterTypeIndex c1, ref Coordinate c2, ref PreviousCoordinate c3, ref TargetCoordinate c4, ref Timer c5)
+            public void Execute(ref MonsterProperties c0, ref TypeOfMonster c1, ref Coordinate c2, ref PreviousCoordinate c3, ref TargetCoordinate c4, ref Timer c5)
             {
                 c3.X = c2.X;
                 c3.Y = c2.Y;
@@ -277,6 +238,8 @@ namespace GeometryEscape
                 {
                     return;
                 }
+
+
                 switch (tileType)
                 {
                     case TileType.Blocked:
@@ -298,14 +261,59 @@ namespace GeometryEscape
         public JobHandle OnBeatUpdate(ref JobHandle inputDeps, int beatCounter)
         {
             //Schedule your job for every beat here.
-            inputDeps = new SetRoutePosition
+            var monsterEntityList = _MonsterEntityQuery.ToEntityArray(Allocator.TempJob);
+            m_MonsterMovePattern.Counter = beatCounter;
+            for (int i = 0; i < monsterEntityList.Length; i++)
             {
-                MonsterMovePattern = new MonsterMovePattern
+                Entity monster = monsterEntityList[i];
+                PreviousCoordinate previousCoordinate = default;
+                var coordinate = EntityManager.GetComponentData<Coordinate>(monster);
+                previousCoordinate.X = coordinate.X;
+                previousCoordinate.Y = coordinate.Y;
+                previousCoordinate.Z = coordinate.Z;
+                previousCoordinate.Direction = coordinate.Direction;
+                Coordinate nextMove = default;
+                var type = EntityManager.GetComponentData<TypeOfMonster>(monster);
+                switch (type.Value)
                 {
-                    Counter = beatCounter
-                },
-                TileHashMap = WorldSystem.TileHashMap
-            }.Schedule(this, inputDeps);
+                    case MonsterType.Blue:
+                        nextMove = m_MonsterMovePattern.SmallCircle(previousCoordinate);
+                        break;
+                    case MonsterType.Green:
+                        nextMove = m_MonsterMovePattern.LeftAndRight(previousCoordinate);
+                        break;
+                    case MonsterType.Skeleton:
+                        nextMove = m_MonsterMovePattern.SmallCircle(previousCoordinate);
+                        break;
+                    default:
+                        nextMove = coordinate;
+                        break;
+                }
+                TileType tileType;
+                //If the next position is out of map we cancel.
+                if (!WorldSystem.TileHashMap.TryGetValue(nextMove, out tileType))
+                {
+                    continue;
+                }
+                //If the next position already has a monster, we cancel.
+                TypeOfMonster monsterType = default;
+                if (WorldSystem.MonsterHashMap.TryGetValue(nextMove, out monsterType))
+                {
+                    continue;
+                }
+                WorldSystem.MonsterHashMap.Remove(coordinate);
+                if (!WorldSystem.MonsterHashMap.TryAdd(nextMove, type))
+                {
+                    Debug.Log("Something wrong with setting monster position hash map!");
+                    continue;
+                }
+                EntityManager.SetComponentData(monster, previousCoordinate);
+                EntityManager.SetComponentData(monster, new TargetCoordinate { X = nextMove.X, Y = nextMove.Y, Z = nextMove.Z, Direction = nextMove.Direction });
+                EntityManager.SetComponentData(monster, new Timer { isOn = true, T = 0, maxT = 0.2f });
+            }
+
+            monsterEntityList.Dispose();
+
             inputDeps.Complete();
             return inputDeps;
         }
@@ -313,22 +321,20 @@ namespace GeometryEscape
         public JobHandle OnFixedUpdate(ref JobHandle inputDeps, int counter)
         {
             //Schedule your job for every time step here. Time step is defined in central system.
-            //Coordinate startPoint = new Coordinate { X=c1.X, Y=c1.Y, Z=c1.Z };
-            //Coordinate endPoint=new Coordinate {X=c1.X2,Y=c1.Y2,Z=c1.Z2 };
-            
+
             return inputDeps;
         }
         protected override JobHandle OnUpdate(JobHandle inputDeps)
         {
 
             //MonsterRoute();
-            inputDeps = new MoveMonster{ }.Schedule(this, inputDeps);
-            
+            inputDeps = new MoveMonster { }.Schedule(this, inputDeps);
+
             return inputDeps;
 
 
         }
-       
+
 
     }
 }

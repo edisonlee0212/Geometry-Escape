@@ -64,14 +64,10 @@ namespace GeometryEscape
         {
             ShutDown();
             m_MusicResources = CentralSystem.AudioResources;
-            m_Music = m_MusicResources.Musics[2];
-            //m_Beats = m_MusicResources.Musics[1];
-            //m_KeySound = m_MusicResources.Musics[0];
+            m_Music = m_MusicResources.Musics[0];
             m_SoundEffectAudioSources = new AudioSource[m_MusicResources.SoundEffects.Length];
             CreateMusic(m_Music.MusicClip);
             CreateSoundEffects(m_MusicResources.SoundEffects);
-            //CreateBeats(m_Beats.MusicClip);
-            //CreateKeySound(m_KeySound.MusicClip);
             m_MusicAudioSource.Play();
             _Deviation = 0.1f;
             Enabled = true;

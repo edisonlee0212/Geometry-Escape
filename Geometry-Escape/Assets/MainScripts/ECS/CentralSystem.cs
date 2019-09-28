@@ -38,6 +38,7 @@ namespace GeometryEscape
         private static UISystem m_UISystem;
         private static CopyTextureIndexSystem m_CopyTextureIndexSystem;
         private static CopyDisplayColorSystem m_CopyDisplayColorSystem;
+        private static FloatingOriginSystem m_FloatingOriginSystem;
         #endregion
 
         #region Resources
@@ -66,7 +67,6 @@ namespace GeometryEscape
         /// 这里面存储所有主角相关的GameObject。
         /// </summary>
         private static MainCharacterResources m_MainCharacterResources;
-        private static CharacterHead m_CharacterHead;
 
         #endregion
 
@@ -90,9 +90,6 @@ namespace GeometryEscape
         private static bool _InverseDirection;
         private static int _FreezeCount;
         private static float3 _CurrentCenterPosition;
-        private static Coordinate _CharacterCurrentPosition;
-        private static bool _HurtMonster;
-        private static int _CurrentMonsterIndex;        // the monster that currently interact with character
         private static float _CurrentZoomFactor;
         private static float _Scale;
 
@@ -103,9 +100,6 @@ namespace GeometryEscape
         #endregion
 
         #region Getters and Setters
-        public static bool HurtMonster { get => _HurtMonster; set => _HurtMonster = value; }
-        public static int CurrentMonsterIndex { get => _CurrentMonsterIndex; set => _CurrentMonsterIndex = value; }
-        public static CharacterHead CharacterHead { get => m_CharacterHead; set => m_CharacterHead = value; }
         public static MeshRenderSystem RenderSystem { get => m_RenderSystem; set => m_RenderSystem = value; }
         public static TileSystem TileSystem { get => m_TileSystem; set => m_TileSystem = value; }
         public static WorldSystem WorldSystem { get => m_WorldSystem; set => m_WorldSystem = value; }
@@ -114,6 +108,8 @@ namespace GeometryEscape
         public static MonsterSystem MonsterSystem { get => m_MonsterSystem; set => m_MonsterSystem = value; }
         public static UISystem UISystem { get => m_UISystem; set => m_UISystem = value; }
         public static CopyTextureIndexSystem CopyTextureIndexSystem { get => m_CopyTextureIndexSystem; set => m_CopyTextureIndexSystem = value; }
+        public static FloatingOriginSystem FloatingOriginSystem { get => m_FloatingOriginSystem; set => m_FloatingOriginSystem = value; }
+
         public static LightResources LightResources { get => m_LightResources; set => m_LightResources = value; }
         public static TileResources TileResources { get => m_TileResources; set => m_TileResources = value; }
         public static AudioResources AudioResources { get => m_AudioResources; set => m_AudioResources = value; }
@@ -161,7 +157,7 @@ namespace GeometryEscape
             AudioSystem = World.Active.GetOrCreateSystem<AudioSystem>();
             CopyTextureIndexSystem = World.Active.GetOrCreateSystem<CopyTextureIndexSystem>();
             CopyDisplayColorSystem = World.Active.GetOrCreateSystem<CopyDisplayColorSystem>();
-
+            FloatingOriginSystem = World.Active.GetOrCreateSystem<FloatingOriginSystem>();
             #endregion
 
             SceneManager.LoadScene("MainMenu");
@@ -184,24 +180,16 @@ namespace GeometryEscape
              */
             m_Light = LightResources.ViewLight.transform;
 
-            /* 设置主角，主角动画及大小随地图缩放和玩家操作改变，这里加入引用。
-             */
             MainCharacterController = m_MainCharacterResources.MainCharacterController;
-            /*
-             * 地图放大倍数
-             */
+
             _CurrentZoomFactor = 1;
             _CurrentCenterPosition = Unity.Mathematics.float3.zero;
-            // used to do interaction with monster. If the character is moving, this value is the destination position. 
-            _CharacterCurrentPosition = new Coordinate { X = _CurrentCenterPosition.x, Y = _CurrentCenterPosition.y, Z = _CurrentCenterPosition.z };
-            //设置砖块系统的一些初始参数，tilescale值砖块的大小，你可以尝试改变这个值，看看有什么效果。
             Scale = 2;
-            //设置砖块系统的单位时间，砖块系统内有对应的OnUpdate和OnFixedUpdate，对应unity原本的Update和FixedUpdate
-            //其中OnUpdate由系统自动调用，OnFixedUpdate为我写的方法，由OnUpdate调用，这里就是调用时间间隔，0.1f代表每秒执行10次OnFixedUpdate
             TimeStep = 0.1f;
+
             #endregion
             #region Initialize sub-systems
-            //确认所有必须设置的初始参数设置完毕，我们可以启动各个子系统。
+            FloatingOriginSystem.Init();
             RenderSystem.Init();//启动这个系统
             TileSystem.Init();
 
@@ -210,7 +198,6 @@ namespace GeometryEscape
             WorldSystem.MonsterResources = m_MonsterResources;
             WorldSystem.Init();
             AudioSystem.Init();
-            CharacterHead = new CharacterHead();
             ControlSystem = new ControlSystem();//control system并不是一个真正的ECS的系统，所以我们通过这种方式建立。
             CopyTextureIndexSystem.Init();
             CopyDisplayColorSystem.Init();
@@ -238,7 +225,7 @@ namespace GeometryEscape
             TileSystem.Pause();
             MonsterSystem.Pause();
             AudioSystem.Pause();
-
+            FloatingOriginSystem.Pause();
             WorldSystem.Pause();
 
         }
@@ -257,7 +244,7 @@ namespace GeometryEscape
             TileSystem.Resume();
             MonsterSystem.Resume();
             AudioSystem.Resume();
-
+            FloatingOriginSystem.Pause();
             WorldSystem.Resume();
 
         }
@@ -277,6 +264,7 @@ namespace GeometryEscape
             AudioSystem.ShutDown();
             CopyDisplayColorSystem.ShutDown();
             CopyTextureIndexSystem.ShutDown();
+            FloatingOriginSystem.ShutDown();
             ControlSystem.ControlMode = ControlMode.NoControl;
             
         }
@@ -331,7 +319,7 @@ namespace GeometryEscape
                 Debug.Log("Freezed! Need " + _FreezeCount + " more try to make another move.");
                 return;
             }
-            if (!_Moving && (ControlSystem.ControlMode == ControlMode.MapEditor || TileSystem.CenterEntity != Entity.Null))
+            if (!_Moving && (ControlSystem.ControlMode == ControlMode.MapEditor || FloatingOriginSystem.CenterTileEntity != Entity.Null))
             {
                 Debug.Log(AudioSystem.OnBeats());
                 if ((AudioSystem.OnBeats() || ControlSystem.ControlMode == ControlMode.MapEditor) && moveVec != Vector2.zero && moveVec.x * moveVec.y == 0)
@@ -350,7 +338,7 @@ namespace GeometryEscape
 
                             if (_InverseDirection)
                             {
-                                if (m_EntityManager.GetComponentData<LeftTile>(TileSystem.CenterEntity).Value == Entity.Null)
+                                if (m_EntityManager.GetComponentData<LeftTile>(FloatingOriginSystem.CenterTileEntity).Value == Entity.Null)
                                 {
                                     Debug.Log("Blocked in player mode! Use map editor mode if you want to move to empty space.");
                                     return;
@@ -358,7 +346,7 @@ namespace GeometryEscape
                             }
                             else
                             {
-                                if (m_EntityManager.GetComponentData<RightTile>(TileSystem.CenterEntity).Value == Entity.Null)
+                                if (m_EntityManager.GetComponentData<RightTile>(FloatingOriginSystem.CenterTileEntity).Value == Entity.Null)
                                 {
                                     Debug.Log("Blocked in player mode! Use map editor mode if you want to move to empty space.");
                                     return;
@@ -374,7 +362,7 @@ namespace GeometryEscape
                         {
                             if (_InverseDirection)
                             {
-                                if (m_EntityManager.GetComponentData<RightTile>(TileSystem.CenterEntity).Value == Entity.Null)
+                                if (m_EntityManager.GetComponentData<RightTile>(FloatingOriginSystem.CenterTileEntity).Value == Entity.Null)
                                 {
                                     Debug.Log("Blocked in player mode! Use map editor mode if you want to move to empty space.");
                                     return;
@@ -382,7 +370,7 @@ namespace GeometryEscape
                             }
                             else
                             {
-                                if (m_EntityManager.GetComponentData<LeftTile>(TileSystem.CenterEntity).Value == Entity.Null)
+                                if (m_EntityManager.GetComponentData<LeftTile>(FloatingOriginSystem.CenterTileEntity).Value == Entity.Null)
                                 {
                                     Debug.Log("Blocked in player mode! Use map editor mode if you want to move to empty space.");
                                     return;
@@ -397,7 +385,7 @@ namespace GeometryEscape
                         {
                             if (_InverseDirection)
                             {
-                                if (m_EntityManager.GetComponentData<DownTile>(TileSystem.CenterEntity).Value == Entity.Null)
+                                if (m_EntityManager.GetComponentData<DownTile>(FloatingOriginSystem.CenterTileEntity).Value == Entity.Null)
                                 {
                                     Debug.Log("Blocked in player mode! Use map editor mode if you want to move to empty space.");
                                     return;
@@ -405,7 +393,7 @@ namespace GeometryEscape
                             }
                             else
                             {
-                                if (m_EntityManager.GetComponentData<UpTile>(TileSystem.CenterEntity).Value == Entity.Null)
+                                if (m_EntityManager.GetComponentData<UpTile>(FloatingOriginSystem.CenterTileEntity).Value == Entity.Null)
                                 {
                                     Debug.Log("Blocked in player mode! Use map editor mode if you want to move to empty space.");
                                     return;
@@ -420,7 +408,7 @@ namespace GeometryEscape
                         {
                             if (_InverseDirection)
                             {
-                                if (m_EntityManager.GetComponentData<UpTile>(TileSystem.CenterEntity).Value == Entity.Null)
+                                if (m_EntityManager.GetComponentData<UpTile>(FloatingOriginSystem.CenterTileEntity).Value == Entity.Null)
                                 {
                                     Debug.Log("Blocked in player mode! Use map editor mode if you want to move to empty space.");
                                     return;
@@ -428,7 +416,7 @@ namespace GeometryEscape
                             }
                             else
                             {
-                                if (m_EntityManager.GetComponentData<DownTile>(TileSystem.CenterEntity).Value == Entity.Null)
+                                if (m_EntityManager.GetComponentData<DownTile>(FloatingOriginSystem.CenterTileEntity).Value == Entity.Null)
                                 {
                                     Debug.Log("Blocked in player mode! Use map editor mode if you want to move to empty space.");
                                     return;
@@ -438,7 +426,6 @@ namespace GeometryEscape
                         characterMovingDirection = _InverseDirection ? Direction.Up : Direction.Down;
                     }
                     #endregion
-
                     switch (characterMovingDirection)
                     {
                         case Direction.Up:
@@ -473,6 +460,10 @@ namespace GeometryEscape
         #endregion
 
         #region Jobs
+
+        
+
+
         [BurstCompile]
         protected struct TimerJob : IJobForEach<Timer>
         {
@@ -506,39 +497,14 @@ namespace GeometryEscape
             #endregion
             m_AudioSystem.StopTrapSound();
             m_LightResources.StopTrapColor();
-            if (TileSystem.CenterEntity != Entity.Null)
-            {
-                switch (EntityManager.GetComponentData<TileTypeIndex>(TileSystem.CenterEntity).Value)
-                {
-                    case TileType.NailTrap:
-                        if (EntityManager.GetComponentData<TextureIndex>(TileSystem.CenterEntity).Value == 1)
-                        {
-                            m_MainCharacterController.ChangeHealth(-1);
-                            m_AudioSystem.PlayTrapSound();
-                            m_LightResources.TrapColor();
-                           // m_CharacterHead.ChangeColor();
-                        }
-                        break;
-                }
-            }
-            // character coordinate
-            Coordinate characterPosition = _CharacterCurrentPosition;
-            // monster coordinates
-            Coordinate[] monsterPosition = m_MonsterSystem.MonsterCurrentPosition;
-            //Debug.Log("character position"+characterPosition.X+characterPosition.Y+characterPosition.Z);
-            //Debug.Log("monster position"+monsterPosition[0].X+ monsterPosition[0].Y+ monsterPosition[0].Z);
-            
 
-            // check direction and coordinate
-            for (int i = 0; i < m_WorldSystem.TotalMonsterAmount; i++)
+            if (_CheckTile && FloatingOriginSystem.CenterTileEntity != Entity.Null)
             {
-                if (characterPosition.X == monsterPosition[i].X&&characterPosition.Y==monsterPosition[i].Y)
-                {
-                    m_MainCharacterController.ChangeHealth(-1);
-                    _CurrentMonsterIndex = i;
-                    //  m_MonsterSystem.ChangeHealth(-10);
-                    _HurtMonster = true;
-                }
+                CheckTrap();
+            }
+            else
+            {
+                _CheckTile = true;
             }
             return inputDeps;
         }
@@ -547,6 +513,12 @@ namespace GeometryEscape
         {
             if (Running)
             {
+                
+
+                if (_Moving) OnMoving();
+
+                if (_Zooming) OnZooming();
+
                 inputDeps = new TimerJob
                 {
                     deltaTime = Time.deltaTime
@@ -574,41 +546,43 @@ namespace GeometryEscape
                 #endregion
 
                 #region Movement
-                if (_Moving) OnMoving();
-                else if (_CheckTile && TileSystem.CenterEntity != Entity.Null)
-                {
-                    //如果上次移动之后没有检测是什么砖块，我们在这里进行操作。
-                    _CheckTile = false;
-                    switch (EntityManager.GetComponentData<TileTypeIndex>(TileSystem.CenterEntity).Value)
-                    {
-                        case TileType.Normal:
-                            break;
-                        case TileType.FreezeTrap:
-                            _FreezeCount = 5;
-                            break;
-                        case TileType.InverseTrap:
-                            _InverseDirection = !_InverseDirection;
-                            break;
-                        case TileType.MusicAccleratorTrap:
-
-                            break;
-                        default:
-                            break;
-                    }
-                }
-                _CharacterCurrentPosition.X = -_TargetOriginPosition.x;
-                _CharacterCurrentPosition.Y = -_TargetOriginPosition.y;
-                _CharacterCurrentPosition.Z = -_TargetOriginPosition.z;
-
-                if (_Zooming) OnZooming();
+                
 
                 #endregion
             }
 
             return inputDeps;
         }
-        #region Movement
 
+        private void CheckTrap()
+        {
+            switch (EntityManager.GetComponentData<TypeOfTile>(FloatingOriginSystem.CenterTileEntity).Value)
+            {
+                case TileType.Normal:
+                    break;
+                case TileType.FreezeTrap:
+                    _FreezeCount = 5;
+                    break;
+                case TileType.InverseTrap:
+                    _InverseDirection = !_InverseDirection;
+                    break;
+                case TileType.MusicAccleratorTrap:
+
+                    break;
+                case TileType.NailTrap:
+                    if (EntityManager.GetComponentData<TextureIndex>(FloatingOriginSystem.CenterTileEntity).Value == 1)
+                    {
+                        m_MainCharacterController.ChangeHealth(-1);
+                        m_AudioSystem.PlayTrapSound();
+                        m_LightResources.TrapColor();
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        #region Movement
 
         private void OnMoving()
         {
@@ -624,7 +598,6 @@ namespace GeometryEscape
                 MainCharacterController.Idle();
             }
             //设置以在移动完成之后进行操作。
-            _CheckTile = true;
         }
 
         private void OnZooming()
@@ -652,12 +625,52 @@ namespace GeometryEscape
     {
         #region Private
         private float3 _PreviousCenterPosition;
+        private static NativeArray<Entity> _CenterTileEntity;
+        private static NativeArray<Entity> _CenterMonsterEntity;
         #endregion
 
         #region Public
+
+
+        public static Entity CenterTileEntity { get => _CenterTileEntity[0]; set => _CenterTileEntity[0] = value; }
+        public static Entity CenterMonsterEntity { get => _CenterMonsterEntity[0]; set => _CenterMonsterEntity[0] = value; }
         #endregion
 
         #region Managers
+        protected override void OnCreate()
+        {
+            Enabled = false;
+        }
+
+        public void Init()
+        {
+            _CenterTileEntity = new NativeArray<Entity>(1, Allocator.Persistent);
+            _CenterMonsterEntity = new NativeArray<Entity>(1, Allocator.Persistent);
+            Enabled = true;
+        }
+
+
+        public void Pause()
+        {
+            Enabled = false;
+        }
+
+        public void Resume()
+        {
+            Enabled = true;
+        }
+
+        public void ShutDown()
+        {
+            Enabled = false;
+            if (_CenterTileEntity.IsCreated) _CenterTileEntity.Dispose();
+            if (_CenterMonsterEntity.IsCreated) _CenterMonsterEntity.Dispose();
+        }
+
+        protected override void OnDestroy()
+        {
+            ShutDown();
+        }
 
         #endregion
 
@@ -679,7 +692,31 @@ namespace GeometryEscape
                 c3.Value = Quaternion.Euler(0, 0, coordinate.Direction);
             }
         }
+        [BurstCompile]
+        struct CenterSelect : IJobForEachWithEntity<Translation, TypeOfEntity>
+        {
+            [ReadOnly] public float scale;
+            [NativeDisableParallelForRestriction]
+            [WriteOnly] public NativeArray<Entity> centerTileEntity;
+            [WriteOnly] public NativeArray<Entity> centerMonsterEntity;
+            public void Execute(Entity entity, int index, [ReadOnly] ref Translation c0, [ReadOnly] ref TypeOfEntity c1)
+            {
+                if (Mathf.Abs(c0.Value.x) < scale / 2 && Mathf.Abs(c0.Value.y) < scale / 2)
+                {
+                    switch (c1.Value)
+                    {
+                        case EntityType.Tile:
+                            //如果这个砖块处于中心，我们把它存到container里面
+                            centerTileEntity[0] = entity;
+                            break;
+                        case EntityType.Monster:
+                            centerMonsterEntity[0] = entity;
+                            break;
+                    }
 
+                }
+            }
+        }
         #endregion
         protected override JobHandle OnUpdate(JobHandle inputDeps)
         {
@@ -689,6 +726,18 @@ namespace GeometryEscape
                 centerPosition = CentralSystem.CurrentCenterPosition
             }.Schedule(this, inputDeps);
             inputDeps.Complete();
+
+            _CenterTileEntity[0] = Entity.Null;
+            _CenterMonsterEntity[0] = Entity.Null;
+            inputDeps = new CenterSelect
+            {
+                scale = CentralSystem.Scale / CentralSystem.CurrentZoomFactor,
+                centerTileEntity = _CenterTileEntity,
+                centerMonsterEntity = _CenterMonsterEntity
+            }.Schedule(this, inputDeps);
+            inputDeps.Complete();
+
+            if (_CenterMonsterEntity[0] != Entity.Null) Debug.Log("Hit!");
             return inputDeps;
         }
     }

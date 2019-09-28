@@ -13,14 +13,6 @@ MonoBehaviour:
   m_Name: AudioResources
   m_EditorClassIdentifier: 
   m_Musics:
-  - MusicClip: {fileID: 8300000, guid: 8b8697a82ea5c704ca08719b3be33b1a, type: 3}
-    MusicInfo:
-      MusicStartTime: 0.01
-      MusicBeatsTime: 0.1
-  - MusicClip: {fileID: 8300000, guid: d835453e477ff8649ae8f35f5985c2ef, type: 3}
-    MusicInfo:
-      MusicStartTime: 0.01
-      MusicBeatsTime: 0.6465641
   - MusicClip: {fileID: 8300000, guid: 41c20ecc26a7d524095f1754bc7b187c, type: 3}
     MusicInfo:
       MusicStartTime: 0.2
