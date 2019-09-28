@@ -154,11 +154,12 @@ namespace GeometryEscape
             }
             */
             
-            CentralSystem.MonsterSystem.MonsterCurrentPosition = new Coordinate[2];     // hardcode number of monsters
+            CentralSystem.MonsterSystem.MonsterCurrentPosition = new Coordinate[1];     // hardcode number of monsters
 
-            for (int i = 0; i < 2; i++)      // hardcode number of monsters
+            for (int i = 0; i < 1; i++)      // hardcode number of monsters
             {
                 AddMonster(i, new Coordinate { X = 0, Y = 0, Z = -1 });
+
                 CentralSystem.MonsterSystem.MonsterCurrentPosition[i] = new Coordinate { X=0,Y=0,Z=-1};
             }
 
@@ -456,7 +457,7 @@ namespace GeometryEscape
                 for (int i = 0; i < 100 && i < count; i++)
                 {
                     var monsterInfo = _MonsterCreationQueue.Dequeue();
-                    CreateMonster(inputDeps, monsterInfo);
+                    CreateMonster(inputDeps, monsterInfo,i);
                 }
                 if (_MonsterCreationQueue.Count == 0) _AddingMonsters = false;
             }
@@ -587,8 +588,9 @@ namespace GeometryEscape
             EntityManager.SetComponentData(instance, tileType);
             _TotalTileAmount++;
         }
-        private void CreateMonster(JobHandle inputDeps, MonsterInfo monsterInfo)
+        private void CreateMonster(JobHandle inputDeps, MonsterInfo monsterInfo,int i)
         {
+
             /*
             // TODO ->
             var materialIndex = monsterInfo.MaterialIndex;
@@ -654,6 +656,10 @@ namespace GeometryEscape
             {
                 Value = 1
             });
+            EntityManager.SetComponentData(instance, new MonsterProperties
+            {
+                Index = i
+            }) ;
         }
     }
 }

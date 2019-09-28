@@ -90,6 +90,7 @@ namespace GeometryEscape
         private static bool _InverseDirection;
         private static int _FreezeCount;
         private static float3 _CurrentCenterPosition;
+        private static Coordinate _CharacterCurrentPosition;
         private static float _CurrentZoomFactor;
         private static float _Scale;
 
@@ -187,6 +188,8 @@ namespace GeometryEscape
              */
             _CurrentZoomFactor = 1;
             _CurrentCenterPosition = Unity.Mathematics.float3.zero;
+            // used to do interaction with monster. If the character is moving, this value is the destination position. 
+            _CharacterCurrentPosition = new Coordinate { X = _CurrentCenterPosition.x, Y = _CurrentCenterPosition.y, Z = _CurrentCenterPosition.z };
             //设置砖块系统的一些初始参数，tilescale值砖块的大小，你可以尝试改变这个值，看看有什么效果。
             Scale = 2;
             //设置砖块系统的单位时间，砖块系统内有对应的OnUpdate和OnFixedUpdate，对应unity原本的Update和FixedUpdate
@@ -210,7 +213,7 @@ namespace GeometryEscape
             #endregion
             //这个地方设置操作模式，不同操作模式对应不同场景。
 
-            ControlSystem.ControlMode = ControlMode.MapEditor;
+            ControlSystem.ControlMode = ControlMode.InGame;
             Running = true;
 
             Enabled = true;
@@ -515,14 +518,21 @@ namespace GeometryEscape
                 }
             }
             // character coordinate
-            //_CurrentCenterPosition;
+            Coordinate characterPosition = _CharacterCurrentPosition;
             // monster coordinates
+            Coordinate[] monsterPosition = m_MonsterSystem.MonsterCurrentPosition;
+            Debug.Log("character position"+characterPosition.X+characterPosition.Y+characterPosition.Z);
+            Debug.Log("monster position"+monsterPosition[0].X+ monsterPosition[0].Y+ monsterPosition[0].Z);
 
-           // inputDeps = new MoveMonster
-          //  {
-
-          //  }.Schedule(MonsterSystem,inputDeps);
             // check direction and coordinate
+            for (int i = 0; i < m_MonsterSystem.MonsterCount; i++)
+            {
+                if (characterPosition.X == monsterPosition[i].X&&characterPosition.Y==monsterPosition[i].Y)
+                {
+                    m_MainCharacterController.ChangeHealth(-1);
+                    //  m_MonsterSystem.ChangeHealth(-10);
+                }
+            }
             return inputDeps;
         }
 
@@ -579,6 +589,10 @@ namespace GeometryEscape
                             break;
                     }
                 }
+                _CharacterCurrentPosition.X = -_TargetOriginPosition.x;
+                _CharacterCurrentPosition.Y = -_TargetOriginPosition.y;
+                _CharacterCurrentPosition.Z = -_TargetOriginPosition.z;
+
                 if (_Zooming) OnZooming();
 
                 #endregion
@@ -600,7 +614,6 @@ namespace GeometryEscape
             {
                 _Moving = false;
                 _CurrentCenterPosition = _TargetOriginPosition;
-                // TODO
                 MainCharacterController.Idle();
             }
             //设置以在移动完成之后进行操作。

@@ -51,6 +51,10 @@ namespace GeometryEscape
 
         }
 
+        public void ChangeHealth()
+        {
+
+        }
         public void Init()
         {
             ShutDown();
@@ -102,11 +106,14 @@ namespace GeometryEscape
 
         #region Jobs
 
-        [BurstCompile]
-        protected struct MoveMonster : IJobForEach<Coordinate, PreviousCoordinate, TargetCoordinate, Timer>
+       // [BurstCompile]
+        protected struct MoveMonster : IJobForEach<Coordinate, PreviousCoordinate, TargetCoordinate, Timer,MonsterProperties>
         {
-            public void Execute(ref Coordinate c0, ref PreviousCoordinate c1, ref TargetCoordinate c2, ref Timer c3)
+            public void Execute(ref Coordinate c0, ref PreviousCoordinate c1, ref TargetCoordinate c2, ref Timer c3,ref MonsterProperties c4)
             {
+                _MonsterCurrentPosition[c4.Index].X = c2.X;
+                _MonsterCurrentPosition[c4.Index].Y = c2.Y;
+                _MonsterCurrentPosition[c4.Index].Z = c2.Z;
 
                 if (!c3.isOn) return;
                 var proportion = c3.T / c3.maxT;
