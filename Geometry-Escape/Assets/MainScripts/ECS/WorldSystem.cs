@@ -54,9 +54,9 @@ namespace GeometryEscape
         private static bool _AddingTiles;
         private static bool _RemovingTiles;
         private static bool _AddingMonsters;
-        private static bool _RemovingMonsts;
+        private static bool _RemovingMonsters;
         private static int _TotalTileAmount;
-        private static int _TotalMonsterAmmount;
+        private int _TotalMonsterAmount;
         private static TileResources m_TileResources;
         private static MonsterResources m_MonsterResources;
 
@@ -65,7 +65,7 @@ namespace GeometryEscape
         public static bool RemovingTiles { get => _RemovingTiles; set => _RemovingTiles = value; }
         public static TileResources TileResources { get => m_TileResources; set => m_TileResources = value; }
         public static MonsterResources MonsterResources { get => m_MonsterResources; set => m_MonsterResources = value; }
-        public static int TotalMonsterAmmount { get => _TotalMonsterAmmount; set => _TotalMonsterAmmount = value; }
+        public int TotalMonsterAmount { get => _TotalMonsterAmount; set => _TotalMonsterAmount = value; }
         public static EntityArchetype TileEntityArchetype { get => _TileEntityArchetype; set => _TileEntityArchetype = value; }
         public static EntityArchetype MonsterEntityArchetype { get => _MonsterEntityArchetype; set => _MonsterEntityArchetype = value; }
         public static NativeHashMap<Coordinate, TileType> TileHashMap { get => _TileHashMap; set => _TileHashMap = value; }
@@ -124,7 +124,7 @@ namespace GeometryEscape
             _MonsterDestructionQueue = new NativeQueue<Entity>(Allocator.Persistent);
             _TileHashMap = new NativeHashMap<Coordinate, TileType>(10000, Allocator.Persistent);
             _TotalTileAmount = 0;
-            _TotalMonsterAmmount = 0;
+            _TotalMonsterAmount = 0;
 
             int _TileCount = 50;
             for (int i = 0; i < _TileCount; i++)
@@ -164,6 +164,7 @@ namespace GeometryEscape
             }
             CentralSystem.CurrentMonsterIndex = -1;      // default -1
             CentralSystem.HurtMonster = false;
+            CentralSystem.MonsterSystem.MonsterIsDeadIndex = -1;
             Enabled = true;
         }
 
@@ -277,7 +278,7 @@ namespace GeometryEscape
 
         public static void AddMonster(int monsterIndex, Coordinate initialCoordinate = default)
         {
-           CentralSystem.MonsterSystem.MonsterCount++;
+           CentralSystem.WorldSystem.TotalMonsterAmount++;
             _AddingMonsters = true;
             _MonsterCreationQueue.Enqueue(new MonsterInfo
             {
@@ -462,6 +463,23 @@ namespace GeometryEscape
                 }
                 if (_MonsterCreationQueue.Count == 0) _AddingMonsters = false;
             }
+            if (_RemovingMonsters && _MonsterDestructionQueue.Count != 0)
+            {
+                int count = _MonsterDestructionQueue.Count;
+                for (int i = 0; i < 100 && i < count; i++)
+                {
+                    var monsterEntity = _MonsterDestructionQueue.Dequeue();
+                    DestroyMonster(inputDeps, monsterEntity);
+                }
+                if (_MonsterDestructionQueue.Count == 0) _RemovingMonsters = false;
+            }
+
+            // TODO: used to destroy monster if hp <=0
+            if (CentralSystem.MonsterSystem.MonsterIsDeadIndex!=-1)
+            {
+
+                CentralSystem.MonsterSystem.MonsterIsDeadIndex = -1;
+            }
 
             return inputDeps;
         }
@@ -512,7 +530,6 @@ namespace GeometryEscape
             EntityManager.DestroyEntity(tileEntity);
             _TotalTileAmount--;
         }
-
         private void CreateTile(JobHandle inputDeps, TileCreationInfo tileInfo)
         {
             var initialCoordinate = tileInfo.Coordinate;
@@ -589,65 +606,21 @@ namespace GeometryEscape
             EntityManager.SetComponentData(instance, tileType);
             _TotalTileAmount++;
         }
+        private void DestroyMonster(JobHandle inputDeps, Entity monsterEntity)
+        {
+            EntityManager.DestroyEntity(monsterEntity);
+            TotalMonsterAmount--;
+        }
         private void CreateMonster(JobHandle inputDeps, MonsterInfo monsterInfo,int i)
         {
-
-            /*
-            // TODO ->
-            var materialIndex = monsterInfo.MaterialIndex;
-            var initialCoordinate = monsterInfo.Coordinate;
-            var monsterType = monsterInfo.MonsterType;
-
-            var color = new DefaultColor { };
-            //color.Color = Vector4.one;
-            var textureInfo = new TextureIndex
-            {
-                Value = 1
-            };
-            var renderMaterialIndex = new RenderMaterialIndex
-            {
-                Value = materialIndex
-            };
-
-            var maxTextureIndex = new TextureMaxIndex
-            {
-                Value = 1
-            };
-            Entity instance = EntityManager.CreateEntity(_MonsterEntityArchetype);
-
-            EntityManager.SetSharedComponentData(instance, renderMaterialIndex);
-            EntityManager.SetComponentData(instance, initialCoordinate);
-            EntityManager.SetComponentData(instance, color);
-            EntityManager.SetComponentData(instance, textureInfo);
-            EntityManager.SetComponentData(instance, maxTextureIndex);
-            var properties = new MonsterProperties
-            {
-                MonsterType = monsterType,
-                //Coordinate = 
-                MaterialIndex = materialIndex
-            };
-            _TotalMonsterAmmount++;
-            EntityManager.SetComponentData(instance, properties);*/
             var monster = m_MonsterResources.GetMonster(monsterInfo.MonsterIndex);
-            /*typeof(MonsterTypeIndex),
-                typeof(RenderContent),
-                typeof(Coordinate),
-                typeof(Translation),
-                typeof(Rotation),
-                typeof(Scale),
-                typeof(LocalToWorld),
-                typeof(MonsterProperties),
-                typeof(DefaultColor),
-                typeof(TextureIndex),
-                typeof(TextureMaxIndex),
-                typeof(MonsterHP)*/
             var instance = EntityManager.CreateEntity(MonsterEntityArchetype);
             EntityManager.SetComponentData(instance, new MonsterTypeIndex
             {
                 Value = monster.MonsterType
             });
             EntityManager.SetSharedComponentData(instance, monster.RenderContent);
-            EntityManager.SetComponentData(instance, monsterInfo.Coordinate);
+            EntityManager.SetComponentData(instance, monsterInfo.Coordinate); //
             EntityManager.SetComponentData(instance, new DisplayColor
             {
                 Value = Vector4.one

@@ -530,7 +530,7 @@ namespace GeometryEscape
             
 
             // check direction and coordinate
-            for (int i = 0; i < m_MonsterSystem.MonsterCount; i++)
+            for (int i = 0; i < m_WorldSystem.TotalMonsterAmount; i++)
             {
                 if (characterPosition.X == monsterPosition[i].X&&characterPosition.Y==monsterPosition[i].Y)
                 {

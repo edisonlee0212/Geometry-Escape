@@ -22,25 +22,24 @@ namespace GeometryEscape
         private static AudioSource m_MusicAudioSource;
         private static AudioResources.Music m_Music;
         private static CentralSystem m_CentralSystem;
+        
 
         private static EntityArchetype _MonsterEntityArchetype;
 
         private static float _Timer; 
         private static int _Counter;
         private static float _TimeStep;
-        private int _MonsterCount;
         private int _MonsterMaterAmount;
         private static float _beatTime;
         private float _currentTime;
         private static NativeQueue<MonsterInfo> _MonsterCreationQueue;
         private static Vector3 startPoint;
         private static Vector3 endPoint;
-        private static Vector3 lerp;
+        private static int _MonsterIsDeadIndex;      // index of monster which hp<=0
         private static Coordinate[] _MonsterCurrentPosition;
 
-        public int MonsterCount { get => _MonsterCount; set => _MonsterCount = value; }
         public Coordinate[] MonsterCurrentPosition { get => _MonsterCurrentPosition; set => _MonsterCurrentPosition = value; }
-
+        public  int MonsterIsDeadIndex { get => _MonsterIsDeadIndex; set => _MonsterIsDeadIndex = value; }
 
         //public float beatTime { get => _beatTime; set => _beatTime=value; }
         #endregion
@@ -83,13 +82,13 @@ namespace GeometryEscape
         #region Methods
 
 
-        public void MonsterRoute() {
+        /*public void MonsterRoute() {
 
             float distCovered = (_currentTime - _beatTime) * 2.0f;
             float fractionOfJourney=distCovered/ Vector3.Distance(startPoint, endPoint);
             lerp = Vector3.Lerp(startPoint, endPoint, fractionOfJourney);
             Debug.Log("in monsterRoute "+startPoint);
-        }
+        }*/
 
         public void RouteOnCall(Entity entity) {
             /** need an algorithm to calculate 
@@ -125,11 +124,23 @@ namespace GeometryEscape
                 {
                     c3.isOn = false;
                 }
-                if (c4.Index == CentralSystem.CurrentMonsterIndex&&CentralSystem.HurtMonster)
+                if (c4.Index == CentralSystem.CurrentMonsterIndex && CentralSystem.HurtMonster)
                 {
-                    c5.Value -= 10;
-                    CentralSystem.HurtMonster = false;
-                    Debug.Log("Monster hp "+c5.Value);
+                    if (c5.Value - 10 <= 0)
+                    {
+                        _MonsterIsDeadIndex = c4.Index;
+
+                        Debug.Log("monster dead"+ _MonsterIsDeadIndex);
+                        // TODO  destroy game object
+
+                        // TODO    destroy entity
+                    }
+                    else
+                    {
+                        c5.Value -= 10;
+                        CentralSystem.HurtMonster = false;
+                        Debug.Log("Monster hp " + c5.Value);
+                    }
                 }
             }
         }
