@@ -514,8 +514,7 @@ namespace GeometryEscape
             if (Running)
             {
                 if (_Moving) OnMoving();
-
-                if (_Zooming) OnZooming();
+                else if (_Zooming) OnZooming();
 
                 inputDeps = new TimerJob
                 {
@@ -614,6 +613,8 @@ namespace GeometryEscape
             Vector3 position = m_Light.position;
             position.z = -5 / _CurrentZoomFactor;
             m_Light.position = position;
+            m_MainCharacterController.gameObject.transform.localScale = new Vector3(1.0f / _CurrentZoomFactor, 1.0f / _CurrentZoomFactor, 1.0f/_CurrentZoomFactor);
+
         }
         #endregion
     }

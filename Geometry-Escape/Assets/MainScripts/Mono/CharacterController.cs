@@ -34,7 +34,7 @@ namespace GeometryEscape
         public void MoveLeft()
         {
             var scale = transform.localScale;
-            scale.x = 1;
+            if (scale.x < 0) scale.x *= -1;
             transform.localScale = scale;
             m_Animator.Play("Run");
         }
@@ -42,7 +42,7 @@ namespace GeometryEscape
         public void MoveRight()
         {
             var scale = transform.localScale;
-            scale.x = -1;
+            if (scale.x > 0) scale.x *= -1;
             transform.localScale = scale;
             m_Animator.Play("Run");
         }
