@@ -162,7 +162,6 @@ namespace GeometryEscape
 
             SceneManager.LoadScene("MainMenu");
             Enabled = false;
-            //Init();
         }
         public void Init()
         {
@@ -329,7 +328,7 @@ namespace GeometryEscape
                     _MovementTime = time;
                     _MovementTimer = 0;
                     _PreviousOriginPosition = _CurrentCenterPosition;
-                        _TargetOriginPosition = (float3)(int3)_PreviousOriginPosition;
+                    _TargetOriginPosition = (float3)(int3)_PreviousOriginPosition;
 
                     #region Decide Direction
                     if (moveVec.x > 0)
@@ -514,8 +513,6 @@ namespace GeometryEscape
         {
             if (Running)
             {
-
-
                 if (_Moving) OnMoving();
 
                 if (_Zooming) OnZooming();
@@ -576,6 +573,7 @@ namespace GeometryEscape
                         m_MainCharacterController.ChangeHealth(-1);
                         m_AudioSystem.PlayTrapSound();
                         m_LightResources.TrapColor();
+                        FloatingOriginSystem.ShakeWorld(new ShakeInfo { Amplitude = 0.1f, Frequency = 30, x = true, y = true, Duration = 0.2f });
                     }
                     break;
                 default:
@@ -619,7 +617,11 @@ namespace GeometryEscape
         }
         #endregion
     }
-
+    public struct ShakeInfo
+    {
+        public float Duration, Amplitude, Frequency;
+        public bool x, y, z;
+    }
 
     [UpdateInGroup(typeof(LateSimulationSystemGroup))]
     public class FloatingOriginSystem : JobComponentSystem
@@ -629,6 +631,10 @@ namespace GeometryEscape
         private static NativeArray<Entity> _CenterTileEntity;
         private static NativeArray<Entity> _CenterMonsterEntity;
         private static float _PushTimer;
+        private static bool _Shaking;
+        private static float _ShakeTimer;
+        private static ShakeInfo _ShakeInfo;
+        private static float3 _WorldPositionOffset;
         #endregion
 
         #region Public
@@ -641,6 +647,7 @@ namespace GeometryEscape
         #region Managers
         protected override void OnCreate()
         {
+            _WorldPositionOffset = default;
             Enabled = false;
         }
 
@@ -677,6 +684,16 @@ namespace GeometryEscape
         #endregion
 
         #region Methods
+
+        public static bool ShakeWorld(ShakeInfo shakeInfo)
+        {
+            if (_Shaking) return false;
+            _ShakeInfo = shakeInfo;
+            _ShakeTimer = shakeInfo.Duration;
+            _Shaking = true;
+            return true;
+        }
+
         #endregion
 
         #region Jobs
@@ -694,6 +711,7 @@ namespace GeometryEscape
                 c3.Value = Quaternion.Euler(0, 0, coordinate.Direction);
             }
         }
+
         [BurstCompile]
         struct CenterSelect : IJobForEachWithEntity<Translation, TypeOfEntity>
         {
@@ -720,15 +738,37 @@ namespace GeometryEscape
                 }
             }
         }
+
         #endregion
         protected override JobHandle OnUpdate(JobHandle inputDeps)
         {
-            inputDeps = new CalculateLocalToWorld
+            if (_Shaking)
             {
-                scale = CentralSystem.Scale / CentralSystem.CurrentZoomFactor,
-                centerPosition = CentralSystem.CurrentCenterPosition
-            }.Schedule(this, inputDeps);
-            inputDeps.Complete();
+                Debug.Log("Shaking");
+                if (_ShakeTimer > 0)
+                {
+                    if (_ShakeInfo.x)
+                    {
+                        _WorldPositionOffset.x = sin(_ShakeTimer * _ShakeInfo.Frequency) * _ShakeInfo.Amplitude;
+                    }
+                    if (_ShakeInfo.y)
+                    {
+                        _WorldPositionOffset.y = sin(_ShakeTimer * _ShakeInfo.Frequency) * _ShakeInfo.Amplitude;
+                    }
+                    if (_ShakeInfo.z)
+                    {
+                        _WorldPositionOffset.z = sin(_ShakeTimer * _ShakeInfo.Frequency) * _ShakeInfo.Amplitude;
+                    }
+                    _ShakeTimer -= Time.deltaTime;
+                }
+                else
+                {
+                    _Shaking = false;
+                    _WorldPositionOffset = new float3(0, 0, 0);
+                }
+            }
+
+
 
             _CenterTileEntity[0] = Entity.Null;
             _CenterMonsterEntity[0] = Entity.Null;
@@ -740,19 +780,31 @@ namespace GeometryEscape
             }.Schedule(this, inputDeps);
             inputDeps.Complete();
 
-            if(_PushTimer <= 0.1f)
+            if (_PushTimer <= 0.1f)
             {
                 _PushTimer += Time.deltaTime;
             }
 
             if (CenterMonsterEntity != Entity.Null && _PushTimer > 0.1f)
             {
+                switch (EntityManager.GetComponentData<TypeOfMonster>(CenterMonsterEntity).Value)
+                {
+                    case MonsterType.Blue:
+                        CentralSystem.MainCharacterController.ChangeHealth(-10);
+                        break;
+                    case MonsterType.Green:
+                        CentralSystem.MainCharacterController.ChangeHealth(-20);
+                        break;
+                    case MonsterType.Skeleton:
+                        CentralSystem.MainCharacterController.ChangeHealth(-10);
+                        break;
+                }
                 var position = EntityManager.GetComponentData<Translation>(CenterMonsterEntity).Value;
                 if (position.x < 0)
                 {
                     CentralSystem.Move(new Vector2(1, 0), true, 0.1f);
                 }
-                else if(position.x > 0)
+                else if (position.x > 0)
                 {
                     CentralSystem.Move(new Vector2(-1, 0), true, 0.1f);
                 }
@@ -760,12 +812,20 @@ namespace GeometryEscape
                 {
                     CentralSystem.Move(new Vector2(0, 1), true, 0.1f);
                 }
-                else if(position.y > 0)
+                else if (position.y > 0)
                 {
                     CentralSystem.Move(new Vector2(0, -1), true, 0.1f);
                 }
                 _PushTimer = 0;
             }
+
+            inputDeps = new CalculateLocalToWorld
+            {
+                scale = CentralSystem.Scale / CentralSystem.CurrentZoomFactor,
+                centerPosition = CentralSystem.CurrentCenterPosition + _WorldPositionOffset
+            }.Schedule(this, inputDeps);
+            inputDeps.Complete();
+
             return inputDeps;
         }
     }

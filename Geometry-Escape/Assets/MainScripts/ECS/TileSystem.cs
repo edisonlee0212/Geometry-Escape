@@ -1,4 +1,5 @@
-﻿using Unity.Burst;
+﻿using System.Collections;
+using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
@@ -133,10 +134,11 @@ namespace GeometryEscape
         {
             inputDeps = new SetAllNailTrap
             {
-                mode = beatCounter % 2
+                mode = 1
             }.Schedule(this, inputDeps);
-
             inputDeps.Complete();
+            _ResetNails = true;
+            _ResetNailsTimer = 0.2f;
             return inputDeps;
         }
 
@@ -145,13 +147,30 @@ namespace GeometryEscape
             inputDeps.Complete();
             return inputDeps;
         }
-
+        private static bool _ResetNails;
+        private static float _ResetNailsTimer;
         protected override JobHandle OnUpdate(JobHandle inputDeps)
         {
-            
+            if (_ResetNails)
+            {
+                if (_ResetNailsTimer > 0)
+                {
+                    _ResetNailsTimer -= Time.deltaTime;
+                }
+                else
+                {
+                    _ResetNails = false;
+                    inputDeps = new SetAllNailTrap
+                    {
+                        mode = 0
+                    }.Schedule(this, inputDeps);
+                    inputDeps.Complete();
+                }
+            }
 
             inputDeps = new CopyDisplayColor { }.Schedule(this, inputDeps);
             return inputDeps;
         }
+
     }
 }

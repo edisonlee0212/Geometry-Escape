@@ -255,17 +255,6 @@ namespace GeometryEscape
             _TileDestructionQueue.Enqueue(tileEntity);
         }
 
-        /*public static void AddMonster(int materialIndex, Coordinate initialCoordinate = default, MonsterType monsterType = MonsterType.Green)
-        {
-            _AddingMonsts = true;
-            _MonsterCreationQueue.Enqueue(new MonsterInfo
-            {
-                MaterialIndex = materialIndex,
-                Coordinate = initialCoordinate,
-                MonsterType = monsterType
-            });
-        }*/
-
         public static void AddMonster(int monsterIndex, Coordinate initialCoordinate = default)
         {
             CentralSystem.WorldSystem.TotalMonsterAmount++;

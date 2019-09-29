@@ -24,6 +24,7 @@ namespace GeometryEscape
         {
             m_ViewLight.GetComponent<Light>().color = Color.red;
         }
+
         public void StopTrapColor()
         {
             m_ViewLight.GetComponent<Light>().color = Color.white;
