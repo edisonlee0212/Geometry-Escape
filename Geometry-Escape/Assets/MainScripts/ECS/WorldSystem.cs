@@ -142,7 +142,7 @@ namespace GeometryEscape
                 {
                     int index = i * _TileCount + j;
 
-                    AddTileCreationInfo(new TileCreationInfo { TileProperties = new TileProperties { Index = index % 2 }, Coordinate = new Coordinate { X = i, Y = j, Z = 0 } });
+                    AddTileCreationInfo(new TileCreationInfo { TileProperties = new TileProperties { Index = index % 5 }, Coordinate = new Coordinate { X = i, Y = j, Z = 0 } });
 
                 }
             }

@@ -89,6 +89,7 @@ namespace GeometryEscape
         }
 
 
+
         public void ShutDown()
         {
             Enabled = false;
@@ -220,6 +221,15 @@ namespace GeometryEscape
             return (int)((m_MusicAudioSource.time - m_Music.MusicInfo.MusicStartTime) / m_Music.MusicInfo.MusicBeatsTime);
         }
 
+        private static float _AcclerateTimer;
+        private static bool _Acclerating;
+        public static void AcclerateMusic(float time, float speed)
+        {
+            _AcclerateTimer = time;
+            m_MusicAudioSource.pitch = speed;
+            _Acclerating = true;
+        }
+
         #endregion
 
         #region Jobs
@@ -238,6 +248,16 @@ namespace GeometryEscape
         }
         protected override JobHandle OnUpdate(JobHandle inputDeps)
         {
+            if (_Acclerating)
+            {
+                _AcclerateTimer -= Time.deltaTime;
+                if(_AcclerateTimer <= 0)
+                {
+                    _Acclerating = false;
+                    m_MusicAudioSource.pitch = 1;
+                }
+            }
+
             return inputDeps;
         }
     }

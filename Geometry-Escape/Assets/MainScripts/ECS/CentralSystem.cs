@@ -18,8 +18,8 @@ namespace GeometryEscape
         #region Private
         private static EntityManager m_EntityManager;
         private static Transform m_Light;
-
-
+        private static Entity _LastTriggeredEntity;
+        private static int _FreezeCount;
         private static ControlMode _SavedControlMode;
         #endregion
 
@@ -79,7 +79,7 @@ namespace GeometryEscape
         private static int _BeatCounter;
         private static CharacterController m_MainCharacterController;
         private static float _Timer;
-
+        
         private static bool _Running;
 
         #endregion
@@ -88,7 +88,6 @@ namespace GeometryEscape
         private static bool _Moving, _Zooming;
         private static bool _CheckTile;
         private static bool _InverseDirection;
-        private static int _FreezeCount;
         private static float3 _CurrentCenterPosition;
         private static float _CurrentZoomFactor;
         private static float _Scale;
@@ -121,7 +120,6 @@ namespace GeometryEscape
         public static bool Moving { get => _Moving; set => _Moving = value; }
         public static bool Zooming { get => _Zooming; set => _Zooming = value; }
         public static bool CheckTile { get => _CheckTile; set => _CheckTile = value; }
-        public static int FreezeCount { get => _FreezeCount; set => _FreezeCount = value; }
         public static bool InverseDirection { get => _InverseDirection; set => _InverseDirection = value; }
         public static CopyDisplayColorSystem CopyDisplayColorSystem { get => m_CopyDisplayColorSystem; set => m_CopyDisplayColorSystem = value; }
         public static CharacterController MainCharacterController { get => m_MainCharacterController; set => m_MainCharacterController = value; }
@@ -304,6 +302,7 @@ namespace GeometryEscape
 
         public enum Direction
         {
+            Still,
             Up,
             Down,
             Left,
@@ -312,10 +311,9 @@ namespace GeometryEscape
 
         public static void Move(Vector2 moveVec, bool avoidCheck = false, float time = 0.2f)
         {
-            if (!avoidCheck && _FreezeCount > 0)
+            if(!avoidCheck && _FreezeCount > 0)
             {
                 _FreezeCount--;
-                Debug.Log("Freezed! Need " + _FreezeCount + " more try to make another move.");
                 return;
             }
             if (avoidCheck || (!_Moving && (ControlSystem.ControlMode == ControlMode.MapEditor || FloatingOriginSystem.CenterTileEntity != Entity.Null)))
@@ -323,7 +321,7 @@ namespace GeometryEscape
                 Debug.Log(AudioSystem.OnBeats());
                 if (avoidCheck || (AudioSystem.OnBeats() || ControlSystem.ControlMode == ControlMode.MapEditor) && moveVec != Vector2.zero && moveVec.x * moveVec.y == 0)
                 {
-                    Direction characterMovingDirection = default;
+                    Direction characterMovingDirection = Direction.Still;
                     _Moving = true;
                     _MovementTime = time;
                     _MovementTimer = 0;
@@ -339,7 +337,6 @@ namespace GeometryEscape
                             {
                                 if (m_EntityManager.GetComponentData<LeftTile>(FloatingOriginSystem.CenterTileEntity).Value == Entity.Null)
                                 {
-                                    Debug.Log("Blocked in player mode! Use map editor mode if you want to move to empty space.");
                                     return;
                                 }
                             }
@@ -347,13 +344,12 @@ namespace GeometryEscape
                             {
                                 if (m_EntityManager.GetComponentData<RightTile>(FloatingOriginSystem.CenterTileEntity).Value == Entity.Null)
                                 {
-                                    Debug.Log("Blocked in player mode! Use map editor mode if you want to move to empty space.");
                                     return;
                                 }
                             }
 
                         }
-                        characterMovingDirection = _InverseDirection ? Direction.Left : Direction.Right;
+                        characterMovingDirection = (!avoidCheck && _InverseDirection) ? Direction.Left : Direction.Right;
                     }
                     else if (moveVec.x < 0)
                     {
@@ -363,7 +359,6 @@ namespace GeometryEscape
                             {
                                 if (m_EntityManager.GetComponentData<RightTile>(FloatingOriginSystem.CenterTileEntity).Value == Entity.Null)
                                 {
-                                    Debug.Log("Blocked in player mode! Use map editor mode if you want to move to empty space.");
                                     return;
                                 }
                             }
@@ -371,12 +366,11 @@ namespace GeometryEscape
                             {
                                 if (m_EntityManager.GetComponentData<LeftTile>(FloatingOriginSystem.CenterTileEntity).Value == Entity.Null)
                                 {
-                                    Debug.Log("Blocked in player mode! Use map editor mode if you want to move to empty space.");
                                     return;
                                 }
                             }
                         }
-                        characterMovingDirection = _InverseDirection ? Direction.Right : Direction.Left;
+                        characterMovingDirection = (!avoidCheck && _InverseDirection) ? Direction.Right : Direction.Left;
                     }
                     else if (moveVec.y > 0)
                     {
@@ -386,7 +380,6 @@ namespace GeometryEscape
                             {
                                 if (m_EntityManager.GetComponentData<DownTile>(FloatingOriginSystem.CenterTileEntity).Value == Entity.Null)
                                 {
-                                    Debug.Log("Blocked in player mode! Use map editor mode if you want to move to empty space.");
                                     return;
                                 }
                             }
@@ -394,12 +387,11 @@ namespace GeometryEscape
                             {
                                 if (m_EntityManager.GetComponentData<UpTile>(FloatingOriginSystem.CenterTileEntity).Value == Entity.Null)
                                 {
-                                    Debug.Log("Blocked in player mode! Use map editor mode if you want to move to empty space.");
                                     return;
                                 }
                             }
                         }
-                        characterMovingDirection = _InverseDirection ? Direction.Down : Direction.Up;
+                        characterMovingDirection = (!avoidCheck && _InverseDirection) ? Direction.Down : Direction.Up;
                     }
                     else if (moveVec.y < 0)
                     {
@@ -409,7 +401,6 @@ namespace GeometryEscape
                             {
                                 if (m_EntityManager.GetComponentData<UpTile>(FloatingOriginSystem.CenterTileEntity).Value == Entity.Null)
                                 {
-                                    Debug.Log("Blocked in player mode! Use map editor mode if you want to move to empty space.");
                                     return;
                                 }
                             }
@@ -417,12 +408,11 @@ namespace GeometryEscape
                             {
                                 if (m_EntityManager.GetComponentData<DownTile>(FloatingOriginSystem.CenterTileEntity).Value == Entity.Null)
                                 {
-                                    Debug.Log("Blocked in player mode! Use map editor mode if you want to move to empty space.");
                                     return;
                                 }
                             }
                         }
-                        characterMovingDirection = _InverseDirection ? Direction.Up : Direction.Down;
+                        characterMovingDirection = (!avoidCheck && _InverseDirection) ? Direction.Up : Direction.Down;
                     }
                     #endregion
                     switch (characterMovingDirection)
@@ -446,6 +436,9 @@ namespace GeometryEscape
                             _TargetOriginPosition.x -= 1;
                             MainCharacterController.MoveRight();
                             Debug.Log("Move right, target position: " + (-_TargetOriginPosition));
+                            break;
+                        case Direction.Still:
+                            Debug.Log("Blocked in player mode! Use map editor mode if you want to move to empty space.");
                             break;
                     }
                     UISystem.ShowHit_300();
@@ -545,20 +538,32 @@ namespace GeometryEscape
             return inputDeps;
         }
 
+
         private void CheckTrap()
         {
+            if (ControlSystem.ControlMode == ControlMode.MapEditor) return;
+            if (!_LastTriggeredEntity.Equals(FloatingOriginSystem.CenterTileEntity))
+            {
+                _LastTriggeredEntity = Entity.Null;
+            }
             switch (EntityManager.GetComponentData<TypeOfTile>(FloatingOriginSystem.CenterTileEntity).Value)
             {
                 case TileType.Normal:
                     break;
                 case TileType.FreezeTrap:
+                    if (_LastTriggeredEntity.Equals(FloatingOriginSystem.CenterTileEntity)) break;
+                    _LastTriggeredEntity = FloatingOriginSystem.CenterTileEntity;
                     _FreezeCount = 5;
                     break;
                 case TileType.InverseTrap:
+                    if (_LastTriggeredEntity.Equals(FloatingOriginSystem.CenterTileEntity)) break;
+                    _LastTriggeredEntity = FloatingOriginSystem.CenterTileEntity;
                     _InverseDirection = !_InverseDirection;
                     break;
                 case TileType.MusicAccleratorTrap:
-
+                    if (_LastTriggeredEntity.Equals(FloatingOriginSystem.CenterTileEntity)) break;
+                    _LastTriggeredEntity = FloatingOriginSystem.CenterTileEntity;
+                    AudioSystem.AcclerateMusic(2, 2);
                     break;
                 case TileType.NailTrap:
                     if (EntityManager.GetComponentData<TextureIndex>(FloatingOriginSystem.CenterTileEntity).Value == 1)
