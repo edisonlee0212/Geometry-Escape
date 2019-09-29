@@ -183,7 +183,11 @@ namespace GeometryEscape
             _CurrentCenterPosition = Unity.Mathematics.float3.zero;
             Scale = 1;
             TimeStep = 0.1f;
-
+            _CurrentCenterPosition = default;
+            _PreviousOriginPosition = default;
+            _TargetOriginPosition = default;
+            _Moving = false;
+            _LastTriggeredEntity = Entity.Null;
             #endregion
             #region Initialize sub-systems
             FloatingOriginSystem.Init();
@@ -263,7 +267,7 @@ namespace GeometryEscape
             CopyTextureIndexSystem.ShutDown();
             FloatingOriginSystem.ShutDown();
             ControlSystem.ControlMode = ControlMode.NoControl;
-
+            EntityManager.DestroyEntity(EntityManager.CreateEntityQuery(typeof(TypeOfEntity)));
         }
         /// <summary>
         /// 当中央系统被删除时，它需要先中止其他系统运行。
@@ -674,6 +678,11 @@ namespace GeometryEscape
             Enabled = false;
             if (_CenterTileEntity.IsCreated) _CenterTileEntity.Dispose();
             if (_CenterMonsterEntity.IsCreated) _CenterMonsterEntity.Dispose();
+            _PreviousCenterPosition = default;
+            _PushTimer = default;
+            _Shaking = default;
+            _WorldPositionOffset = default;
+            _ShakeInfo = default;
         }
 
         protected override void OnDestroy()
