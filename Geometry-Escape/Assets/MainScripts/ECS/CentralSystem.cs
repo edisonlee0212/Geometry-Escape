@@ -183,7 +183,7 @@ namespace GeometryEscape
 
             _CurrentZoomFactor = 1;
             _CurrentCenterPosition = Unity.Mathematics.float3.zero;
-            Scale = 2;
+            Scale = 1;
             TimeStep = 0.1f;
 
             #endregion
@@ -243,7 +243,7 @@ namespace GeometryEscape
             TileSystem.Resume();
             MonsterSystem.Resume();
             AudioSystem.Resume();
-            FloatingOriginSystem.Pause();
+            FloatingOriginSystem.Resume();
             WorldSystem.Resume();
 
         }
@@ -328,7 +328,6 @@ namespace GeometryEscape
                     _MovementTime = time;
                     _MovementTimer = 0;
                     _PreviousOriginPosition = _CurrentCenterPosition;
-                    _TargetOriginPosition = (float3)(int3)_PreviousOriginPosition;
 
                     #region Decide Direction
                     if (moveVec.x > 0)
@@ -495,7 +494,7 @@ namespace GeometryEscape
             m_TileSystem.OnBeatUpdate(ref inputDeps, _BeatCounter);
             m_MonsterSystem.OnBeatUpdate(ref inputDeps, _BeatCounter);
             #endregion
-            m_AudioSystem.StopTrapSound();
+            AudioSystem.StopTrapSound();
             m_LightResources.StopTrapColor();
 
             if (_CheckTile && FloatingOriginSystem.CenterTileEntity != Entity.Null)
@@ -541,11 +540,6 @@ namespace GeometryEscape
                 }
                 #endregion
                 #endregion
-
-                #region Movement
-
-
-                #endregion
             }
 
             return inputDeps;
@@ -570,7 +564,7 @@ namespace GeometryEscape
                     if (EntityManager.GetComponentData<TextureIndex>(FloatingOriginSystem.CenterTileEntity).Value == 1)
                     {
                         m_MainCharacterController.ChangeHealth(-1);
-                        m_AudioSystem.PlayTrapSound();
+                        AudioSystem.PlayTrapSound();
                         m_LightResources.TrapColor();
                         FloatingOriginSystem.ShakeWorld(new ShakeInfo { Amplitude = 0.1f, Frequency = 30, x = true, y = true, Duration = 0.2f });
                     }
@@ -613,7 +607,7 @@ namespace GeometryEscape
             Vector3 position = m_Light.position;
             position.z = -5 / _CurrentZoomFactor;
             m_Light.position = position;
-            m_MainCharacterController.gameObject.transform.localScale = new Vector3(1.0f / _CurrentZoomFactor, 1.0f / _CurrentZoomFactor, 1.0f/_CurrentZoomFactor);
+            m_MainCharacterController.gameObject.transform.localScale = new Vector3(1.0f / _CurrentZoomFactor, 1.0f / _CurrentZoomFactor, 1.0f / _CurrentZoomFactor);
 
         }
         #endregion
@@ -709,7 +703,7 @@ namespace GeometryEscape
                 var coordinate = c0;
                 c1.Value = scale;
                 float z = (coordinate.Z + centerPosition.z) * scale;
-                if(c4.Value == EntityType.Monster && Vector2.Distance(new Vector2(coordinate.X, coordinate.Y), new Vector2(-centerPosition.x, -centerPosition.y)) > 3)
+                if (c4.Value == EntityType.Monster && Vector2.Distance(new Vector2(coordinate.X, coordinate.Y), new Vector2(-centerPosition.x, -centerPosition.y)) > 8)
                 {
                     z = 10;
                 }
@@ -805,6 +799,7 @@ namespace GeometryEscape
                         CentralSystem.MainCharacterController.ChangeHealth(-10);
                         break;
                 }
+                AudioSystem.PlayTrapSound();
                 var position = EntityManager.GetComponentData<Translation>(CenterMonsterEntity).Value;
                 if (position.x < 0)
                 {

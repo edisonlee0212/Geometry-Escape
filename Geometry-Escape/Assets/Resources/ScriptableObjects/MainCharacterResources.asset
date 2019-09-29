@@ -13,4 +13,4 @@ MonoBehaviour:
   m_Name: MainCharacterResources
   m_EditorClassIdentifier: 
   m_CharacterControllers:
-  - {fileID: 63388835632064576, guid: 95e87b6d088eac1428915bd517b666f2, type: 3}
+  - {fileID: 2275024570278478825, guid: 95e87b6d088eac1428915bd517b666f2, type: 3}

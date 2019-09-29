@@ -191,12 +191,12 @@ namespace GeometryEscape
         {
             m_SoundEffectAudioSources[1].Play();
         }
-        public void PlayTrapSound()
+        public static void PlayTrapSound()
         {
             m_SoundEffectAudioSources[2].Play();
         }
 
-        public void StopTrapSound()
+        public static void StopTrapSound()
         {
             m_SoundEffectAudioSources[2].Stop();
         }
