@@ -521,7 +521,7 @@ namespace GeometryEscape
                 {
                     deltaTime = Time.deltaTime
                 }.Schedule(this, inputDeps);
-
+                inputDeps.Complete();
                 #region Special System Update
                 #region Fixed Time Step
                 _Timer += Time.deltaTime;
@@ -699,15 +699,20 @@ namespace GeometryEscape
         #region Jobs
 
         [BurstCompile]
-        struct CalculateLocalToWorld : IJobForEach<Coordinate, Scale, Translation, Rotation>
+        struct CalculateLocalToWorld : IJobForEach<Coordinate, Scale, Translation, Rotation, TypeOfEntity>
         {
             [ReadOnly] public float scale;
             [ReadOnly] public float3 centerPosition;
-            public void Execute([ReadOnly] ref Coordinate c0, [WriteOnly] ref Scale c1, [WriteOnly] ref Translation c2, [WriteOnly] ref Rotation c3)
+            public void Execute([ReadOnly] ref Coordinate c0, [WriteOnly] ref Scale c1, [WriteOnly] ref Translation c2, [WriteOnly] ref Rotation c3, [ReadOnly] ref TypeOfEntity c4)
             {
                 var coordinate = c0;
                 c1.Value = scale;
-                c2.Value = new float3((coordinate.X + centerPosition.x) * scale, (coordinate.Y + centerPosition.y) * scale, (coordinate.Z + centerPosition.z) * scale);
+                float z = (coordinate.Z + centerPosition.z) * scale;
+                if(c4.Value == EntityType.Monster && Vector2.Distance(new Vector2(coordinate.X, coordinate.Y), new Vector2(-centerPosition.x, -centerPosition.y)) > 3)
+                {
+                    z = 10;
+                }
+                c2.Value = new float3((coordinate.X + centerPosition.x) * scale, (coordinate.Y + centerPosition.y) * scale, z);
                 c3.Value = Quaternion.Euler(0, 0, coordinate.Direction);
             }
         }

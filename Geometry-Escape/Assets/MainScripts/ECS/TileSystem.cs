@@ -73,7 +73,7 @@ namespace GeometryEscape
         #endregion
 
         #region Jobs
-        
+
         [BurstCompile]
         struct RotateTileTest1 : IJobForEach<Coordinate, TileProperties>
         {
@@ -119,12 +119,19 @@ namespace GeometryEscape
             }
         }
         [BurstCompile]
-        struct SetAllNailTrap : IJobForEach<TypeOfTile, TextureIndex>
+        struct SetAllNailTrap : IJobForEach<TypeOfTile, TextureIndex, Coordinate>
         {
             public int mode;
-            public void Execute(ref TypeOfTile c0, ref TextureIndex c1)
+            public int counter;
+            public void Execute(ref TypeOfTile c0, ref TextureIndex c1, ref Coordinate c2)
             {
-                if (c0.Value == TileType.NailTrap) c1.Value = mode;
+                if (counter == -1)
+                {
+                    c1.Value = mode;
+                    return;
+                }
+                else if ((c2.X + c2.Y + counter) % 3 == 0 && c0.Value == TileType.NailTrap) c1.Value = mode;
+                
             }
         }
 
@@ -132,13 +139,16 @@ namespace GeometryEscape
 
         public JobHandle OnBeatUpdate(ref JobHandle inputDeps, int beatCounter)
         {
+
             inputDeps = new SetAllNailTrap
             {
-                mode = 1
+                mode = 1,
+                counter = beatCounter
             }.Schedule(this, inputDeps);
             inputDeps.Complete();
             _ResetNails = true;
             _ResetNailsTimer = 0.2f;
+
             return inputDeps;
         }
 
@@ -162,6 +172,7 @@ namespace GeometryEscape
                     _ResetNails = false;
                     inputDeps = new SetAllNailTrap
                     {
+                        counter = -1,
                         mode = 0
                     }.Schedule(this, inputDeps);
                     inputDeps.Complete();
