@@ -25,15 +25,21 @@ MonoBehaviour:
         Mesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
         Material: {fileID: 2100000, guid: 913f0284a10c0bc4785660114e886834, type: 2}
     MaxIndex: 2
-  - TileType: 0
+  - TileType: 4
     RenderContent:
       MeshMaterial:
         Mesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
-        Material: {fileID: 0}
+        Material: {fileID: 2100000, guid: b35c77e937ac049458ead7c8a91187e3, type: 2}
     MaxIndex: 0
-  - TileType: 0
+  - TileType: 5
     RenderContent:
       MeshMaterial:
-        Mesh: {fileID: 0}
-        Material: {fileID: 0}
+        Mesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
+        Material: {fileID: 2100000, guid: 6410609c1f7da7e47962df31368ac199, type: 2}
+    MaxIndex: 0
+  - TileType: 3
+    RenderContent:
+      MeshMaterial:
+        Mesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
+        Material: {fileID: 2100000, guid: fd52611b40a505945b8d70e7200e94e1, type: 2}
     MaxIndex: 0

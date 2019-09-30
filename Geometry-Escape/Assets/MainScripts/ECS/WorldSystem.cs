@@ -136,12 +136,12 @@ namespace GeometryEscape
                 {
                     int index = i * _TileCount + j;
 
-                    AddTileCreationInfo(new TileCreationInfo { TileProperties = new TileProperties { Index = index % 2 }, Coordinate = new Coordinate { X = i, Y = j, Z = 0 } });
+                    AddTileCreationInfo(new TileCreationInfo { TileProperties = new TileProperties { Index = index % 5 }, Coordinate = new Coordinate { X = i, Y = j, Z = 0 } });
 
                 }
             }
 
-            for (int i = 1; i < 10; i++)      // hardcode number of monsters
+            for (int i = 1; i < 50; i++)
             {
                 AddMonster(i % 2, new Coordinate { X = i, Y = i, Z = -1 });
 
