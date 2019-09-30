@@ -596,8 +596,8 @@ namespace GeometryEscape
                 Debug.Log("Warning! Trying to create a new monster with the same position as another monster!");
             }
             var instance = EntityManager.CreateEntity(MonsterEntityArchetype);
-            Debug.Log("test drawmesh"+monster.HealthBarMeshMaterial.Mesh.Equals(null));
-            Graphics.DrawMesh(monster.HealthBarMeshMaterial.Mesh, new Vector3 { x=0,y=0,z=-3}, Quaternion.identity, monster.HealthBarMeshMaterial.Material,0);
+            //Debug.Log("test drawmesh"+monster.HealthBarMeshMaterial.Mesh.Equals(null));
+            //Graphics.DrawMesh(monster.HealthBarMeshMaterial.Mesh, new Vector3 { x=0,y=0,z=-3}, Quaternion.identity, monster.HealthBarMeshMaterial.Material,0);
             EntityManager.SetComponentData(instance, new TypeOfEntity { Value = EntityType.Monster });
             EntityManager.SetComponentData(instance, new TypeOfMonster
             {
