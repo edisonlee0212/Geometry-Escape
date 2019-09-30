@@ -93,6 +93,7 @@ namespace GeometryEscape
                 );
 
             TileEntityArchetype = EntityManager.CreateArchetype(
+                typeof(Timer),
                 typeof(TypeOfEntity),
                 typeof(TypeOfTile),
                 typeof(LeftTile),

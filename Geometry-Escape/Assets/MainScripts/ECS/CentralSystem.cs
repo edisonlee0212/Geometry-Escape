@@ -18,7 +18,8 @@ namespace GeometryEscape
         #region Private
         private static EntityManager m_EntityManager;
         private static Transform m_Light;
-        private static Entity _LastTriggeredEntity;
+        private static Entity _LastBeatsTrapTriggeredEntity;
+        private static Entity _LastFixedTrapTriggeredEntity;
         private static int _FreezeCount;
         private static ControlMode _SavedControlMode;
         #endregion
@@ -86,7 +87,8 @@ namespace GeometryEscape
 
         #region Variables for Moving and Zooming
         private static bool _Moving, _Zooming;
-        private static bool _CheckTile;
+        private static bool _CheckBeatsTrapTile;
+        private static bool _CheckFixedTrapTile;
         private static bool _InverseDirection;
         private static float3 _CurrentCenterPosition;
         private static float _CurrentZoomFactor;
@@ -119,7 +121,7 @@ namespace GeometryEscape
         public static float CurrentZoomFactor { get => _CurrentZoomFactor; set => _CurrentZoomFactor = value; }
         public static bool Moving { get => _Moving; set => _Moving = value; }
         public static bool Zooming { get => _Zooming; set => _Zooming = value; }
-        public static bool CheckTile { get => _CheckTile; set => _CheckTile = value; }
+        public static bool CheckTile { get => _CheckBeatsTrapTile; set => _CheckBeatsTrapTile = value; }
         public static bool InverseDirection { get => _InverseDirection; set => _InverseDirection = value; }
         public static CopyDisplayColorSystem CopyDisplayColorSystem { get => m_CopyDisplayColorSystem; set => m_CopyDisplayColorSystem = value; }
         public static CharacterController MainCharacterController { get => m_MainCharacterController; set => m_MainCharacterController = value; }
@@ -129,6 +131,7 @@ namespace GeometryEscape
         public static float TimeStep { get => _TimeStep; set => _TimeStep = value; }
 
         public static bool Running { get => _Running; set => _Running = value; }
+        public static bool CheckFixedTrapTile { get => _CheckFixedTrapTile; set => _CheckFixedTrapTile = value; }
 
         #endregion
 
@@ -187,7 +190,7 @@ namespace GeometryEscape
             _PreviousOriginPosition = default;
             _TargetOriginPosition = default;
             _Moving = false;
-            _LastTriggeredEntity = Entity.Null;
+            _LastBeatsTrapTriggeredEntity = Entity.Null;
             #endregion
             #region Initialize sub-systems
             FloatingOriginSystem.Init();
@@ -481,6 +484,10 @@ namespace GeometryEscape
             m_MonsterSystem.OnFixedUpdate(ref inputDeps, _Counter);
             #endregion
 
+            if (FloatingOriginSystem.CenterTileEntity != Entity.Null)
+            {
+                CheckTrapOnFixedUpdate();
+            }
             return inputDeps;
         }
 
@@ -494,13 +501,9 @@ namespace GeometryEscape
             AudioSystem.StopTrapSound();
             m_LightResources.StopTrapColor();
 
-            if (_CheckTile && FloatingOriginSystem.CenterTileEntity != Entity.Null)
+            if (FloatingOriginSystem.CenterTileEntity != Entity.Null)
             {
-                CheckTrap();
-            }
-            else
-            {
-                _CheckTile = true;
+                CheckTrapOnBeatsUpdate();
             }
             return inputDeps;
         }
@@ -542,42 +545,61 @@ namespace GeometryEscape
             return inputDeps;
         }
 
-
-        private void CheckTrap()
+        private void CheckTrapOnFixedUpdate()
         {
             if (ControlSystem.ControlMode == ControlMode.MapEditor) return;
-            if (!_LastTriggeredEntity.Equals(FloatingOriginSystem.CenterTileEntity))
+            if (!_LastFixedTrapTriggeredEntity.Equals(FloatingOriginSystem.CenterTileEntity))
             {
-                _LastTriggeredEntity = Entity.Null;
+                _LastFixedTrapTriggeredEntity = Entity.Null;
             }
             switch (EntityManager.GetComponentData<TypeOfTile>(FloatingOriginSystem.CenterTileEntity).Value)
             {
-                case TileType.Normal:
-                    break;
-                case TileType.FreezeTrap:
-                    if (_LastTriggeredEntity.Equals(FloatingOriginSystem.CenterTileEntity)) break;
-                    _LastTriggeredEntity = FloatingOriginSystem.CenterTileEntity;
-                    _FreezeCount = 5;
-                    break;
-                case TileType.InverseTrap:
-                    if (_LastTriggeredEntity.Equals(FloatingOriginSystem.CenterTileEntity)) break;
-                    _LastTriggeredEntity = FloatingOriginSystem.CenterTileEntity;
-                    _InverseDirection = !_InverseDirection;
-                    break;
-                case TileType.MusicAccleratorTrap:
-                    if (_LastTriggeredEntity.Equals(FloatingOriginSystem.CenterTileEntity)) break;
-                    _LastTriggeredEntity = FloatingOriginSystem.CenterTileEntity;
-                    AudioSystem.AcclerateMusic(2, 2);
-                    break;
                 case TileType.NailTrap:
+                    
                     if (EntityManager.GetComponentData<TextureIndex>(FloatingOriginSystem.CenterTileEntity).Value == 1)
                     {
+                        if (!EntityManager.GetComponentData<Timer>(FloatingOriginSystem.CenterTileEntity).isOn)
+                        {
+                            break;
+                        }
+                        EntityManager.SetComponentData(FloatingOriginSystem.CenterTileEntity, new Timer { isOn = false });
+
                         m_MainCharacterController.ChangeHealth(-1);
                         AudioSystem.PlayTrapSound();
                         m_LightResources.TrapColor();
                         FloatingOriginSystem.ShakeWorld(new ShakeInfo { Amplitude = 0.1f, Frequency = 30, x = true, y = true, Duration = 0.2f });
                     }
                     break;
+            }
+        }
+
+        private void CheckTrapOnBeatsUpdate()
+        {
+            if (ControlSystem.ControlMode == ControlMode.MapEditor) return;
+            if (!_LastBeatsTrapTriggeredEntity.Equals(FloatingOriginSystem.CenterTileEntity))
+            {
+                _LastBeatsTrapTriggeredEntity = Entity.Null;
+            }
+            switch (EntityManager.GetComponentData<TypeOfTile>(FloatingOriginSystem.CenterTileEntity).Value)
+            {
+                case TileType.Normal:
+                    break;
+                case TileType.FreezeTrap:
+                    if (_LastBeatsTrapTriggeredEntity.Equals(FloatingOriginSystem.CenterTileEntity)) break;
+                    _LastBeatsTrapTriggeredEntity = FloatingOriginSystem.CenterTileEntity;
+                    _FreezeCount = 5;
+                    break;
+                case TileType.InverseTrap:
+                    if (_LastBeatsTrapTriggeredEntity.Equals(FloatingOriginSystem.CenterTileEntity)) break;
+                    _LastBeatsTrapTriggeredEntity = FloatingOriginSystem.CenterTileEntity;
+                    _InverseDirection = !_InverseDirection;
+                    break;
+                case TileType.MusicAccleratorTrap:
+                    if (_LastBeatsTrapTriggeredEntity.Equals(FloatingOriginSystem.CenterTileEntity)) break;
+                    _LastBeatsTrapTriggeredEntity = FloatingOriginSystem.CenterTileEntity;
+                    AudioSystem.AcclerateMusic(2, 2);
+                    break;
+                
                 default:
                     break;
             }

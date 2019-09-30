@@ -119,19 +119,27 @@ namespace GeometryEscape
             }
         }
         [BurstCompile]
-        struct SetAllNailTrap : IJobForEach<TypeOfTile, TextureIndex, Coordinate>
+        struct SetAllNailTrap : IJobForEach<TypeOfTile, TextureIndex, Coordinate, Timer>
         {
             public int mode;
             public int counter;
-            public void Execute(ref TypeOfTile c0, ref TextureIndex c1, ref Coordinate c2)
+            public void Execute(ref TypeOfTile c0, ref TextureIndex c1, ref Coordinate c2, ref Timer c3)
             {
                 if (counter == -1)
                 {
                     c1.Value = mode;
                     return;
                 }
-                else if ((c2.X + c2.Y + counter) % 3 == 0 && c0.Value == TileType.NailTrap) c1.Value = mode;
-                
+                else if ((c2.X + c2.Y + counter) % 3 == 0 && c0.Value == TileType.NailTrap)
+                {
+                    c1.Value = mode;
+                    if (c1.Value == 1)
+                    {
+                        c3.isOn = true;
+                        c3.T = 0;
+                        c3.maxT = 0.2f;
+                    }
+                }
             }
         }
 
