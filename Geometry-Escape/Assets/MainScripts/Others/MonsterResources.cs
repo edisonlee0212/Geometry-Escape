@@ -10,6 +10,7 @@ namespace GeometryEscape
         #region Public
         [SerializeField]
         private Monster[] _Monsters;
+
         public int GetMonsterAmount()
         {
             return _Monsters.Length;
@@ -27,6 +28,7 @@ namespace GeometryEscape
             public int MonsterIndex;
             public MonsterType MonsterType;
             public RenderContent RenderContent;
+            public HealthBarMeshMaterial HealthBarMeshMaterial;
             public TextureMaxIndex TextureMaxIndex;
         }
     }

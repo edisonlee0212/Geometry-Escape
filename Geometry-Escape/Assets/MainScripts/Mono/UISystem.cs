@@ -12,8 +12,11 @@ public class UISystem : MonoBehaviour
     private GameObject m_Miss;
     [SerializeField]
     private TextMeshProUGUI m_HealthStatusText;
+   // [SerializeField]
+   // private TextMeshProUGUI m_MonsterHealthText;
 
-    public static TextMeshProUGUI _HealthStatusText;
+    public static TextMeshProUGUI MonsterHealthText;
+    public static TextMeshProUGUI HealthStatusText;
     public static GameObject hit_300;
     public static GameObject miss;
     // Start is called before the first frame update
@@ -28,7 +31,8 @@ public class UISystem : MonoBehaviour
         hit_300 = m_Hit_300;
         miss = m_Miss;
 
-        _HealthStatusText = m_HealthStatusText;
+        HealthStatusText = m_HealthStatusText;
+     //   MonsterHealthText = m_MonsterHealthText;
 
         Debug.Log("init");
         HideHit_300();
@@ -68,6 +72,10 @@ public class UISystem : MonoBehaviour
 
     public static void ChangeHealth(int points)
     {
-        _HealthStatusText.text = "Health: " + points;
+        HealthStatusText.text = "Health: " + points;
+    }
+    public static void ChangeMonsterHealth()
+    {
+   //     MonsterHealthText.text = "Health: "+50;
     }
 }

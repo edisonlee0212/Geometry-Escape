@@ -18,16 +18,10 @@ namespace GeometryEscape
     [Serializable]
     public struct MonsterInfo
     {
-        //public MonsterType MonsterType;
-        //public Coordinate Coordinate;       // position
-        //public int MaterialIndex;
-        // default route
-        // mechanic trigger
-        // view scope check 
-        // monster hp
         public int MonsterIndex;
         public Coordinate Coordinate;
     }
+
 
     /// <summary>
     /// The system manages the creation and destruction of all world entities.
@@ -452,7 +446,11 @@ namespace GeometryEscape
                 }
                 if (_MonsterDestructionQueue.Count == 0) _RemovingMonsters = false;
             }
-
+            if (!CentralSystem.MonsterSystem.MonsterKilled.Equals(Entity.Null))
+            {
+                DestroyMonster(inputDeps, CentralSystem.MonsterSystem.MonsterKilled);
+                CentralSystem.MonsterSystem.MonsterKilled = Entity.Null;
+            }
             return inputDeps;
         }
 
@@ -579,7 +577,7 @@ namespace GeometryEscape
             EntityManager.SetComponentData(instance, tileType);
             _TotalTileAmount++;
         }
-        private void DestroyMonster(JobHandle inputDeps, Entity monsterEntity)
+        public void DestroyMonster(JobHandle inputDeps, Entity monsterEntity)
         {
             var coordinate = EntityManager.GetComponentData<Coordinate>(monsterEntity);
             MonsterHashMap.Remove(coordinate);
@@ -589,6 +587,7 @@ namespace GeometryEscape
         private void CreateMonster(JobHandle inputDeps, MonsterInfo monsterInfo, int i)
         {
             var monster = m_MonsterResources.GetMonster(monsterInfo.MonsterIndex);
+
             if (!MonsterHashMap.TryAdd(monsterInfo.Coordinate, new TypeOfMonster
             {
                 Value = monster.MonsterType
@@ -597,6 +596,8 @@ namespace GeometryEscape
                 Debug.Log("Warning! Trying to create a new monster with the same position as another monster!");
             }
             var instance = EntityManager.CreateEntity(MonsterEntityArchetype);
+            Debug.Log("test drawmesh"+monster.HealthBarMeshMaterial.Mesh.Equals(null));
+            Graphics.DrawMesh(monster.HealthBarMeshMaterial.Mesh, new Vector3 { x=0,y=0,z=-3}, Quaternion.identity, monster.HealthBarMeshMaterial.Material,0);
             EntityManager.SetComponentData(instance, new TypeOfEntity { Value = EntityType.Monster });
             EntityManager.SetComponentData(instance, new TypeOfMonster
             {

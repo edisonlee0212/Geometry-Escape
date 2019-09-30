@@ -1,4 +1,5 @@
-﻿using Unity.Burst;
+﻿using System;
+using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Jobs;
@@ -7,6 +8,12 @@ using Unity.Transforms;
 using UnityEngine;
 namespace GeometryEscape
 {
+    [Serializable]
+    public struct HealthBarMeshMaterial
+    {
+        public Mesh Mesh;
+        public Material Material;
+    }
     /// <summary>
     /// The system that control all monsters.
     /// </summary>
@@ -25,6 +32,7 @@ namespace GeometryEscape
         private static EntityQuery _MonsterEntityQuery;
         private static MonsterMovePattern m_MonsterMovePattern;
         private static EntityArchetype _MonsterEntityArchetype;
+        private static Entity _MonsterKilled;
 
         private static float _Timer;
         private static int _Counter;
@@ -33,6 +41,7 @@ namespace GeometryEscape
         private static float _beatTime;
         private float _currentTime;
         private static NativeQueue<MonsterInfo> _MonsterCreationQueue;
+        public Entity MonsterKilled { get => _MonsterKilled; set => _MonsterKilled = value; }
         private static Vector3 startPoint;
         private static Vector3 endPoint;
 
@@ -98,18 +107,20 @@ namespace GeometryEscape
 
 
         }
-
+        public void ChangeMonsterHealth()
+        {
+            UISystem.ChangeMonsterHealth();
+        }
 
         #endregion
 
 
         #region Jobs
 
-        [BurstCompile]
-        protected struct MoveMonster : IJobForEach<Coordinate, PreviousCoordinate, TargetCoordinate, Timer, MonsterProperties, MonsterHP>
+        protected struct MoveMonster : IJobForEachWithEntity<Coordinate, PreviousCoordinate, TargetCoordinate, Timer, MonsterProperties, MonsterHP>
         {
             [ReadOnly] public Vector3 position;
-            public void Execute(ref Coordinate c0, ref PreviousCoordinate c1, ref TargetCoordinate c2, ref Timer c3, ref MonsterProperties c4, ref MonsterHP c5)
+            public void Execute(Entity entity,int index,ref Coordinate c0, ref PreviousCoordinate c1, ref TargetCoordinate c2, ref Timer c3, ref MonsterProperties c4, ref MonsterHP c5)
             {
                 if (!c3.isOn) return;
                 var proportion = c3.T / c3.maxT;
@@ -121,7 +132,12 @@ namespace GeometryEscape
                 {
                     c3.isOn = false;
                 }
+                if (c5.Value <= 0)
+                {
+                    _MonsterKilled = entity;
+                }
             }
+
         }
 
         // check if any monsters are in the scope and run to the character
@@ -329,6 +345,7 @@ namespace GeometryEscape
 
             //MonsterRoute();
             inputDeps = new MoveMonster { }.Schedule(this, inputDeps);
+            
 
             return inputDeps;
 

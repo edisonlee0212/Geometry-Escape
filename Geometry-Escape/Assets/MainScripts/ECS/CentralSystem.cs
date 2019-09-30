@@ -636,6 +636,7 @@ namespace GeometryEscape
         private static float _ShakeTimer;
         private static ShakeInfo _ShakeInfo;
         private static float3 _WorldPositionOffset;
+        
         #endregion
 
         #region Public
@@ -750,7 +751,7 @@ namespace GeometryEscape
         {
             if (_Shaking)
             {
-                Debug.Log("Shaking");
+               // Debug.Log("Shaking");
                 if (_ShakeTimer > 0)
                 {
                     if (_ShakeInfo.x)
@@ -793,18 +794,29 @@ namespace GeometryEscape
 
             if (CenterMonsterEntity != Entity.Null && _PushTimer > 0.1f)
             {
+                int CenterMonsterHP = EntityManager.GetComponentData<MonsterHP>(CenterMonsterEntity).Value;
+
                 switch (EntityManager.GetComponentData<TypeOfMonster>(CenterMonsterEntity).Value)
                 {
                     case MonsterType.Blue:
                         CentralSystem.MainCharacterController.ChangeHealth(-10);
+                        EntityManager.SetComponentData<MonsterHP>(CenterMonsterEntity,new MonsterHP { Value = CenterMonsterHP - 50 });
+                        //CentralSystem.MonsterSystem.ChangeMonsterHealth();
                         break;
                     case MonsterType.Green:
                         CentralSystem.MainCharacterController.ChangeHealth(-20);
+                        EntityManager.SetComponentData<MonsterHP>(CenterMonsterEntity, new MonsterHP { Value = CenterMonsterHP - 50 });
+                        //CentralSystem.MonsterSystem.ChangeMonsterHealth();
+
                         break;
                     case MonsterType.Skeleton:
                         CentralSystem.MainCharacterController.ChangeHealth(-10);
+                        EntityManager.SetComponentData<MonsterHP>(CenterMonsterEntity, new MonsterHP { Value = CenterMonsterHP - 50 });
+                        //CentralSystem.MonsterSystem.ChangeMonsterHealth();
+
                         break;
                 }
+                Debug.Log("check monster HP"+CenterMonsterHP);
                 var position = EntityManager.GetComponentData<Translation>(CenterMonsterEntity).Value;
                 if (position.x < 0)
                 {
