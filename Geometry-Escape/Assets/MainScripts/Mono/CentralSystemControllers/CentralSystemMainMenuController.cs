@@ -21,5 +21,10 @@ namespace GeometryEscape {
             Application.Quit();
 #endif
         }
+
+        public void OnOptionButtonPressed()
+        {
+            SceneManager.LoadScene("Offset", LoadSceneMode.Single);
+        }
     }
 }

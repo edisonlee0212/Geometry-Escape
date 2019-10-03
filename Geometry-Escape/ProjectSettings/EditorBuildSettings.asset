@@ -11,6 +11,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/In-Game.unity
     guid: 9fc0d4010bbf28b4594072e72b8655ab
+  - enabled: 1
+    path: Assets/Scenes/Offset.unity
+    guid: c941522c877e8fb4d904eace8a4be56b
   m_configObjects:
     com.unity.input.settings: {fileID: 11400000, guid: e7a5ba5b06e3e83409e47db6774d707d,
       type: 2}

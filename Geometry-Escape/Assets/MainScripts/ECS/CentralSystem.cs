@@ -18,6 +18,7 @@ namespace GeometryEscape
         #region Private
         private static EntityManager m_EntityManager;
         private static Transform m_Light;
+        private static bool _inoffsettest = false;
         private static Entity _LastBeatsTrapTriggeredEntity;
         private static Entity _LastFixedTrapTriggeredEntity;
         private static int _FreezeCount;
@@ -190,6 +191,7 @@ namespace GeometryEscape
             _PreviousOriginPosition = default;
             _TargetOriginPosition = default;
             _Moving = false;
+            _inoffsettest = false;
             _LastBeatsTrapTriggeredEntity = Entity.Null;
             #endregion
             #region Initialize sub-systems
@@ -207,6 +209,46 @@ namespace GeometryEscape
             CopyDisplayColorSystem.Init();
             #endregion
             //这个地方设置操作模式，不同操作模式对应不同场景。
+
+            ControlSystem.ControlMode = ControlMode.InGame;
+            Running = true;
+
+            Enabled = true;
+        }
+
+        public void OffsetInit()
+        {
+
+            #region Load Resources
+            //首先我们载入resources，准备好要分配给各个子系统的资源
+            m_LightResources = Resources.Load<LightResources>("ScriptableObjects/LightResources");
+            m_AudioResources = Resources.Load<AudioResources>("ScriptableObjects/AudioResources");
+            m_MainCharacterResources = Resources.Load<MainCharacterResources>("ScriptableObjects/MainCharacterResources");
+            #endregion
+            #region Initial Settings
+            /* 设置灯光，因为地图具有缩放功能，在地图缩放的时候灯光范围也应该随之更改，所以在这里加入引用。
+             */
+            m_Light = LightResources.ViewLight.transform;
+
+            MainCharacterController = m_MainCharacterResources.MainCharacterController;
+
+            _CurrentZoomFactor = 1;
+            _CurrentCenterPosition = Unity.Mathematics.float3.zero;
+            Scale = 1;
+            TimeStep = 0.1f;
+            _CurrentCenterPosition = default;
+            _PreviousOriginPosition = default;
+            _TargetOriginPosition = default;
+            _inoffsettest = true;
+            _Moving = false;
+            _LastBeatsTrapTriggeredEntity = Entity.Null;
+            #endregion
+            #region Initialize sub-systems
+            FloatingOriginSystem.Init();
+            RenderSystem.Init();//启动这个系统
+            AudioSystem.Init();
+            ControlSystem = new ControlSystem();//control system并不是一个真正的ECS的系统，所以我们通过这种方式建立。
+            #endregion
 
             ControlSystem.ControlMode = ControlMode.InGame;
             Running = true;
@@ -318,6 +360,14 @@ namespace GeometryEscape
 
         public static void Move(Vector2 moveVec, bool avoidCheck = false, float time = 0.2f)
         {
+            if (_inoffsettest)
+            {
+                // AudioSystem.OnBeats();
+                int offset = AudioSystem.CalOffset();
+                CentralSystemOffsetController.updateOffset(offset);
+                return;
+            }
+            
             if(!avoidCheck && _FreezeCount > 0)
             {
                 _FreezeCount--;

@@ -213,7 +213,14 @@ namespace GeometryEscape
             float dev = Mathf.Abs((m_MusicAudioSource.time - m_Music.MusicInfo.MusicStartTime) % m_Music.MusicInfo.MusicBeatsTime);
 
             Debug.Log("dev: " + dev);
+            Debug.Log("offset: " + CentralSystemOffsetController._offset);
             return dev <= _Deviation || dev >= m_Music.MusicInfo.MusicBeatsTime - _Deviation;
+        }
+
+        public static int CalOffset()
+        {
+            int offset = (int)(100 * (float)((m_MusicAudioSource.time - m_Music.MusicInfo.MusicStartTime) % m_Music.MusicInfo.MusicBeatsTime));
+            return offset;
         }
 
         public static int CurrentBeatCounter()

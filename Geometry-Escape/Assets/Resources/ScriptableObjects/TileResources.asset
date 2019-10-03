@@ -18,7 +18,7 @@ MonoBehaviour:
       MeshMaterial:
         Mesh: {fileID: 10210, guid: 0000000000000000e000000000000000, type: 0}
         Material: {fileID: 2100000, guid: 2f7626e6a21e6d947b26a774973205fb, type: 2}
-    MaxIndex: 1
+    MaxIndex: 2
   - TileType: 2
     RenderContent:
       MeshMaterial:

@@ -34,7 +34,6 @@ public class UISystem : MonoBehaviour
         HealthStatusText = m_HealthStatusText;
      //   MonsterHealthText = m_MonsterHealthText;
 
-        Debug.Log("init");
         HideHit_300();
         HideMiss();
     }
