@@ -11,12 +11,15 @@ namespace GeometryEscape {
         }
 
         public void OnStartButtonPressed() {
-
             SceneManager.LoadScene("In-Game", LoadSceneMode.Single);
         }
 
         public void OnExitButtonPressed() {
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPlaying = false;
+#else
             Application.Quit();
+#endif
         }
     }
 }
