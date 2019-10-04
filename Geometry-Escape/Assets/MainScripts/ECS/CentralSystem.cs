@@ -214,6 +214,8 @@ namespace GeometryEscape
             Running = true;
 
             Enabled = true;
+
+            UISystem.Displaypopup(0);
         }
 
         public void OffsetInit()
@@ -605,6 +607,7 @@ namespace GeometryEscape
             switch (EntityManager.GetComponentData<TypeOfTile>(FloatingOriginSystem.CenterTileEntity).Value)
             {
                 case TileType.NailTrap:
+                    //UISystem.Displaypopup(2);
                     
                     if (EntityManager.GetComponentData<TextureIndex>(FloatingOriginSystem.CenterTileEntity).Value == 1)
                     {
@@ -619,6 +622,18 @@ namespace GeometryEscape
                         m_LightResources.TrapColor();
                         FloatingOriginSystem.ShakeWorld(new ShakeInfo { Amplitude = 0.1f, Frequency = 30, x = true, y = true, Duration = 0.2f });
                     }
+                    break;
+
+                //case TileType.MusicAccleratorTrap:
+                //    UISystem.Displaypopup(3);
+                //    break;
+                //case TileType.FreezeTrap:
+                //    UISystem.Displaypopup(4);
+                //    break;
+                //case TileType.InverseTrap:
+                //    UISystem.Displaypopup(5);
+                //    break;
+                default:
                     break;
             }
         }

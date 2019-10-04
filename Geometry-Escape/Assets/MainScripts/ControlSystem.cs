@@ -138,6 +138,7 @@ namespace GeometryEscape
         private static void Move(InputAction.CallbackContext ctx)
         {
             AudioSystem.PlayKeySound();
+            UISystem.Displaypopup(1);
             CentralSystem.Move(ctx.ReadValue<Vector2>());
         }
 
