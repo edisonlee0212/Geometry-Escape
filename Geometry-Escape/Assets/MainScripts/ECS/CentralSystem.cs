@@ -210,7 +210,7 @@ namespace GeometryEscape
             #endregion
             //这个地方设置操作模式，不同操作模式对应不同场景。
 
-            ControlSystem.ControlMode = ControlMode.InGame;
+            ControlSystem.ControlMode = ControlMode.MapEditor;
             Running = true;
 
             Enabled = true;
@@ -584,6 +584,7 @@ namespace GeometryEscape
                 #endregion
 
                 #region Beat
+                if (!AudioSystem.MusicAudioSource.isPlaying) AudioSystem.MusicAudioSource.Play();
                 int count = AudioSystem.CurrentBeatCounter();
                 if (count != _BeatCounter)
                 {
