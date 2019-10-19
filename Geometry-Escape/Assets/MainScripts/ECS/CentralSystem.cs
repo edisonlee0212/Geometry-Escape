@@ -81,7 +81,7 @@ namespace GeometryEscape
         private static int _BeatCounter;
         private static CharacterController m_MainCharacterController;
         private static float _Timer;
-        
+
         private static bool _Running;
 
         #endregion
@@ -210,7 +210,7 @@ namespace GeometryEscape
             #endregion
             //这个地方设置操作模式，不同操作模式对应不同场景。
 
-            ControlSystem.ControlMode = ControlMode.MapEditor;
+            ControlSystem.ControlMode = ControlMode.InGame;
             Running = true;
 
             Enabled = true;
@@ -369,8 +369,8 @@ namespace GeometryEscape
                 CentralSystemOffsetController.updateOffset(offset);
                 return;
             }
-            
-            if(!avoidCheck && _FreezeCount > 0)
+
+            if (!avoidCheck && _FreezeCount > 0)
             {
                 _FreezeCount--;
                 return;
@@ -385,93 +385,75 @@ namespace GeometryEscape
                     _MovementTime = time;
                     _MovementTimer = 0;
                     _PreviousOriginPosition = _CurrentCenterPosition;
-
+                    Entity targetEntity = Entity.Null;
                     #region Decide Direction
                     if (moveVec.x > 0)
                     {
-                        if (!(ControlSystem.ControlMode == ControlMode.MapEditor))
+                        if (ControlSystem.ControlMode == ControlMode.InGame)
                         {
-
                             if (_InverseDirection)
                             {
-                                if (m_EntityManager.GetComponentData<LeftTile>(FloatingOriginSystem.CenterTileEntity).Value == Entity.Null)
-                                {
-                                    return;
-                                }
+                                targetEntity = m_EntityManager.GetComponentData<LeftTile>(FloatingOriginSystem.CenterTileEntity).Value;
+
                             }
                             else
                             {
-                                if (m_EntityManager.GetComponentData<RightTile>(FloatingOriginSystem.CenterTileEntity).Value == Entity.Null)
-                                {
-                                    return;
-                                }
+                                targetEntity = m_EntityManager.GetComponentData<RightTile>(FloatingOriginSystem.CenterTileEntity).Value;
                             }
-
                         }
+
                         characterMovingDirection = (!avoidCheck && _InverseDirection) ? Direction.Left : Direction.Right;
                     }
                     else if (moveVec.x < 0)
                     {
-                        if (!(ControlSystem.ControlMode == ControlMode.MapEditor))
+                        if (ControlSystem.ControlMode == ControlMode.InGame)
                         {
                             if (_InverseDirection)
                             {
-                                if (m_EntityManager.GetComponentData<RightTile>(FloatingOriginSystem.CenterTileEntity).Value == Entity.Null)
-                                {
-                                    return;
-                                }
+                                targetEntity = m_EntityManager.GetComponentData<RightTile>(FloatingOriginSystem.CenterTileEntity).Value;
                             }
                             else
                             {
-                                if (m_EntityManager.GetComponentData<LeftTile>(FloatingOriginSystem.CenterTileEntity).Value == Entity.Null)
-                                {
-                                    return;
-                                }
+                                targetEntity = m_EntityManager.GetComponentData<LeftTile>(FloatingOriginSystem.CenterTileEntity).Value;
                             }
                         }
                         characterMovingDirection = (!avoidCheck && _InverseDirection) ? Direction.Right : Direction.Left;
                     }
                     else if (moveVec.y > 0)
                     {
-                        if (!(ControlSystem.ControlMode == ControlMode.MapEditor))
+                        if (ControlSystem.ControlMode == ControlMode.InGame)
                         {
                             if (_InverseDirection)
                             {
-                                if (m_EntityManager.GetComponentData<DownTile>(FloatingOriginSystem.CenterTileEntity).Value == Entity.Null)
-                                {
-                                    return;
-                                }
+                                targetEntity = m_EntityManager.GetComponentData<DownTile>(FloatingOriginSystem.CenterTileEntity).Value;
                             }
                             else
                             {
-                                if (m_EntityManager.GetComponentData<UpTile>(FloatingOriginSystem.CenterTileEntity).Value == Entity.Null)
-                                {
-                                    return;
-                                }
+                                targetEntity = m_EntityManager.GetComponentData<UpTile>(FloatingOriginSystem.CenterTileEntity).Value;
                             }
                         }
                         characterMovingDirection = (!avoidCheck && _InverseDirection) ? Direction.Down : Direction.Up;
                     }
                     else if (moveVec.y < 0)
                     {
-                        if (!(ControlSystem.ControlMode == ControlMode.MapEditor))
+                        if (ControlSystem.ControlMode == ControlMode.InGame)
                         {
                             if (_InverseDirection)
                             {
-                                if (m_EntityManager.GetComponentData<UpTile>(FloatingOriginSystem.CenterTileEntity).Value == Entity.Null)
-                                {
-                                    return;
-                                }
+                                targetEntity = m_EntityManager.GetComponentData<UpTile>(FloatingOriginSystem.CenterTileEntity).Value;
+
                             }
                             else
                             {
-                                if (m_EntityManager.GetComponentData<DownTile>(FloatingOriginSystem.CenterTileEntity).Value == Entity.Null)
-                                {
-                                    return;
-                                }
+                                targetEntity = m_EntityManager.GetComponentData<DownTile>(FloatingOriginSystem.CenterTileEntity).Value;
                             }
                         }
                         characterMovingDirection = (!avoidCheck && _InverseDirection) ? Direction.Up : Direction.Down;
+                    }
+                    Debug.Log(targetEntity);
+                    if (targetEntity == Entity.Null || m_EntityManager.GetComponentData<TypeOfTile>(targetEntity).Value == TileType.Blocked)
+                    {
+                        if (ControlSystem.ControlMode == ControlMode.InGame) return;
                     }
                     #endregion
                     switch (characterMovingDirection)
@@ -496,6 +478,7 @@ namespace GeometryEscape
                             MainCharacterController.MoveRight();
                             Debug.Log("Move right, target position: " + (-_TargetOriginPosition));
                             break;
+
                         case Direction.Still:
                             Debug.Log("Blocked in player mode! Use map editor mode if you want to move to empty space.");
                             break;
@@ -609,7 +592,7 @@ namespace GeometryEscape
             {
                 case TileType.NailTrap:
                     //UISystem.Displaypopup(2);
-                    
+
                     if (EntityManager.GetComponentData<TextureIndex>(FloatingOriginSystem.CenterTileEntity).Value == 1)
                     {
                         if (!EntityManager.GetComponentData<Timer>(FloatingOriginSystem.CenterTileEntity).isOn)
@@ -665,7 +648,7 @@ namespace GeometryEscape
                     _LastBeatsTrapTriggeredEntity = FloatingOriginSystem.CenterTileEntity;
                     AudioSystem.AcclerateMusic(2, 2);
                     break;
-                
+
                 default:
                     break;
             }
@@ -727,7 +710,7 @@ namespace GeometryEscape
         private static float _ShakeTimer;
         private static ShakeInfo _ShakeInfo;
         private static float3 _WorldPositionOffset;
-        
+
         #endregion
 
         #region Public
@@ -847,7 +830,7 @@ namespace GeometryEscape
         {
             if (_Shaking)
             {
-               // Debug.Log("Shaking");
+                // Debug.Log("Shaking");
                 if (_ShakeTimer > 0)
                 {
                     if (_ShakeInfo.x)
@@ -896,7 +879,7 @@ namespace GeometryEscape
                 {
                     case MonsterType.Blue:
                         CentralSystem.MainCharacterController.ChangeHealth(-10);
-                        EntityManager.SetComponentData<MonsterHP>(CenterMonsterEntity,new MonsterHP { Value = CenterMonsterHP - 50 });
+                        EntityManager.SetComponentData<MonsterHP>(CenterMonsterEntity, new MonsterHP { Value = CenterMonsterHP - 50 });
                         //CentralSystem.MonsterSystem.ChangeMonsterHealth();
                         break;
                     case MonsterType.Green:
@@ -912,7 +895,7 @@ namespace GeometryEscape
 
                         break;
                 }
-//                Debug.Log("check monster HP"+CenterMonsterHP);
+                //Debug.Log("check monster HP"+CenterMonsterHP);
                 AudioSystem.PlayTrapSound();
                 var position = EntityManager.GetComponentData<Translation>(CenterMonsterEntity).Value;
                 if (position.x < 0)

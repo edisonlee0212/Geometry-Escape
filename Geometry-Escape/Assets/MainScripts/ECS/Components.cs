@@ -16,6 +16,7 @@ namespace GeometryEscape
         FreezeTrap,
         InverseTrap,
         Bonus,
+        Exit,
     }
 
     public enum EntityType
