@@ -107,12 +107,12 @@ namespace GeometryEscape
 
         private static void MapEditorSaveMap(InputAction.CallbackContext ctx)
         {
-            WorldSystem.SaveMap("temp");
+            WorldSystem.SaveMapByName("TestGround");
         }
 
         private static void MapEditorLoadMap(InputAction.CallbackContext ctx)
         {
-            WorldSystem.LoadMap("temp");
+            WorldSystem.LoadMapByName("TestGround");
         }
 
         private static void MapEditorDestroyAllTiles(InputAction.CallbackContext ctx)

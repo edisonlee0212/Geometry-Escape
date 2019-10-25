@@ -23,17 +23,31 @@ namespace GeometryEscape
             _TileEntityQuery = _EntityManager.CreateEntityQuery(typeof(TileProperties));
         }
 
-        public static void SaveNewMap(string mapName)
+        public static void SaveMapByPath(string path)
         {
             //If the central system is currently running, we return because other systems may alter the map.
             if (CentralSystem.Running) CentralSystem.Pause();
+            var stream = File.Open(path, FileMode.OpenOrCreate);
+            SaveMap(stream);
+            CentralSystem.WorldSystem.Resume();
+        }
+
+        public static void SaveMapByName(string mapName)
+        {
+            //If the central system is currently running, we return because other systems may alter the map.
+            if (CentralSystem.Running) CentralSystem.Pause();
+            var stream = File.Open(_SavePath + "/" + mapName, FileMode.OpenOrCreate);
+            SaveMap(stream);
+        }
+
+        private static void SaveMap(FileStream stream)
+        {
             //First we use the query to get the list of the tile entities.
             var tileEntityArray = _TileEntityQuery.ToEntityArray(Unity.Collections.Allocator.TempJob);
             //We calculate the tile count.
             int tileAmount = tileEntityArray.Length;
             Debug.Log("Saving " + tileAmount + " tiles.");
             //Load file stream for saving.
-            var stream = File.Open(_SavePath + "/" + mapName, FileMode.OpenOrCreate);
             var formatter = new BinaryWriter(stream);
             //Below are file writing process.
 
@@ -51,14 +65,28 @@ namespace GeometryEscape
             //Now we store the monsters.
             //TODO
 
-            CentralSystem.Resume();
         }
 
-        public static void LoadMap(string mapName)
+        public static void LoadMapByPath(string path)
+        {
+            if (CentralSystem.Running) CentralSystem.Pause();
+            //Open the file using the map name
+            var stream = File.Open(path, FileMode.Open);
+            LoadMap(stream);
+            CentralSystem.WorldSystem.Resume();
+        }
+
+        public static void LoadMapByName(string mapName)
         {
             if (CentralSystem.Running) CentralSystem.Pause();
             //Open the file using the map name
             var stream = File.Open(_SavePath + "/" + mapName, FileMode.Open);
+            LoadMap(stream);
+            CentralSystem.WorldSystem.Resume();
+        }
+
+        private static void LoadMap(FileStream stream)
+        {
             var formatter = new BinaryReader(stream);
             //Get the amount of tiles.
             int tileAmount = formatter.ReadInt32();
@@ -72,7 +100,6 @@ namespace GeometryEscape
             //Read monsters.
             //TODO
 
-            CentralSystem.Resume();
         }
 
         public static void SaveTileEntity(FileStream stream, Entity entity, BinaryWriter writer)

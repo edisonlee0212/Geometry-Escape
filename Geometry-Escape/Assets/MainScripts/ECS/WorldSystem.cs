@@ -130,24 +130,14 @@ namespace GeometryEscape
             _TotalTileAmount = 0;
             _TotalMonsterAmount = 0;
 
-            int _TileCount = 50;
-            for (int i = 0; i < _TileCount; i++)
-            {
-                for (int j = 0; j < _TileCount; j++)
-                {
-                    int index = i * _TileCount + j;
-
-                    AddTileCreationInfo(new TileCreationInfo { TileProperties = new TileProperties { Index = index % 5 }, Coordinate = new Coordinate { X = i, Y = j, Z = 0 } });
-
-                }
-            }
+            FileSystem.LoadMapByPath(Application.dataPath + "/Resources/Maps/TestGround");
 
             for (int i = 1; i < 50; i++)
             {
                 AddMonster(i % 2, new Coordinate { X = i, Y = i, Z = -1 });
 
             }
-
+            CentralSystem.Pause();
             Enabled = true;
         }
 
@@ -263,6 +253,7 @@ namespace GeometryEscape
 
         public static void DestroyAllTiles()
         {
+            CentralSystem.Pause();
             var query = m_EntityManager.CreateEntityQuery(typeof(TileProperties));
             var list = query.ToEntityArray(Allocator.TempJob);
             foreach (var i in list)
@@ -271,16 +262,17 @@ namespace GeometryEscape
             }
             _RemovingTiles = true;
             list.Dispose();
+            CentralSystem.WorldSystem.Enabled = true;
         }
 
-        public static void SaveMap(string mapName)
+        public static void SaveMapByName(string mapName)
         {
-            FileSystem.SaveNewMap(mapName);
+            FileSystem.SaveMapByName(mapName);
         }
 
-        public static void LoadMap(string mapName)
+        public static void LoadMapByName(string mapName)
         {
-            FileSystem.LoadMap(mapName);
+            FileSystem.LoadMapByName(mapName);
         }
         #endregion
 
@@ -415,7 +407,7 @@ namespace GeometryEscape
                 }
                 if (_TileCreationQueue.Count == 0) _AddingTiles = false;
             }
-            if (_RemovingTiles && _TileDestructionQueue.Count != 0)
+            else if (_RemovingTiles && _TileDestructionQueue.Count != 0)
             {
                 int count = _TileDestructionQueue.Count;
                 for (int i = 0; i < 100 && i < count; i++)
@@ -427,7 +419,7 @@ namespace GeometryEscape
             }
 
 
-            if (_AddingMonsters && _MonsterCreationQueue.Count != 0)
+            else if (_AddingMonsters && _MonsterCreationQueue.Count != 0)
             {
                 int count = _MonsterCreationQueue.Count;
                 for (int i = 0; i < 100 && i < count; i++)
@@ -437,7 +429,7 @@ namespace GeometryEscape
                 }
                 if (_MonsterCreationQueue.Count == 0) _AddingMonsters = false;
             }
-            if (_RemovingMonsters && _MonsterDestructionQueue.Count != 0)
+            else if (_RemovingMonsters && _MonsterDestructionQueue.Count != 0)
             {
                 int count = _MonsterDestructionQueue.Count;
                 for (int i = 0; i < 100 && i < count; i++)
@@ -447,10 +439,15 @@ namespace GeometryEscape
                 }
                 if (_MonsterDestructionQueue.Count == 0) _RemovingMonsters = false;
             }
-            if (!CentralSystem.MonsterSystem.MonsterKilled.Equals(Entity.Null))
+            else if (!CentralSystem.MonsterSystem.MonsterKilled.Equals(Entity.Null))
             {
                 DestroyMonster(inputDeps, CentralSystem.MonsterSystem.MonsterKilled);
                 CentralSystem.MonsterSystem.MonsterKilled = Entity.Null;
+            }
+            else
+            {
+                CentralSystem.Resume();
+                Enabled = false;
             }
             return inputDeps;
         }

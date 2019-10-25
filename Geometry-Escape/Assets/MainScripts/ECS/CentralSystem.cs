@@ -200,17 +200,18 @@ namespace GeometryEscape
             TileSystem.Init();
 
             MonsterSystem.Init();
-            WorldSystem.TileResources = m_TileResources;
-            WorldSystem.MonsterResources = m_MonsterResources;
-            WorldSystem.Init();
+            
             AudioSystem.Init();
             ControlSystem = new ControlSystem();//control system并不是一个真正的ECS的系统，所以我们通过这种方式建立。
             CopyTextureIndexSystem.Init();
             CopyDisplayColorSystem.Init();
+            WorldSystem.TileResources = m_TileResources;
+            WorldSystem.MonsterResources = m_MonsterResources;
+            WorldSystem.Init();
             #endregion
             //这个地方设置操作模式，不同操作模式对应不同场景。
 
-            ControlSystem.ControlMode = ControlMode.InGame;
+            ControlSystem.ControlMode = ControlMode.MapEditor;
             Running = true;
 
             Enabled = true;
@@ -275,7 +276,6 @@ namespace GeometryEscape
             AudioSystem.Pause();
             FloatingOriginSystem.Pause();
             WorldSystem.Pause();
-
         }
 
         /// <summary>
