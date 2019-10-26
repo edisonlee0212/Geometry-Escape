@@ -22,6 +22,7 @@ namespace GeometryEscape
             m_SerializationUtilities = new SerializationUtilities();
             _EntityManager = World.Active.EntityManager;
             _TileEntityQuery = _EntityManager.CreateEntityQuery(typeof(TileProperties));
+            _MonsterEntityQuery = _EntityManager.CreateEntityQuery(typeof(MonsterProperties));
         }
 
         public static void SaveMapByPath(string path)
@@ -39,6 +40,7 @@ namespace GeometryEscape
             if (CentralSystem.Running) CentralSystem.Pause();
             var stream = File.Open(_SavePath + "/" + mapName, FileMode.OpenOrCreate);
             SaveMap(stream);
+            CentralSystem.WorldSystem.Resume();
         }
 
         private static void SaveMap(FileStream stream)
@@ -67,13 +69,13 @@ namespace GeometryEscape
             //TODO
             var monsterEntityArray = _MonsterEntityQuery.ToEntityArray(Unity.Collections.Allocator.TempJob);
             int monsterAmount = monsterEntityArray.Length;
-            //writter.Write(monsterAmount);
+            writter.Write(monsterAmount);
             Debug.Log("monsterAmount " + monsterAmount);
 
-            //foreach (var i in monsterEntityArray)
-            //{
-            //    SaveMonsterEntity(stream, i, writter);
-            //}
+            foreach (var i in monsterEntityArray)
+            {
+                SaveMonsterEntity(stream, i, writter);
+            }
             monsterEntityArray.Dispose();
         }
 
@@ -97,6 +99,11 @@ namespace GeometryEscape
 
         private static void LoadMap(FileStream stream)
         {
+            if (WorldSystem.MapLoaded)
+            {
+                Debug.Log("Map is not loaded! Try load map first.");
+                return;
+            }
             var reader = new BinaryReader(stream);
             //Get the amount of tiles.
             int tileAmount = reader.ReadInt32();
@@ -109,12 +116,14 @@ namespace GeometryEscape
 
             //Read monsters.
             //TODO
-            //int monsterAmount = reader.ReadInt32();
-            //Debug.Log("monsterAmount "+monsterAmount);
-            //for (int i = 0; i < monsterAmount; i++)
-            //{
-            //    LoadMonsterEntity(stream, reader);
-            //}
+            int monsterAmount = reader.ReadInt32();
+            
+            Debug.Log("monsterAmount "+monsterAmount);
+            for (int i = 0; i < monsterAmount; i++)
+            {
+                LoadMonsterEntity(stream, reader);
+            }
+            WorldSystem.MapLoaded = true;
         }
 
         public static void SaveTileEntity(FileStream stream, Entity entity, BinaryWriter writer)

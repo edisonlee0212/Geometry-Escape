@@ -117,7 +117,7 @@ namespace GeometryEscape
 
         private static void MapEditorDestroyAllTiles(InputAction.CallbackContext ctx)
         {
-            WorldSystem.DestroyAllTiles();
+            WorldSystem.UnloadMap();
         }
 
         private static void BeatsEditorStartRecording(InputAction.CallbackContext ctx)

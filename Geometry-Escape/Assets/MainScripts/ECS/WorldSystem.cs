@@ -46,7 +46,7 @@ namespace GeometryEscape
         private static EntityArchetype _MonsterEntityArchetype;
         private static NativeHashMap<Coordinate, TileType> _TileHashMap;
         private static NativeHashMap<Coordinate, TypeOfMonster> _MonsterHashMap;
-
+        private static bool _MapLoaded;
 
         private static bool _AddingTiles;
         private static bool _RemovingTiles;
@@ -67,6 +67,7 @@ namespace GeometryEscape
         public static EntityArchetype MonsterEntityArchetype { get => _MonsterEntityArchetype; set => _MonsterEntityArchetype = value; }
         public static NativeHashMap<Coordinate, TileType> TileHashMap { get => _TileHashMap; set => _TileHashMap = value; }
         public static NativeHashMap<Coordinate, TypeOfMonster> MonsterHashMap { get => _MonsterHashMap; set => _MonsterHashMap = value; }
+        public static bool MapLoaded { get => _MapLoaded; set => _MapLoaded = value; }
 
         #endregion
 
@@ -132,10 +133,6 @@ namespace GeometryEscape
 
             FileSystem.LoadMapByPath(Application.dataPath + "/Resources/Maps/TestGround");
 
-            for (int i = 1; i < 50; i++)
-            {
-                AddMonster(new MonsterCreationInfo { MonsterProperties=new MonsterProperties { Index = i%2 }, Coordinate= new Coordinate { X = i, Y = i, Z = -1 } });
-            }
             CentralSystem.Pause();
             Enabled = true;
         }
@@ -246,7 +243,7 @@ namespace GeometryEscape
             _MonsterCreationQueue.Enqueue(monsterCreationInfo);
         }
 
-        public static void DestroyAllTiles()
+        public static void UnloadMap()
         {
             CentralSystem.Pause();
             var query = m_EntityManager.CreateEntityQuery(typeof(TileProperties));
@@ -257,6 +254,16 @@ namespace GeometryEscape
             }
             _RemovingTiles = true;
             list.Dispose();
+
+            query = m_EntityManager.CreateEntityQuery(typeof(MonsterProperties));
+            list = query.ToEntityArray(Allocator.TempJob);
+            foreach (var i in list)
+            {
+                _MonsterDestructionQueue.Enqueue(i);
+            }
+            _RemovingMonsters = true;
+            list.Dispose();
+            MapLoaded = false;
             CentralSystem.WorldSystem.Enabled = true;
         }
 
