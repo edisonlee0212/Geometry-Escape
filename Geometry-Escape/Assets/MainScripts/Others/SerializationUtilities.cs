@@ -28,12 +28,22 @@ namespace GeometryEscape
         {
             writer.Write(tileProperties.Index);
         }
+        public static void Write(BinaryWriter writer, ref MonsterProperties monsterProperties)
+        {
+            writer.Write(monsterProperties.Index);
+        }
 
         public static TileProperties ReadTileProperties(BinaryReader reader)
         {
             var tileProperties = new TileProperties();
             tileProperties.Index = reader.ReadInt32();
             return tileProperties;
+        }
+        public static MonsterProperties ReadMonsterProperties(BinaryReader reader)
+        {
+            var monsterProperties = new MonsterProperties();
+            monsterProperties.Index = reader.ReadInt32();
+            return monsterProperties;
         }
     }
 }

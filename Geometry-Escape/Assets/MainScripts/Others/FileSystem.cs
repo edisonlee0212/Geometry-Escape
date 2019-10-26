@@ -13,6 +13,7 @@ namespace GeometryEscape
         public static string _SavePath;
         public static EntityManager _EntityManager;
         public static EntityQuery _TileEntityQuery;
+        public static EntityQuery _MonsterEntityQuery;
         private static SerializationUtilities m_SerializationUtilities;
         public FileSystem()
         {
@@ -48,15 +49,15 @@ namespace GeometryEscape
             int tileAmount = tileEntityArray.Length;
             Debug.Log("Saving " + tileAmount + " tiles.");
             //Load file stream for saving.
-            var formatter = new BinaryWriter(stream);
+            var writter = new BinaryWriter(stream);
             //Below are file writing process.
 
             //1. We write the amount of tiles.
-            formatter.Write(tileAmount);
+            writter.Write(tileAmount);
             //Write the necessary information of a tile.
             foreach (var i in tileEntityArray)
             {
-                SaveTileEntity(stream, i, formatter);
+                SaveTileEntity(stream, i, writter);
             }
             //Discard the entity array.
             tileEntityArray.Dispose();
@@ -64,7 +65,16 @@ namespace GeometryEscape
 
             //Now we store the monsters.
             //TODO
+            var monsterEntityArray = _MonsterEntityQuery.ToEntityArray(Unity.Collections.Allocator.TempJob);
+            int monsterAmount = monsterEntityArray.Length;
+            //writter.Write(monsterAmount);
+            Debug.Log("monsterAmount " + monsterAmount);
 
+            //foreach (var i in monsterEntityArray)
+            //{
+            //    SaveMonsterEntity(stream, i, writter);
+            //}
+            monsterEntityArray.Dispose();
         }
 
         public static void LoadMapByPath(string path)
@@ -87,19 +97,24 @@ namespace GeometryEscape
 
         private static void LoadMap(FileStream stream)
         {
-            var formatter = new BinaryReader(stream);
+            var reader = new BinaryReader(stream);
             //Get the amount of tiles.
-            int tileAmount = formatter.ReadInt32();
+            int tileAmount = reader.ReadInt32();
             Debug.Log("Loading " + tileAmount + " tiles.");
             //Read tile and load it into the game world.
             for (int i = 0; i < tileAmount; i++)
             {
-                LoadTileEntity(stream, formatter);
+                LoadTileEntity(stream, reader);
             }
 
             //Read monsters.
             //TODO
-
+            //int monsterAmount = reader.ReadInt32();
+            //Debug.Log("monsterAmount "+monsterAmount);
+            //for (int i = 0; i < monsterAmount; i++)
+            //{
+            //    LoadMonsterEntity(stream, reader);
+            //}
         }
 
         public static void SaveTileEntity(FileStream stream, Entity entity, BinaryWriter writer)
@@ -119,6 +134,23 @@ namespace GeometryEscape
                 TileProperties = SerializationUtilities.ReadTileProperties(reader)
             };
             WorldSystem.AddTileCreationInfo(tileLoadingInfo);
+        }
+        public static void SaveMonsterEntity(FileStream stream, Entity entity, BinaryWriter writer)
+        {
+            var coordinate = _EntityManager.GetComponentData<Coordinate>(entity);
+            SerializationUtilities.Write(writer, ref coordinate);
+            var monsterProperties = _EntityManager.GetComponentData<MonsterProperties>(entity);
+            SerializationUtilities.Write(writer, ref monsterProperties);
+        }
+        public static void LoadMonsterEntity(FileStream stream, BinaryReader reader)
+        {
+
+            var monsterLoadingInfo = new MonsterCreationInfo
+            {
+                Coordinate = SerializationUtilities.ReadCoordinate(reader),
+                MonsterProperties = SerializationUtilities.ReadMonsterProperties(reader)
+                };
+            WorldSystem.AddMonster(monsterLoadingInfo);
         }
     }
 }

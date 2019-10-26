@@ -16,9 +16,9 @@ namespace GeometryEscape
         public Coordinate Coordinate;
     }
     [Serializable]
-    public struct MonsterInfo
+    public struct MonsterCreationInfo
     {
-        public int MonsterIndex;
+        public MonsterProperties MonsterProperties;
         public Coordinate Coordinate;
     }
 
@@ -37,7 +37,7 @@ namespace GeometryEscape
         private static NativeQueue<Entity> _TileDestructionQueue;
 
 
-        private static NativeQueue<MonsterInfo> _MonsterCreationQueue;
+        private static NativeQueue<MonsterCreationInfo> _MonsterCreationQueue;
         private static NativeQueue<Entity> _MonsterDestructionQueue;
         #endregion
 
@@ -122,7 +122,7 @@ namespace GeometryEscape
             ShutDown();
             _TileCreationQueue = new NativeQueue<TileCreationInfo>(Allocator.Persistent);
             _TileDestructionQueue = new NativeQueue<Entity>(Allocator.Persistent);
-            _MonsterCreationQueue = new NativeQueue<MonsterInfo>(Allocator.Persistent);
+            _MonsterCreationQueue = new NativeQueue<MonsterCreationInfo>(Allocator.Persistent);
             _MonsterDestructionQueue = new NativeQueue<Entity>(Allocator.Persistent);
             _TileHashMap = new NativeHashMap<Coordinate, TileType>(10000, Allocator.Persistent);
             _MonsterHashMap = new NativeHashMap<Coordinate, TypeOfMonster>(10000, Allocator.Persistent);
@@ -134,8 +134,7 @@ namespace GeometryEscape
 
             for (int i = 1; i < 50; i++)
             {
-                AddMonster(i % 2, new Coordinate { X = i, Y = i, Z = -1 });
-
+                AddMonster(new MonsterCreationInfo { MonsterProperties=new MonsterProperties { Index = i%2 }, Coordinate= new Coordinate { X = i, Y = i, Z = -1 } });
             }
             CentralSystem.Pause();
             Enabled = true;
@@ -240,15 +239,11 @@ namespace GeometryEscape
             _TileDestructionQueue.Enqueue(tileEntity);
         }
 
-        public static void AddMonster(int monsterIndex, Coordinate initialCoordinate = default)
+        public static void AddMonster(MonsterCreationInfo monsterCreationInfo)
         {
-            CentralSystem.WorldSystem.TotalMonsterAmount++;
+            //CentralSystem.WorldSystem.TotalMonsterAmount++;
             _AddingMonsters = true;
-            _MonsterCreationQueue.Enqueue(new MonsterInfo
-            {
-                Coordinate = initialCoordinate,
-                MonsterIndex = monsterIndex
-            });
+            _MonsterCreationQueue.Enqueue(monsterCreationInfo);
         }
 
         public static void DestroyAllTiles()
@@ -425,7 +420,7 @@ namespace GeometryEscape
                 for (int i = 0; i < 100 && i < count; i++)
                 {
                     var monsterInfo = _MonsterCreationQueue.Dequeue();
-                    CreateMonster(inputDeps, monsterInfo, i);
+                    CreateMonster(inputDeps, monsterInfo);
                 }
                 if (_MonsterCreationQueue.Count == 0) _AddingMonsters = false;
             }
@@ -582,9 +577,9 @@ namespace GeometryEscape
             EntityManager.DestroyEntity(monsterEntity);
             TotalMonsterAmount--;
         }
-        private void CreateMonster(JobHandle inputDeps, MonsterInfo monsterInfo, int i)
+        private void CreateMonster(JobHandle inputDeps, MonsterCreationInfo monsterInfo)
         {
-            var monster = m_MonsterResources.GetMonster(monsterInfo.MonsterIndex);
+            var monster = m_MonsterResources.GetMonster(monsterInfo.MonsterProperties.Index);
 
             if (!MonsterHashMap.TryAdd(monsterInfo.Coordinate, new TypeOfMonster
             {
@@ -614,14 +609,12 @@ namespace GeometryEscape
             {
                 Value = 1
             });
-            EntityManager.SetComponentData(instance, new MonsterProperties
-            {
-                Index = i
-            });
+            EntityManager.SetComponentData(instance, monsterInfo.MonsterProperties);
             EntityManager.SetComponentData(instance, new MonsterHP
             {
                 Value = 100
             });
+            _TotalMonsterAmount++;
         }
     }
 }

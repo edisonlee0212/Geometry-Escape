@@ -40,7 +40,7 @@ namespace GeometryEscape
         private int _MonsterMaterAmount;
         private static float _beatTime;
         private float _currentTime;
-        private static NativeQueue<MonsterInfo> _MonsterCreationQueue;
+        private static NativeQueue<MonsterCreationInfo> _MonsterCreationQueue;
         public Entity MonsterKilled { get => _MonsterKilled; set => _MonsterKilled = value; }
         private static Vector3 startPoint;
         private static Vector3 endPoint;
