@@ -119,7 +119,7 @@ namespace GeometryEscape
             }
         }
         [BurstCompile]
-        struct SetAllNailTrap : IJobForEach<TypeOfTile, TextureIndex, Coordinate, Timer>
+        struct SetTrapMotion : IJobForEach<TypeOfTile, TextureIndex, Coordinate, Timer>
         {
             public int mode;
             public int counter;
@@ -139,6 +139,15 @@ namespace GeometryEscape
                         c3.T = 0;
                         c3.maxT = 0.2f;
                     }
+                }else if(counter%2==0 && c0.Value == TileType.MusicAccleratorTrap)
+                {
+                    c1.Value = mode;
+                    if (c1.Value == 1)
+                    {
+                        c3.isOn = true;
+                        c3.T = 0;
+                        c3.maxT = 0.2f;
+                    }
                 }
             }
         }
@@ -148,7 +157,7 @@ namespace GeometryEscape
         public JobHandle OnBeatUpdate(ref JobHandle inputDeps, int beatCounter)
         {
 
-            inputDeps = new SetAllNailTrap
+            inputDeps = new SetTrapMotion
             {
                 mode = 1,
                 counter = beatCounter
@@ -167,6 +176,7 @@ namespace GeometryEscape
         }
         private static bool _ResetNails;
         private static float _ResetNailsTimer;
+        
         protected override JobHandle OnUpdate(JobHandle inputDeps)
         {
             if (_ResetNails)
@@ -178,7 +188,7 @@ namespace GeometryEscape
                 else
                 {
                     _ResetNails = false;
-                    inputDeps = new SetAllNailTrap
+                    inputDeps = new SetTrapMotion
                     {
                         counter = -1,
                         mode = 0
