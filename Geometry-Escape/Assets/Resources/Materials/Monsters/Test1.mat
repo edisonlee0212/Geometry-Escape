@@ -8,7 +8,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Test1
-  m_Shader: {fileID: 4800000, guid: f090fca67fc7b9046a4109c7283add93, type: 3}
+  m_Shader: {fileID: 4800000, guid: 8168b360b063ab948af9e4096b25709d, type: 3}
   m_ShaderKeywords: 
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 1
@@ -40,7 +40,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 2800000, guid: 99d78d3213c8b934f9da724fafe2ab58, type: 3}
+        m_Texture: {fileID: 2800000, guid: dfbcfd9adf082ab43948fe9618d695e5, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MetallicGlossMap:
@@ -70,7 +70,7 @@ Material:
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
-    - _TileSplit: 5
+    - _TileSplit: 1
     - _TileSplitX: 5
     - _TileSplitY: 5
     - _UVSec: 0

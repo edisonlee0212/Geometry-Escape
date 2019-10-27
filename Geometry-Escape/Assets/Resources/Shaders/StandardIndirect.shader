@@ -1,4 +1,4 @@
-﻿Shader "Custom/StandardIndirect"
+﻿Shader "Custom/TileSurface"
 {
     Properties
     {
@@ -9,10 +9,10 @@
     }
     SubShader
     {
-        Tags { "RenderType"="Opaque" }
+        Tags { "RenderType" = "Opaque"  }
         LOD 200
-
-        CGPROGRAM
+		
+        CGPROGRAM 
         // Physically based Standard lighting model, and enable shadows on all light types
         #pragma surface surf Standard fullforwardshadows
 		#pragma multi_compile_instancing
