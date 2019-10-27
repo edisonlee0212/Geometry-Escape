@@ -77,6 +77,7 @@ namespace GeometryEscape
 
         public void Pause()
         {
+            Debug.Log("Audio System Paused!");
             m_MusicAudioSource.Pause();
             Enabled = false;
         }
@@ -84,7 +85,7 @@ namespace GeometryEscape
 
         public void Resume()
         {
-            m_MusicAudioSource.Play();
+            m_MusicAudioSource.UnPause();
             Enabled = true;
         }
 

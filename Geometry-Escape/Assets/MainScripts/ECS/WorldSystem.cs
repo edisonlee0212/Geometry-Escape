@@ -131,10 +131,8 @@ namespace GeometryEscape
             _TotalTileAmount = 0;
             _TotalMonsterAmount = 0;
 
-            FileSystem.LoadMapByPath(Application.dataPath + "/Resources/Maps/TestGround");
-
-            CentralSystem.Pause();
-            Enabled = true;
+            //FileSystem.LoadMapByPath(Application.dataPath + "/Resources/Maps/TestGround");
+            TestMap(30);
         }
 
         public void Pause()
@@ -167,6 +165,28 @@ namespace GeometryEscape
         #endregion
 
         #region Methods
+
+        private void TestMap(int length)
+        {
+            CentralSystem.Pause();
+            for (int i = 0; i < length; i++)
+            {
+                for (int j = 0; j < length; j++)
+                {
+                    Coordinate coordinate = new Coordinate { X = i - 1, Y = j - 1, Z = 0 };
+                    if (i == 1 && j > 0 && j < TileResources.GetTileAmount()) AddTileCreationInfo(new TileCreationInfo { TileProperties = new TileProperties { Index = j - 1 }, Coordinate = coordinate });
+                    else if (i == 0 || i == length - 1 || j == 0 || j == length - 1)
+                    {
+                        AddTileCreationInfo(new TileCreationInfo { TileProperties = new TileProperties { Index = 6 }, Coordinate = coordinate });
+                    }
+                    else
+                    {
+                        AddTileCreationInfo(new TileCreationInfo { TileProperties = new TileProperties { Index = 0 }, Coordinate = coordinate });
+                    }
+                }
+            }
+            Enabled = true;
+        }
 
         public int MonsterNumber(int mapDimension)
         {
@@ -518,7 +538,7 @@ namespace GeometryEscape
                 Value = tile.MaxIndex
             };
             Entity instance = EntityManager.CreateEntity(TileEntityArchetype);
-            
+
             NativeArray<LeftTile> left = new NativeArray<LeftTile>(1, Allocator.TempJob);
             NativeArray<RightTile> right = new NativeArray<RightTile>(1, Allocator.TempJob);
             NativeArray<UpTile> up = new NativeArray<UpTile>(1, Allocator.TempJob);

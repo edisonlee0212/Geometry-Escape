@@ -192,6 +192,8 @@ namespace GeometryEscape
             _TargetOriginPosition = default;
             _Moving = false;
             _inoffsettest = false;
+            _Running = true;
+            ControlSystem.ControlMode = ControlMode.InGame;
             _LastBeatsTrapTriggeredEntity = Entity.Null;
             #endregion
             #region Initialize sub-systems
@@ -211,8 +213,7 @@ namespace GeometryEscape
             #endregion
             //这个地方设置操作模式，不同操作模式对应不同场景。
 
-            ControlSystem.ControlMode = ControlMode.MapEditor;
-            Running = true;
+            
 
             Enabled = true;
 
@@ -264,16 +265,14 @@ namespace GeometryEscape
         /// </summary>
         public static void Pause()
         {
-
             if (!Running) return;
             _SavedControlMode = ControlSystem.ControlMode;
             ControlSystem.ControlMode = ControlMode.NoControl;
             Running = false;
-
+            AudioSystem.Pause();
             MainCharacterController.Pause();
             TileSystem.Pause();
             MonsterSystem.Pause();
-            AudioSystem.Pause();
             FloatingOriginSystem.Pause();
             WorldSystem.Pause();
         }
@@ -453,6 +452,7 @@ namespace GeometryEscape
                     Debug.Log(targetEntity);
                     if (targetEntity == Entity.Null || m_EntityManager.GetComponentData<TypeOfTile>(targetEntity).Value == TileType.Blocked)
                     {
+                        FloatingOriginSystem.ShakeWorld(new ShakeInfo { Duration = 0.3f, Amplitude = 10f, Frequency = 0.1f, x = true});
                         if (ControlSystem.ControlMode == ControlMode.InGame) return;
                     }
                     #endregion
@@ -607,7 +607,9 @@ namespace GeometryEscape
                         FloatingOriginSystem.ShakeWorld(new ShakeInfo { Amplitude = 0.1f, Frequency = 30, x = true, y = true, Duration = 0.2f });
                     }
                     break;
-
+                case TileType.Exit:
+                    ReachExit();
+                    break;
                 //case TileType.MusicAccleratorTrap:
                 //    UISystem.Displaypopup(3);
                 //    break;
@@ -621,7 +623,12 @@ namespace GeometryEscape
                     break;
             }
         }
-
+        private  void ReachExit()
+        {
+            if (!Running) return;
+            Debug.Log("Player reached exit!");
+            return;
+        }
         private void CheckTrapOnBeatsUpdate()
         {
             if (ControlSystem.ControlMode == ControlMode.MapEditor) return;
