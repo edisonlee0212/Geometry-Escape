@@ -237,7 +237,7 @@ public class Controls : IInputActionCollection
                 {
                     ""name"": """",
                     ""id"": ""8de313ef-0c8e-4663-8024-b180c958657e"",
-                    ""path"": ""<Keyboard>/delete"",
+                    ""path"": ""<Keyboard>/k"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": ""PC"",
@@ -248,7 +248,7 @@ public class Controls : IInputActionCollection
                 {
                     ""name"": """",
                     ""id"": ""61a284ab-7ef5-4af4-a6e8-cf69bf1d9367"",
-                    ""path"": ""<Keyboard>/insert"",
+                    ""path"": ""<Keyboard>/l"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": ""PC"",

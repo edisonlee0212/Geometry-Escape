@@ -121,7 +121,8 @@ namespace GeometryEscape
 
         protected struct MoveMonster : IJobForEachWithEntity<Coordinate, PreviousCoordinate, TargetCoordinate, Timer, MonsterProperties, MonsterHP>
         {
-            [ReadOnly] public Vector3 position;
+            [WriteOnly] public NativeQueue<Entity>.ParallelWriter monsters;
+
             public void Execute(Entity entity, int index, ref Coordinate c0, ref PreviousCoordinate c1, ref TargetCoordinate c2, ref Timer c3, ref MonsterProperties c4, ref MonsterHP c5)
             {
                 if (!c3.isOn) return;
@@ -136,27 +137,11 @@ namespace GeometryEscape
                 }
                 if (c5.Value <= 0)
                 {
-                    _MonsterKilled = entity;
+                    monsters.Enqueue(entity);
+                    //_MonsterKilled = entity;
                 }
             }
 
-        }
-
-        // check if any monsters are in the scope and run to the character
-        struct CheckOnCall : IJobForEach<Coordinate>
-        {
-            public void Execute(ref Coordinate c0)
-            {
-
-            }
-        }
-
-        // check if any monsters got shot
-        struct CheckDamage : IJobForEach<Coordinate>
-        {
-            public void Execute(ref Coordinate c0)
-            {
-            }
         }
 
         //看完这段请把这段代码挪到合适的位置。
@@ -337,35 +322,37 @@ namespace GeometryEscape
                 }
                 else
                 {
-
                     nextMove = coordinate;
-                    float CoordinateX = -CentralSystem.CurrentCenterPosition.x - coordinate.X;
-                    float CoordinateY = -CentralSystem.CurrentCenterPosition.y - coordinate.Y;
 
-                    if (Mathf.Abs(CoordinateX) > Mathf.Abs(CoordinateY))
+                    if (beatCounter % 3 == 0)
                     {
-                        if (CoordinateX > 0)
+                        float CoordinateX = -CentralSystem.CurrentCenterPosition.x - coordinate.X;
+                        float CoordinateY = -CentralSystem.CurrentCenterPosition.y - coordinate.Y;
+
+                        if (Mathf.Abs(CoordinateX) > Mathf.Abs(CoordinateY))
                         {
-                            nextMove.X += 1;
+                            if (CoordinateX > 0)
+                            {
+                                nextMove.X += 1;
+                            }
+                            else
+                            {
+                                nextMove.X -= 1;
+                            }
                         }
                         else
                         {
-                            nextMove.X -= 1;
+                            if (CoordinateY > 0)
+                            {
+                                nextMove.Y += 1;
+                            }
+                            else
+                            {
+                                nextMove.Y -= 1;
+                            }
                         }
-                    }
-                    else
-                    {
-                        if (CoordinateY > 0)
-                        {
-                            nextMove.Y += 1;
-                        }
-                        else
-                        {
-                            nextMove.Y -= 1;
-                        }
-                    }
 
-
+                    }
                 }
                 TileType tileType;
 
@@ -416,8 +403,17 @@ namespace GeometryEscape
         {
 
             //MonsterRoute();
-            inputDeps = new MoveMonster { }.Schedule(this, inputDeps);
-
+            inputDeps = new MoveMonster
+            { 
+                monsters = WorldSystem._MonsterDestructionQueue.AsParallelWriter()
+            }.Schedule(this, inputDeps);
+            inputDeps.Complete();
+            if(WorldSystem._MonsterDestructionQueue.Count != 0)
+            {
+                WorldSystem.RemovingMonsters = true;
+                CentralSystem.Pause();
+                CentralSystem.WorldSystem.Resume();
+            }
 
             return inputDeps;
 

@@ -38,7 +38,7 @@ namespace GeometryEscape
 
 
         private static NativeQueue<MonsterCreationInfo> _MonsterCreationQueue;
-        private static NativeQueue<Entity> _MonsterDestructionQueue;
+        public static NativeQueue<Entity> _MonsterDestructionQueue;
         #endregion
 
         #region Public
@@ -69,6 +69,7 @@ namespace GeometryEscape
         public static NativeHashMap<Coordinate, TileType> TileHashMap { get => _TileHashMap; set => _TileHashMap = value; }
         public static NativeHashMap<Coordinate, TypeOfMonster> MonsterHashMap { get => _MonsterHashMap; set => _MonsterHashMap = value; }
         public static bool MapLoaded { get => _MapLoaded; set => _MapLoaded = value; }
+        public static bool RemovingMonsters { get => _RemovingMonsters; set => _RemovingMonsters = value; }
 
         #endregion
 
@@ -442,11 +443,6 @@ namespace GeometryEscape
                 }
                 if (_MonsterDestructionQueue.Count == 0) _RemovingMonsters = false;
             }
-            else if (!CentralSystem.MonsterSystem.MonsterKilled.Equals(Entity.Null))
-            {
-                DestroyMonster(inputDeps, CentralSystem.MonsterSystem.MonsterKilled);
-                CentralSystem.MonsterSystem.MonsterKilled = Entity.Null;
-            }
             else
             {
                 CentralSystem.Resume();
@@ -580,6 +576,7 @@ namespace GeometryEscape
         }
         public void DestroyMonster(JobHandle inputDeps, Entity monsterEntity)
         {
+            Debug.Log("destroy monster");
             var coordinate = EntityManager.GetComponentData<Coordinate>(monsterEntity);
             MonsterHashMap.Remove(coordinate);
             EntityManager.DestroyEntity(monsterEntity);
