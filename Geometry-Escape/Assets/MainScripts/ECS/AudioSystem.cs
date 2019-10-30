@@ -78,14 +78,14 @@ namespace GeometryEscape
         public void Pause()
         {
             Debug.Log("Audio System Paused!");
-            m_MusicAudioSource.Pause();
+            if (m_MusicAudioSource != null) m_MusicAudioSource.Pause();
             Enabled = false;
         }
 
 
         public void Resume()
         {
-            m_MusicAudioSource.UnPause();
+            if (m_MusicAudioSource != null) m_MusicAudioSource.UnPause();
             Enabled = true;
         }
 
@@ -259,7 +259,7 @@ namespace GeometryEscape
             if (_Acclerating)
             {
                 _AcclerateTimer -= Time.deltaTime;
-                if(_AcclerateTimer <= 0)
+                if (_AcclerateTimer <= 0)
                 {
                     _Acclerating = false;
                     m_MusicAudioSource.pitch = 1;

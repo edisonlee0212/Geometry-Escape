@@ -165,7 +165,7 @@ namespace GeometryEscape
             SceneManager.LoadScene("MainMenu");
             Enabled = false;
         }
-        public void Init()
+        public void Init(ControlMode controlMode = ControlMode.InGame)
         {
 
             #region Load Resources
@@ -193,7 +193,7 @@ namespace GeometryEscape
             _Moving = false;
             _inoffsettest = false;
             _Running = true;
-            ControlSystem.ControlMode = ControlMode.InGame;
+            ControlSystem.ControlMode = controlMode;
             _LastBeatsTrapTriggeredEntity = Entity.Null;
             #endregion
             #region Initialize sub-systems
@@ -201,61 +201,7 @@ namespace GeometryEscape
             RenderSystem.Init();//启动这个系统
             TileSystem.Init();
 
-            MonsterSystem.Init();
-            
-            AudioSystem.Init();
-            ControlSystem = new ControlSystem();//control system并不是一个真正的ECS的系统，所以我们通过这种方式建立。
-            CopyTextureIndexSystem.Init();
-            CopyDisplayColorSystem.Init();
-            WorldSystem.TileResources = m_TileResources;
-            WorldSystem.MonsterResources = m_MonsterResources;
-            WorldSystem.Init();
-            #endregion
-            //这个地方设置操作模式，不同操作模式对应不同场景。
-
-            
-
-            Enabled = true;
-
-            UISystem.Displaypopup(0);
-        }
-
-        public void EditorInit()
-        {
-            #region Load Resources
-            //首先我们载入resources，准备好要分配给各个子系统的资源
-            m_LightResources = Resources.Load<LightResources>("ScriptableObjects/LightResources");
-            m_TileResources = Resources.Load<TileResources>("ScriptableObjects/TileResources");
-            m_AudioResources = Resources.Load<AudioResources>("ScriptableObjects/AudioResources");
-            m_MonsterResources = Resources.Load<MonsterResources>("ScriptableObjects/MonsterResources");
-            m_MainCharacterResources = Resources.Load<MainCharacterResources>("ScriptableObjects/MainCharacterResources");
-            #endregion
-            #region Initial Settings
-            /* 设置灯光，因为地图具有缩放功能，在地图缩放的时候灯光范围也应该随之更改，所以在这里加入引用。
-             */
-            m_Light = LightResources.ViewLight.transform;
-
-            MainCharacterController = m_MainCharacterResources.MainCharacterController;
-
-            _CurrentZoomFactor = 1;
-            _CurrentCenterPosition = Unity.Mathematics.float3.zero;
-            Scale = 1;
-            TimeStep = 0.1f;
-            _CurrentCenterPosition = default;
-            _PreviousOriginPosition = default;
-            _TargetOriginPosition = default;
-            _Moving = false;
-            _inoffsettest = false;
-            _Running = true;
-            ControlSystem.ControlMode = ControlMode.MapEditor;
-            _LastBeatsTrapTriggeredEntity = Entity.Null;
-            #endregion
-            #region Initialize sub-systems
-            FloatingOriginSystem.Init();
-            RenderSystem.Init();//启动这个系统
-            TileSystem.Init();
-
-            MonsterSystem.Init();
+            if (controlMode != ControlMode.MapEditor) MonsterSystem.Init();
 
             AudioSystem.Init();
             ControlSystem = new ControlSystem();//control system并不是一个真正的ECS的系统，所以我们通过这种方式建立。
@@ -264,12 +210,16 @@ namespace GeometryEscape
             WorldSystem.TileResources = m_TileResources;
             WorldSystem.MonsterResources = m_MonsterResources;
             WorldSystem.Init();
+
             #endregion
             //这个地方设置操作模式，不同操作模式对应不同场景。
 
 
 
             Enabled = true;
+            //FileSystem.LoadMapByPath(Application.dataPath + "/Resources/Maps/TestGround");
+            WorldSystem.TestMap(30, controlMode);
+            //UISystem.Displaypopup(0);
         }
 
         public void OffsetInit()
@@ -324,7 +274,7 @@ namespace GeometryEscape
             AudioSystem.Pause();
             MainCharacterController.Pause();
             TileSystem.Pause();
-            MonsterSystem.Pause();
+            if (ControlSystem.ControlMode != ControlMode.MapEditor) MonsterSystem.Pause();
             FloatingOriginSystem.Pause();
             WorldSystem.Pause();
         }
@@ -341,7 +291,7 @@ namespace GeometryEscape
 
             MainCharacterController.Resume();
             TileSystem.Resume();
-            MonsterSystem.Resume();
+            if (ControlSystem.ControlMode != ControlMode.MapEditor) MonsterSystem.Resume();
             AudioSystem.Resume();
             FloatingOriginSystem.Resume();
             WorldSystem.Resume();
@@ -502,10 +452,11 @@ namespace GeometryEscape
                         characterMovingDirection = (!avoidCheck && _InverseDirection) ? Direction.Up : Direction.Down;
                     }
                     Debug.Log(targetEntity);
-                    if (targetEntity == Entity.Null || m_EntityManager.GetComponentData<TypeOfTile>(targetEntity).Value == TileType.Blocked)
+                    if (ControlSystem.ControlMode == ControlMode.InGame && (targetEntity == Entity.Null || m_EntityManager.GetComponentData<TypeOfTile>(targetEntity).Value == TileType.Blocked))
                     {
-                        FloatingOriginSystem.ShakeWorld(new ShakeInfo { Duration = 0.3f, Amplitude = 10f, Frequency = 0.1f, x = true});
-                        if (ControlSystem.ControlMode == ControlMode.InGame) return;
+                        FloatingOriginSystem.ShakeWorld(new ShakeInfo { Duration = 0.3f, Amplitude = 10f, Frequency = 0.1f, x = true });
+                        return;
+
                     }
                     #endregion
                     switch (characterMovingDirection)
@@ -539,7 +490,7 @@ namespace GeometryEscape
                     {
                         UISystem.ShowHit_300();
                     }
-                    
+
                 }
                 else
                 {
@@ -547,7 +498,7 @@ namespace GeometryEscape
                     {
                         UISystem.ShowMiss();
                     }
-                    
+
                 }
             }
         }
@@ -683,7 +634,7 @@ namespace GeometryEscape
                     break;
             }
         }
-        private  void ReachExit()
+        private void ReachExit()
         {
             if (!Running) return;
             Debug.Log("Player reached exit!");

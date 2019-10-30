@@ -132,8 +132,7 @@ namespace GeometryEscape
             _TotalTileAmount = 0;
             _TotalMonsterAmount = 0;
 
-            //FileSystem.LoadMapByPath(Application.dataPath + "/Resources/Maps/TestGround");
-            TestMap(30);
+            
         }
 
         public void Pause()
@@ -143,7 +142,6 @@ namespace GeometryEscape
 
         public void Resume()
         {
-
             Enabled = true;
         }
 
@@ -167,7 +165,7 @@ namespace GeometryEscape
 
         #region Methods
 
-        private void TestMap(int length)
+        public static void TestMap(int length, ControlMode controlMode)
         {
             CentralSystem.Pause();
             for (int i = 0; i < length; i++)
@@ -188,13 +186,15 @@ namespace GeometryEscape
             }
             AddMonster(new MonsterCreationInfo { MonsterProperties = new MonsterProperties { Index = 0 }, Coordinate = new Coordinate { X = 4, Y = 2, Z = -1 } });
 
-            Enabled = true;
+            CentralSystem.WorldSystem.Resume();
+
         }
 
         public static void AddCenterTile()
         {
             if (!_AddingTiles && !CentralSystem.Moving && FloatingOriginSystem.CenterTileEntity == Entity.Null)
             {
+                CentralSystem.Pause();
                 AddTileCreationInfo(new TileCreationInfo
                 {
                     TileProperties = new TileProperties { Index = tileindex_ },
@@ -205,6 +205,7 @@ namespace GeometryEscape
                         Z = (int)-CentralSystem.CurrentCenterPosition.z,
                     }
                 });
+                CentralSystem.WorldSystem.Resume();
                 Debug.Log("Inserted a new tile at " + (-CentralSystem.CurrentCenterPosition));
             }
             Debug.Log(tileindex_);
@@ -214,8 +215,10 @@ namespace GeometryEscape
         {
             if (!_RemovingTiles && !CentralSystem.Moving && FloatingOriginSystem.CenterTileEntity != Entity.Null)
             {
+                CentralSystem.Pause();
                 DeleteTile(FloatingOriginSystem.CenterTileEntity);
                 FloatingOriginSystem.CenterTileEntity = Entity.Null;
+                CentralSystem.WorldSystem.Resume();
                 Debug.Log("Deleted a new tile at " + (-CentralSystem.CurrentCenterPosition));
             }
         }

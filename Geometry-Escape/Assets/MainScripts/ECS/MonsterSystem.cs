@@ -56,6 +56,7 @@ namespace GeometryEscape
         protected override void OnCreate()
         {
             _MonsterEntityQuery = EntityManager.CreateEntityQuery(typeof(MonsterProperties));
+            Enabled = false;
         }
 
         public void ChangeHealth()
@@ -67,6 +68,7 @@ namespace GeometryEscape
             ShutDown();
             m_MonsterMovePattern = default;
             _TimeStep = 0.5f;
+            Enabled = true;
         }
         public void Pause()
         {

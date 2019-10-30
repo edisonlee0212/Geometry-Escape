@@ -295,7 +295,7 @@ public class Controls : IInputActionCollection
                     ""path"": ""<Keyboard>/q"",
                     ""interactions"": """",
                     ""processors"": """",
-                    ""groups"": """",
+                    ""groups"": ""PC"",
                     ""action"": ""SelectLeft"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
@@ -306,7 +306,7 @@ public class Controls : IInputActionCollection
                     ""path"": ""<Keyboard>/e"",
                     ""interactions"": """",
                     ""processors"": """",
-                    ""groups"": """",
+                    ""groups"": ""PC"",
                     ""action"": ""SelectRight"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false

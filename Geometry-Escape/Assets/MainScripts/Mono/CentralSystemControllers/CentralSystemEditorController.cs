@@ -12,7 +12,7 @@ namespace GeometryEscape
         private void Start()
         {
             m_CentralSystem = World.Active.GetOrCreateSystem<CentralSystem>();
-            m_CentralSystem.EditorInit();
+            m_CentralSystem.Init(ControlMode.MapEditor);
         }
 
         public void OnBackToMainMenu()
