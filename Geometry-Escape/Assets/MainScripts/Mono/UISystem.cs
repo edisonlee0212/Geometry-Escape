@@ -93,7 +93,10 @@ Up is now down and left is now right, etc."
     }
 
     public static void ChangeHealth(int points) {
-        HealthStatusText.text = "Health: " + points;
+        if (ControlSystem.ControlMode == ControlMode.InGame)
+        {
+            HealthStatusText.text = "Health: " + points;
+        }
     }
     public static void ChangeMonsterHealth() {
         //     MonsterHealthText.text = "Health: "+50;
