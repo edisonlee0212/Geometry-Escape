@@ -785,6 +785,7 @@ namespace GeometryEscape
 
         public static Entity CenterTileEntity { get => _CenterTileEntity[0]; set => _CenterTileEntity[0] = value; }
         public static Entity CenterMonsterEntity { get => _CenterMonsterEntity[0]; set => _CenterMonsterEntity[0] = value; }
+        public static float3 WorldPositionOffset { get => _WorldPositionOffset; set => _WorldPositionOffset = value; }
         #endregion
 
         #region Managers

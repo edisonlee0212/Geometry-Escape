@@ -186,35 +186,11 @@ namespace GeometryEscape
                     }
                 }
             }
+            AddMonster(new MonsterCreationInfo { MonsterProperties = new MonsterProperties { Index = 0 }, Coordinate = new Coordinate { X = 4, Y = 2, Z = -1 } });
+
             Enabled = true;
         }
 
-        public int MonsterNumber(int mapDimension)
-        {
-            return mapDimension / 10;
-        }
-        public Vector3[] MonsterPosiGenerator(int mapDimension, int MonsterNumber)
-        {
-            Vector3[] MonstPosiArray = new Vector3[MonsterNumber];
-            float z = 1.0f;
-            float randomx = 0.0f;
-            float randomy = 0.0f;
-            // need to revise to check viability
-            for (int i = 0; i < MonsterNumber; i++)
-            {
-                Vector3 thisVec = new Vector3 { };
-                randomx = UnityEngine.Random.Range(1, mapDimension);
-                randomy = UnityEngine.Random.Range(1, mapDimension);
-                thisVec.x = randomx;
-                thisVec.y = randomy;
-                thisVec.z = z;
-                MonstPosiArray[i] = thisVec;
-            }
-            return MonstPosiArray;
-
-
-
-        }
         public static void AddCenterTile()
         {
             if (!_AddingTiles && !CentralSystem.Moving && FloatingOriginSystem.CenterTileEntity == Entity.Null)

@@ -120,7 +120,7 @@ namespace GeometryEscape
         protected struct MoveMonster : IJobForEachWithEntity<Coordinate, PreviousCoordinate, TargetCoordinate, Timer, MonsterProperties, MonsterHP>
         {
             [ReadOnly] public Vector3 position;
-            public void Execute(Entity entity,int index,ref Coordinate c0, ref PreviousCoordinate c1, ref TargetCoordinate c2, ref Timer c3, ref MonsterProperties c4, ref MonsterHP c5)
+            public void Execute(Entity entity, int index, ref Coordinate c0, ref PreviousCoordinate c1, ref TargetCoordinate c2, ref Timer c3, ref MonsterProperties c4, ref MonsterHP c5)
             {
                 if (!c3.isOn) return;
                 var proportion = c3.T / c3.maxT;
@@ -163,7 +163,6 @@ namespace GeometryEscape
             //在这里你可以记录你需要设置的公用参数，比如你之前的lerp（虽然我不知道那是干啥的
             //这里的参数值要在schedule一个新的job时设定，具体看OnBeatsUpdate
             public int Counter;
-
             //这个struct会被传到SetRoute里面，你可以在这里设计怪物行走路线，下面是两个示例，你可以设置更多传入参数，比如说怪物的生命值之类的来丰富你的pattern
 
             //左右横移
@@ -227,13 +226,20 @@ namespace GeometryEscape
         {
             [ReadOnly] public MonsterMovePattern MonsterMovePattern;
             [ReadOnly] public NativeHashMap<Coordinate, TileType> TileHashMap;
+            [ReadOnly] public Coordinate currentPlayerPosition;
             public void Execute(ref MonsterProperties c0, ref TypeOfMonster c1, ref Coordinate c2, ref PreviousCoordinate c3, ref TargetCoordinate c4, ref Timer c5)
             {
                 c3.X = c2.X;
                 c3.Y = c2.Y;
                 c3.Z = c2.Z;
                 c3.Direction = c2.Direction;
+
                 Coordinate nextMove = default;
+
+                //TODO check if in scope
+
+                // if (!isInScope)
+                //  {
                 switch (c1.Value)
                 {
                     case MonsterType.Blue:
@@ -245,21 +251,36 @@ namespace GeometryEscape
                     case MonsterType.Skeleton:
                         nextMove = MonsterMovePattern.SmallCircle(c3);
                         break;
+
                     default:
                         nextMove = c2;
                         break;
                 }
+                //  }
+                //  else
+                //  {
+                //TODO follow player.
+                currentPlayerPosition.X = CentralSystem.CurrentCenterPosition.x;
+                currentPlayerPosition.Y = CentralSystem.CurrentCenterPosition.y;
+                currentPlayerPosition.Z = CentralSystem.CurrentCenterPosition.z;
+
+
+                //    }
+
                 TileType tileType;
                 if (!TileHashMap.TryGetValue(nextMove, out tileType))
                 {
+                    //TODO If the position is blocked by other monster, assign new position/.
                     return;
                 }
 
 
                 switch (tileType)
                 {
+                    //TODO add new check if you dont want the monster to step on other type of tiles.
                     case TileType.Blocked:
                         return;
+
                     default:
                         break;
                 }
@@ -290,26 +311,75 @@ namespace GeometryEscape
                 previousCoordinate.Direction = coordinate.Direction;
                 Coordinate nextMove = default;
                 var type = EntityManager.GetComponentData<TypeOfMonster>(monster);
-                switch (type.Value)
+                float3 pos = CentralSystem.CurrentCenterPosition + FloatingOriginSystem.WorldPositionOffset;
+                bool isInScope = Vector2.Distance(new Vector2(coordinate.X, coordinate.Y), new Vector2(-pos.x, -pos.y)) < 6;
+
+
+                if (!isInScope)
                 {
-                    case MonsterType.Blue:
-                        nextMove = m_MonsterMovePattern.SmallCircle(previousCoordinate);
-                        break;
-                    case MonsterType.Green:
-                        nextMove = m_MonsterMovePattern.LeftAndRight(previousCoordinate);
-                        break;
-                    case MonsterType.Skeleton:
-                        nextMove = m_MonsterMovePattern.SmallCircle(previousCoordinate);
-                        break;
-                    default:
-                        nextMove = coordinate;
-                        break;
+                    switch (type.Value)
+                    {
+                        case MonsterType.Blue:
+                            nextMove = m_MonsterMovePattern.SmallCircle(previousCoordinate);
+                            break;
+                        case MonsterType.Green:
+                            nextMove = m_MonsterMovePattern.LeftAndRight(previousCoordinate);
+                            break;
+                        case MonsterType.Skeleton:
+                            nextMove = m_MonsterMovePattern.SmallCircle(previousCoordinate);
+                            break;
+                        default:
+                            nextMove = coordinate;
+                            break;
+                    }
+                }
+                else
+                {
+
+                    nextMove = coordinate;
+                    float CoordinateX = -CentralSystem.CurrentCenterPosition.x - coordinate.X;
+                    float CoordinateY = -CentralSystem.CurrentCenterPosition.y - coordinate.Y;
+
+                    if (Mathf.Abs(CoordinateX) > Mathf.Abs(CoordinateY))
+                    {
+                        if (CoordinateX > 0)
+                        {
+                            nextMove.X += 1;
+                        }
+                        else
+                        {
+                            nextMove.X -= 1;
+                        }
+                    }
+                    else
+                    {
+                        if (CoordinateY > 0)
+                        {
+                            nextMove.Y += 1;
+                        }
+                        else
+                        {
+                            nextMove.Y -= 1;
+                        }
+                    }
+
+
                 }
                 TileType tileType;
+
                 //If the next position is out of map we cancel.
                 if (!WorldSystem.TileHashMap.TryGetValue(nextMove, out tileType))
                 {
                     continue;
+                }
+                switch (tileType)
+                {
+                    //TODO add new check if you dont want the monster to step on other type of tiles.
+                    case TileType.Blocked:
+                        continue;
+
+                    default:
+                        break;
                 }
                 //If the next position already has a monster, we cancel.
                 TypeOfMonster monsterType = default;
@@ -345,7 +415,7 @@ namespace GeometryEscape
 
             //MonsterRoute();
             inputDeps = new MoveMonster { }.Schedule(this, inputDeps);
-            
+
 
             return inputDeps;
 
