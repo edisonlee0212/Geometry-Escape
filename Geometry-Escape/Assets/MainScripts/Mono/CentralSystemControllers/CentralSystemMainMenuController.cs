@@ -34,5 +34,11 @@ namespace GeometryEscape {
             source.PlayOneShot(sound);
             SceneManager.LoadScene("Offset", LoadSceneMode.Single);
         }
+
+        public void OnEditorButtonPressed()
+        {
+            source.PlayOneShot(sound);
+            SceneManager.LoadScene("Editor", LoadSceneMode.Single);
+        }
     }
 }

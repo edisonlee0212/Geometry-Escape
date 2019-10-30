@@ -56,6 +56,7 @@ namespace GeometryEscape
         private int _TotalMonsterAmount;
         private static TileResources m_TileResources;
         private static MonsterResources m_MonsterResources;
+        public static int tileindex_ = 2;
 
         public static int TotalTileAmount { get => _TotalTileAmount; }
         public static bool AddingTiles { get => _AddingTiles; set => _AddingTiles = value; }
@@ -220,7 +221,7 @@ namespace GeometryEscape
             {
                 AddTileCreationInfo(new TileCreationInfo
                 {
-                    TileProperties = new TileProperties { Index = 0 },
+                    TileProperties = new TileProperties { Index = tileindex_ },
                     Coordinate = new Coordinate
                     {
                         X = (int)-CentralSystem.CurrentCenterPosition.x,
@@ -230,6 +231,7 @@ namespace GeometryEscape
                 });
                 Debug.Log("Inserted a new tile at " + (-CentralSystem.CurrentCenterPosition));
             }
+            Debug.Log(tileindex_);
         }
 
         public static void RemoveCenterTile()

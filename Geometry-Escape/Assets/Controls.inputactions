@@ -60,6 +60,22 @@
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "Press"
+                },
+                {
+                    "name": "SelectLeft",
+                    "type": "Button",
+                    "id": "aabcccb6-27e0-4ec8-83bb-55ec752c5dd9",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "Press"
+                },
+                {
+                    "name": "SelectRight",
+                    "type": "Button",
+                    "id": "23a016f2-e060-4457-9439-e9891fe169a8",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "Press"
                 }
             ],
             "bindings": [
@@ -242,7 +258,7 @@
                 {
                     "name": "",
                     "id": "c78681bf-fcd8-449e-89fd-81a1d8117432",
-                    "path": "<Keyboard>/q",
+                    "path": "<Keyboard>/r",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -253,11 +269,33 @@
                 {
                     "name": "",
                     "id": "b1870cef-dd83-4757-b648-0f1673d4b33c",
-                    "path": "<Keyboard>/e",
+                    "path": "<Keyboard>/f",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
                     "action": "LoadMap",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "a6e8d9a4-3f08-4880-9a04-e6896c33403f",
+                    "path": "<Keyboard>/q",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "SelectLeft",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "5f78d8ed-7301-4e5e-9b14-3757108cc235",
+                    "path": "<Keyboard>/e",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "SelectRight",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

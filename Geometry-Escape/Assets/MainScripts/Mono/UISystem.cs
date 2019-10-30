@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using GeometryEscape;
+using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -99,10 +100,14 @@ Up is now down and left is now right, etc."
     }
 
     public static void Displaypopup(int index) {
-        if (popupFlags[index]) {
-            popupFlags[index] = false;
-            popupText.text = popupString[index];
-            popup.SetActive(true);
+        if (ControlSystem.ControlMode == ControlMode.InGame)
+        {
+            if (popupFlags[index])
+            {
+                popupFlags[index] = false;
+                popupText.text = popupString[index];
+                popup.SetActive(true);
+            }
         }
     }
 }

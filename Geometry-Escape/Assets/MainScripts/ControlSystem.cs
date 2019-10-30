@@ -96,6 +96,9 @@ namespace GeometryEscape
             _InputSystem.MapEditor.DestroyAllTiles.performed += ctx => MapEditorDestroyAllTiles(ctx);
             _InputSystem.MapEditor.SaveMap.performed += ctx => MapEditorSaveMap(ctx);
             _InputSystem.MapEditor.LoadMap.performed += ctx => MapEditorLoadMap(ctx);
+            _InputSystem.MapEditor.SelectLeft.performed += ctx => MapEditorSelectLeft(ctx);
+            _InputSystem.MapEditor.SelectRight.performed += ctx => MapEditorSelectRight(ctx);
+
             //Menu
             _InputSystem.Menu.Disable();
 
@@ -103,6 +106,16 @@ namespace GeometryEscape
             _InputSystem.BeatsEditor.StartRecording.performed += ctx => BeatsEditorStartRecording(ctx);
             _InputSystem.BeatsEditor.NewBeat.performed += ctx => BeatsEditorNewBeat(ctx);
             _InputSystem.BeatsEditor.EndRecording.performed += ctx => BeatsEditorEndRecording(ctx);
+        }
+
+        private void MapEditorSelectLeft(InputAction.CallbackContext ctx)
+        {
+            Debug.Log("selectleft");
+        }
+
+        private static void MapEditorSelectRight(InputAction.CallbackContext ctx)
+        {
+            Debug.Log("selectright");
         }
 
         private static void MapEditorSaveMap(InputAction.CallbackContext ctx)

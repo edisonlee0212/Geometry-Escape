@@ -220,6 +220,58 @@ namespace GeometryEscape
             UISystem.Displaypopup(0);
         }
 
+        public void EditorInit()
+        {
+            #region Load Resources
+            //首先我们载入resources，准备好要分配给各个子系统的资源
+            m_LightResources = Resources.Load<LightResources>("ScriptableObjects/LightResources");
+            m_TileResources = Resources.Load<TileResources>("ScriptableObjects/TileResources");
+            m_AudioResources = Resources.Load<AudioResources>("ScriptableObjects/AudioResources");
+            m_MonsterResources = Resources.Load<MonsterResources>("ScriptableObjects/MonsterResources");
+            m_MainCharacterResources = Resources.Load<MainCharacterResources>("ScriptableObjects/MainCharacterResources");
+            #endregion
+            #region Initial Settings
+            /* 设置灯光，因为地图具有缩放功能，在地图缩放的时候灯光范围也应该随之更改，所以在这里加入引用。
+             */
+            m_Light = LightResources.ViewLight.transform;
+
+            MainCharacterController = m_MainCharacterResources.MainCharacterController;
+
+            _CurrentZoomFactor = 1;
+            _CurrentCenterPosition = Unity.Mathematics.float3.zero;
+            Scale = 1;
+            TimeStep = 0.1f;
+            _CurrentCenterPosition = default;
+            _PreviousOriginPosition = default;
+            _TargetOriginPosition = default;
+            _Moving = false;
+            _inoffsettest = false;
+            _Running = true;
+            ControlSystem.ControlMode = ControlMode.MapEditor;
+            _LastBeatsTrapTriggeredEntity = Entity.Null;
+            #endregion
+            #region Initialize sub-systems
+            FloatingOriginSystem.Init();
+            RenderSystem.Init();//启动这个系统
+            TileSystem.Init();
+
+            MonsterSystem.Init();
+
+            AudioSystem.Init();
+            ControlSystem = new ControlSystem();//control system并不是一个真正的ECS的系统，所以我们通过这种方式建立。
+            CopyTextureIndexSystem.Init();
+            CopyDisplayColorSystem.Init();
+            WorldSystem.TileResources = m_TileResources;
+            WorldSystem.MonsterResources = m_MonsterResources;
+            WorldSystem.Init();
+            #endregion
+            //这个地方设置操作模式，不同操作模式对应不同场景。
+
+
+
+            Enabled = true;
+        }
+
         public void OffsetInit()
         {
 
@@ -483,11 +535,19 @@ namespace GeometryEscape
                             Debug.Log("Blocked in player mode! Use map editor mode if you want to move to empty space.");
                             break;
                     }
-                    UISystem.ShowHit_300();
+                    if (ControlSystem.ControlMode == ControlMode.InGame)
+                    {
+                        UISystem.ShowHit_300();
+                    }
+                    
                 }
                 else
                 {
-                    UISystem.ShowMiss();
+                    if (ControlSystem.ControlMode == ControlMode.InGame)
+                    {
+                        UISystem.ShowMiss();
+                    }
+                    
                 }
             }
         }

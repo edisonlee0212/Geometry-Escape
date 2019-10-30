@@ -72,6 +72,22 @@ public class Controls : IInputActionCollection
                     ""expectedControlType"": """",
                     ""processors"": """",
                     ""interactions"": ""Press""
+                },
+                {
+                    ""name"": ""SelectLeft"",
+                    ""type"": ""Button"",
+                    ""id"": ""aabcccb6-27e0-4ec8-83bb-55ec752c5dd9"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": ""Press""
+                },
+                {
+                    ""name"": ""SelectRight"",
+                    ""type"": ""Button"",
+                    ""id"": ""23a016f2-e060-4457-9439-e9891fe169a8"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": ""Press""
                 }
             ],
             ""bindings"": [
@@ -254,7 +270,7 @@ public class Controls : IInputActionCollection
                 {
                     ""name"": """",
                     ""id"": ""c78681bf-fcd8-449e-89fd-81a1d8117432"",
-                    ""path"": ""<Keyboard>/q"",
+                    ""path"": ""<Keyboard>/r"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
@@ -265,11 +281,33 @@ public class Controls : IInputActionCollection
                 {
                     ""name"": """",
                     ""id"": ""b1870cef-dd83-4757-b648-0f1673d4b33c"",
-                    ""path"": ""<Keyboard>/e"",
+                    ""path"": ""<Keyboard>/f"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
                     ""action"": ""LoadMap"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""a6e8d9a4-3f08-4880-9a04-e6896c33403f"",
+                    ""path"": ""<Keyboard>/q"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""SelectLeft"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""5f78d8ed-7301-4e5e-9b14-3757108cc235"",
+                    ""path"": ""<Keyboard>/e"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""SelectRight"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -563,6 +601,8 @@ public class Controls : IInputActionCollection
         m_MapEditor_DestroyAllTiles = m_MapEditor.FindAction("DestroyAllTiles", throwIfNotFound: true);
         m_MapEditor_SaveMap = m_MapEditor.FindAction("SaveMap", throwIfNotFound: true);
         m_MapEditor_LoadMap = m_MapEditor.FindAction("LoadMap", throwIfNotFound: true);
+        m_MapEditor_SelectLeft = m_MapEditor.FindAction("SelectLeft", throwIfNotFound: true);
+        m_MapEditor_SelectRight = m_MapEditor.FindAction("SelectRight", throwIfNotFound: true);
         // In-Game
         m_InGame = asset.FindActionMap("In-Game", throwIfNotFound: true);
         m_InGame_Move = m_InGame.FindAction("Move", throwIfNotFound: true);
@@ -631,6 +671,8 @@ public class Controls : IInputActionCollection
     private readonly InputAction m_MapEditor_DestroyAllTiles;
     private readonly InputAction m_MapEditor_SaveMap;
     private readonly InputAction m_MapEditor_LoadMap;
+    private readonly InputAction m_MapEditor_SelectLeft;
+    private readonly InputAction m_MapEditor_SelectRight;
     public struct MapEditorActions
     {
         private Controls m_Wrapper;
@@ -642,6 +684,8 @@ public class Controls : IInputActionCollection
         public InputAction @DestroyAllTiles => m_Wrapper.m_MapEditor_DestroyAllTiles;
         public InputAction @SaveMap => m_Wrapper.m_MapEditor_SaveMap;
         public InputAction @LoadMap => m_Wrapper.m_MapEditor_LoadMap;
+        public InputAction @SelectLeft => m_Wrapper.m_MapEditor_SelectLeft;
+        public InputAction @SelectRight => m_Wrapper.m_MapEditor_SelectRight;
         public InputActionMap Get() { return m_Wrapper.m_MapEditor; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -672,6 +716,12 @@ public class Controls : IInputActionCollection
                 LoadMap.started -= m_Wrapper.m_MapEditorActionsCallbackInterface.OnLoadMap;
                 LoadMap.performed -= m_Wrapper.m_MapEditorActionsCallbackInterface.OnLoadMap;
                 LoadMap.canceled -= m_Wrapper.m_MapEditorActionsCallbackInterface.OnLoadMap;
+                SelectLeft.started -= m_Wrapper.m_MapEditorActionsCallbackInterface.OnSelectLeft;
+                SelectLeft.performed -= m_Wrapper.m_MapEditorActionsCallbackInterface.OnSelectLeft;
+                SelectLeft.canceled -= m_Wrapper.m_MapEditorActionsCallbackInterface.OnSelectLeft;
+                SelectRight.started -= m_Wrapper.m_MapEditorActionsCallbackInterface.OnSelectRight;
+                SelectRight.performed -= m_Wrapper.m_MapEditorActionsCallbackInterface.OnSelectRight;
+                SelectRight.canceled -= m_Wrapper.m_MapEditorActionsCallbackInterface.OnSelectRight;
             }
             m_Wrapper.m_MapEditorActionsCallbackInterface = instance;
             if (instance != null)
@@ -697,6 +747,12 @@ public class Controls : IInputActionCollection
                 LoadMap.started += instance.OnLoadMap;
                 LoadMap.performed += instance.OnLoadMap;
                 LoadMap.canceled += instance.OnLoadMap;
+                SelectLeft.started += instance.OnSelectLeft;
+                SelectLeft.performed += instance.OnSelectLeft;
+                SelectLeft.canceled += instance.OnSelectLeft;
+                SelectRight.started += instance.OnSelectRight;
+                SelectRight.performed += instance.OnSelectRight;
+                SelectRight.canceled += instance.OnSelectRight;
             }
         }
     }
@@ -842,6 +898,8 @@ public class Controls : IInputActionCollection
         void OnDestroyAllTiles(InputAction.CallbackContext context);
         void OnSaveMap(InputAction.CallbackContext context);
         void OnLoadMap(InputAction.CallbackContext context);
+        void OnSelectLeft(InputAction.CallbackContext context);
+        void OnSelectRight(InputAction.CallbackContext context);
     }
     public interface IInGameActions
     {
