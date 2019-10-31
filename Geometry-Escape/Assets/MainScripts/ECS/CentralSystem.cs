@@ -84,6 +84,7 @@ namespace GeometryEscape
         private static Entity _ExitTile;
         private static bool _Running;
         private static string _MapName;
+        private static int _MainCharacterIndex;
         #endregion
 
         #region Variables for Moving and Zooming
@@ -135,6 +136,7 @@ namespace GeometryEscape
         public static bool CheckFixedTrapTile { get => _CheckFixedTrapTile; set => _CheckFixedTrapTile = value; }
         public static Entity ExitTile { get => _ExitTile; set => _ExitTile = value; }
         public static string MapName { get => _MapName; set => _MapName = value; }
+        public static int MainCharacterIndex { get => _MainCharacterIndex; set => _MainCharacterIndex = value; }
 
         #endregion
 
@@ -183,7 +185,7 @@ namespace GeometryEscape
              */
             m_Light = LightResources.ViewLight.transform;
 
-            MainCharacterController = m_MainCharacterResources.MainCharacterController;
+            MainCharacterController = m_MainCharacterResources.Init(_MainCharacterIndex);
 
             _CurrentZoomFactor = 1;
             _CurrentCenterPosition = Unity.Mathematics.float3.zero;
@@ -330,6 +332,14 @@ namespace GeometryEscape
         #endregion
 
         #region Methods
+
+        public static void ReloadMainCharacter()
+        {
+            if(MainCharacterController != null)
+            {
+                MainCharacterController = MainCharacterResources.Init(MainCharacterIndex);
+            }
+        }
 
         public static void Zoom(float direction)
         {

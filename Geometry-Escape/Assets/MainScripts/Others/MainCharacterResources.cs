@@ -25,14 +25,20 @@ namespace GeometryEscape
         #region Methods
         public void Init()
         {
+            if (m_MainCharacterController != null) Destroy(m_MainCharacterController);
             m_MainCharacterController = Instantiate(m_CharacterControllers[0], new Vector3(0, 0, -3), Quaternion.identity).GetComponent<CharacterController>();
         }
 
-        public void Init(int controllerIndex)
+        public CharacterController Init(int controllerIndex)
         {
             Debug.Assert(controllerIndex < m_CharacterControllers.Length);
+            if (m_MainCharacterController != null) Destroy(m_MainCharacterController);
             m_MainCharacterController = Instantiate(m_CharacterControllers[controllerIndex], new Vector3(0, 0, -3), Quaternion.identity).GetComponent<CharacterController>();
+            return m_MainCharacterController;
         }
+
+
+
         #endregion
     }
 }
