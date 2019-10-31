@@ -174,7 +174,7 @@ namespace GeometryEscape
                 for (int j = 0; j < length; j++)
                 {
                     Coordinate coordinate = new Coordinate { X = i - 1, Y = j - 1, Z = 0 };
-                    if (i == 1 && j > 0 && j < TileResources.GetTileAmount()) AddTileCreationInfo(new TileCreationInfo { TileProperties = new TileProperties { Index = j - 1 }, Coordinate = coordinate });
+                    if (i == 1 && j > 0 && j <= TileResources.GetTileAmount()) AddTileCreationInfo(new TileCreationInfo { TileProperties = new TileProperties { Index = j - 1 }, Coordinate = coordinate });
                     else if (i == 0 || i == length - 1 || j == 0 || j == length - 1)
                     {
                         AddTileCreationInfo(new TileCreationInfo { TileProperties = new TileProperties { Index = 6 }, Coordinate = coordinate });

@@ -666,6 +666,9 @@ namespace GeometryEscape
                     _LastBeatsTrapTriggeredEntity = FloatingOriginSystem.CenterTileEntity;
                     AudioSystem.AcclerateMusic(2, 2);
                     break;
+                case TileType.Recover:
+                    CentralSystem.MainCharacterController.ChangeHealth(10);
+                    break;
 
                 default:
                     break;
