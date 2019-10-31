@@ -14,3 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_CharacterControllers:
   - {fileID: 2275024570278478825, guid: 95e87b6d088eac1428915bd517b666f2, type: 3}
+  - {fileID: 7394389403357312078, guid: 386a2851052d30c4b864254ff7dd170d, type: 3}
