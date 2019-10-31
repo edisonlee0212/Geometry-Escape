@@ -86,6 +86,12 @@ namespace GeometryEscape
     }
 
     [Serializable]
+    public struct RecoverTrapEnable : IComponentData
+    {
+        public bool Value;
+    }
+
+    [Serializable]
     public struct UpTile : IComponentData
     {
         public Entity Value;

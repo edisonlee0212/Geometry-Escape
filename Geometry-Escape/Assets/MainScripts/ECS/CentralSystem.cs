@@ -668,7 +668,15 @@ namespace GeometryEscape
                     AudioSystem.AcclerateMusic(2, 2);
                     break;
                 case TileType.Recover:
+                    if (_LastBeatsTrapTriggeredEntity.Equals(FloatingOriginSystem.CenterTileEntity)) break;
+                    _LastBeatsTrapTriggeredEntity = FloatingOriginSystem.CenterTileEntity;
+                    //if (_addHealth) {
+                    if(EntityManager.GetComponentData<RecoverTrapEnable>(_LastBeatsTrapTriggeredEntity).Value)
                     CentralSystem.MainCharacterController.ChangeHealth(10);
+                    EntityManager.SetComponentData<RecoverTrapEnable>(_LastBeatsTrapTriggeredEntity, new RecoverTrapEnable { Value = false });
+
+                    //_addHealth = false;
+                    //}
                     break;
 
                 default:
