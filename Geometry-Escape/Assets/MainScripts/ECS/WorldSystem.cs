@@ -96,6 +96,7 @@ namespace GeometryEscape
                 );
 
             TileEntityArchetype = EntityManager.CreateArchetype(
+                typeof(RecoverTrapEnable),
                 typeof(Timer),
                 typeof(TypeOfEntity),
                 typeof(TypeOfTile),
@@ -571,6 +572,7 @@ namespace GeometryEscape
             {
                 Value = tile.TileType
             };
+            EntityManager.SetComponentData(instance,new RecoverTrapEnable { Value=true});
             EntityManager.SetComponentData(instance, tileType);
             _TotalTileAmount++;
         }

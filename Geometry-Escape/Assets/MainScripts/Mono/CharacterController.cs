@@ -69,7 +69,10 @@ namespace GeometryEscape
 
         public void ChangeHealth(int amount)
         {
+            
             _HealthPoints += amount;
+            if (_HealthPoints <= 0)
+                _HealthPoints = 0;
             UISystem.ChangeHealth(_HealthPoints);
         }
     }
