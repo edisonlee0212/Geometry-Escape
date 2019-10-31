@@ -3,11 +3,15 @@ using System.Collections.Generic;
 using Unity.Entities;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
+
 namespace GeometryEscape
 {
     public class CentralSystemEditorController : MonoBehaviour
     {
         public CentralSystem m_CentralSystem;
+        [SerializeField]
+        private InputField m_InputField;
         // Start is called before the first frame update
         private void Start()
         {
@@ -34,6 +38,36 @@ namespace GeometryEscape
         public void OnPopupCloseButtonPressed()
         {
             UISystem.popup.SetActive(false);
+        }
+
+        public void OnLoadMap()
+        {
+            
+            string name = m_InputField.text;
+            if (name != "" && CentralSystem.Running)
+            {
+                WorldSystem.UnloadMap();
+                FileSystem.LoadMapByName(name);
+            }
+        }
+
+        public void OnSaveMap()
+        {
+            string name = m_InputField.text;
+            if (name != "" && CentralSystem.Running)
+            {
+                FileSystem.SaveMapByName(name);
+            }
+        }
+
+        public void OnUseMap()
+        {
+            string name = m_InputField.text;
+            if (name != "" && CentralSystem.Running)
+            {
+                CentralSystem.MapName = name;
+            }
+            
         }
     }
 }

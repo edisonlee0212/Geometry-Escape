@@ -83,7 +83,7 @@ namespace GeometryEscape
         private static float _Timer;
         private static Entity _ExitTile;
         private static bool _Running;
-
+        private static string _MapName;
         #endregion
 
         #region Variables for Moving and Zooming
@@ -134,6 +134,7 @@ namespace GeometryEscape
         public static bool Running { get => _Running; set => _Running = value; }
         public static bool CheckFixedTrapTile { get => _CheckFixedTrapTile; set => _CheckFixedTrapTile = value; }
         public static Entity ExitTile { get => _ExitTile; set => _ExitTile = value; }
+        public static string MapName { get => _MapName; set => _MapName = value; }
 
         #endregion
 
@@ -220,6 +221,7 @@ namespace GeometryEscape
             Enabled = true;
             //FileSystem.LoadMapByPath(Application.dataPath + "/Resources/Maps/TestGround");
             WorldSystem.TestMap(30, controlMode);
+            //FileSystem.LoadMapByName(_MapName);
             //UISystem.Displaypopup(0);
         }
 

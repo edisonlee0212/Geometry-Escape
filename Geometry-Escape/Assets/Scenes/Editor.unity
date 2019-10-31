@@ -475,7 +475,18 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 481577645}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1600087434}
+        m_MethodName: OnLoadMap
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &481577645
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1197,7 +1208,18 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 702445029}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1600087434}
+        m_MethodName: OnSaveMap
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &702445029
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1806,7 +1828,18 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1042801821}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1600087434}
+        m_MethodName: OnUseMap
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1042801821
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2623,6 +2656,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5fa6557ea755cd64fae25b1d55585e2b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_InputField: {fileID: 1570394319}
 --- !u!4 &1600087435
 Transform:
   m_ObjectHideFlags: 0
