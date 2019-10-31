@@ -81,7 +81,7 @@ namespace GeometryEscape
         private static int _BeatCounter;
         private static CharacterController m_MainCharacterController;
         private static float _Timer;
-
+        private static Entity _ExitTile;
         private static bool _Running;
 
         #endregion
@@ -133,6 +133,7 @@ namespace GeometryEscape
 
         public static bool Running { get => _Running; set => _Running = value; }
         public static bool CheckFixedTrapTile { get => _CheckFixedTrapTile; set => _CheckFixedTrapTile = value; }
+        public static Entity ExitTile { get => _ExitTile; set => _ExitTile = value; }
 
         #endregion
 
