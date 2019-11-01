@@ -76,6 +76,14 @@
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "Press"
+                },
+                {
+                    "name": "AddMonster",
+                    "type": "Button",
+                    "id": "65d598af-857f-4805-992d-abc8e9c8c2f1",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "Press"
                 }
             ],
             "bindings": [
@@ -296,6 +304,17 @@
                     "processors": "",
                     "groups": "PC",
                     "action": "SelectRight",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "38399b28-8453-47cc-971f-437e74a65622",
+                    "path": "<Keyboard>/j",
+                    "interactions": "Press",
+                    "processors": "",
+                    "groups": "PC",
+                    "action": "AddMonster",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

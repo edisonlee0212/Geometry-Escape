@@ -94,6 +94,7 @@ namespace GeometryEscape
             _InputSystem.MapEditor.AddCenterTile.performed += ctx => MapEditorAddCenterTile(ctx);
             _InputSystem.MapEditor.RemoveCenterTile.performed += ctx => MapEditorRemoveCenterTile(ctx);
             _InputSystem.MapEditor.DestroyAllTiles.performed += ctx => MapEditorDestroyAllTiles(ctx);
+            _InputSystem.MapEditor.AddMonster.performed += ctx => MapEditorAddCenterMonster(ctx);
             _InputSystem.MapEditor.SaveMap.performed += ctx => MapEditorSaveMap(ctx);
             _InputSystem.MapEditor.LoadMap.performed += ctx => MapEditorLoadMap(ctx);
             _InputSystem.MapEditor.SelectLeft.performed += ctx => MapEditorSelectLeft(ctx);
@@ -163,6 +164,11 @@ namespace GeometryEscape
         private static void MapEditorAddCenterTile(InputAction.CallbackContext ctx)
         {
             WorldSystem.AddCenterTile();
+        }
+
+        private static void MapEditorAddCenterMonster(InputAction.CallbackContext ctx)
+        {
+            WorldSystem.AddCenterMonster();
         }
 
         private static void MapEditorRemoveCenterTile(InputAction.CallbackContext ctx)

@@ -155,7 +155,7 @@ namespace GeometryEscape
                 Coordinate = SerializationUtilities.ReadCoordinate(reader),
                 MonsterProperties = SerializationUtilities.ReadMonsterProperties(reader)
                 };
-            WorldSystem.AddMonster(monsterLoadingInfo);
+            WorldSystem.AddMonsterCreationInfo(monsterLoadingInfo);
         }
     }
 }

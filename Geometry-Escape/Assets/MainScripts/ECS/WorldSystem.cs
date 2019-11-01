@@ -186,7 +186,7 @@ namespace GeometryEscape
                     }
                 }
             }
-            AddMonster(new MonsterCreationInfo { MonsterProperties = new MonsterProperties { Index = 0 }, Coordinate = new Coordinate { X = 4, Y = 2, Z = -1 } });
+            AddMonsterCreationInfo(new MonsterCreationInfo { MonsterProperties = new MonsterProperties { Index = 0 }, Coordinate = new Coordinate { X = 4, Y = 2, Z = -1 } });
 
             CentralSystem.WorldSystem.Resume();
 
@@ -225,6 +225,29 @@ namespace GeometryEscape
             }
         }
 
+        public static void AddCenterMonster()
+        {
+            if (!_AddingMonsters && !CentralSystem.Moving && FloatingOriginSystem.CenterTileEntity != Entity.Null)
+            {
+                CentralSystem.Pause();
+                AddMonsterCreationInfo(new MonsterCreationInfo
+                {
+                    //public MonsterProperties MonsterProperties;
+        //public Coordinate Coordinate;
+                    MonsterProperties = new MonsterProperties { Index = 0 },
+                    Coordinate = new Coordinate
+                    {
+                        X = (int)-CentralSystem.CurrentCenterPosition.x,
+                        Y = (int)-CentralSystem.CurrentCenterPosition.y,
+                        Z = (int)-CentralSystem.CurrentCenterPosition.z,
+                    }
+                });
+                CentralSystem.WorldSystem.Resume();
+                Debug.Log("Inserted a new monster at " + (-CentralSystem.CurrentCenterPosition));
+            }
+        }
+
+
         public static void AddTileCreationInfo(TileCreationInfo tileCreationInfo)
         {
             _AddingTiles = true;
@@ -239,9 +262,8 @@ namespace GeometryEscape
             _TileDestructionQueue.Enqueue(tileEntity);
         }
 
-        public static void AddMonster(MonsterCreationInfo monsterCreationInfo)
+        public static void AddMonsterCreationInfo(MonsterCreationInfo monsterCreationInfo)
         {
-            //CentralSystem.WorldSystem.TotalMonsterAmount++;
             _AddingMonsters = true;
             _MonsterCreationQueue.Enqueue(monsterCreationInfo);
         }

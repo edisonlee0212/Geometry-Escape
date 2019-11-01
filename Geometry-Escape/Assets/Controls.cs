@@ -88,6 +88,14 @@ public class Controls : IInputActionCollection
                     ""expectedControlType"": """",
                     ""processors"": """",
                     ""interactions"": ""Press""
+                },
+                {
+                    ""name"": ""AddMonster"",
+                    ""type"": ""Button"",
+                    ""id"": ""65d598af-857f-4805-992d-abc8e9c8c2f1"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": ""Press""
                 }
             ],
             ""bindings"": [
@@ -308,6 +316,17 @@ public class Controls : IInputActionCollection
                     ""processors"": """",
                     ""groups"": ""PC"",
                     ""action"": ""SelectRight"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""38399b28-8453-47cc-971f-437e74a65622"",
+                    ""path"": ""<Keyboard>/j"",
+                    ""interactions"": ""Press"",
+                    ""processors"": """",
+                    ""groups"": ""PC"",
+                    ""action"": ""AddMonster"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 }
@@ -603,6 +622,7 @@ public class Controls : IInputActionCollection
         m_MapEditor_LoadMap = m_MapEditor.FindAction("LoadMap", throwIfNotFound: true);
         m_MapEditor_SelectLeft = m_MapEditor.FindAction("SelectLeft", throwIfNotFound: true);
         m_MapEditor_SelectRight = m_MapEditor.FindAction("SelectRight", throwIfNotFound: true);
+        m_MapEditor_AddMonster = m_MapEditor.FindAction("AddMonster", throwIfNotFound: true);
         // In-Game
         m_InGame = asset.FindActionMap("In-Game", throwIfNotFound: true);
         m_InGame_Move = m_InGame.FindAction("Move", throwIfNotFound: true);
@@ -673,6 +693,7 @@ public class Controls : IInputActionCollection
     private readonly InputAction m_MapEditor_LoadMap;
     private readonly InputAction m_MapEditor_SelectLeft;
     private readonly InputAction m_MapEditor_SelectRight;
+    private readonly InputAction m_MapEditor_AddMonster;
     public struct MapEditorActions
     {
         private Controls m_Wrapper;
@@ -686,6 +707,7 @@ public class Controls : IInputActionCollection
         public InputAction @LoadMap => m_Wrapper.m_MapEditor_LoadMap;
         public InputAction @SelectLeft => m_Wrapper.m_MapEditor_SelectLeft;
         public InputAction @SelectRight => m_Wrapper.m_MapEditor_SelectRight;
+        public InputAction @AddMonster => m_Wrapper.m_MapEditor_AddMonster;
         public InputActionMap Get() { return m_Wrapper.m_MapEditor; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -722,6 +744,9 @@ public class Controls : IInputActionCollection
                 SelectRight.started -= m_Wrapper.m_MapEditorActionsCallbackInterface.OnSelectRight;
                 SelectRight.performed -= m_Wrapper.m_MapEditorActionsCallbackInterface.OnSelectRight;
                 SelectRight.canceled -= m_Wrapper.m_MapEditorActionsCallbackInterface.OnSelectRight;
+                AddMonster.started -= m_Wrapper.m_MapEditorActionsCallbackInterface.OnAddMonster;
+                AddMonster.performed -= m_Wrapper.m_MapEditorActionsCallbackInterface.OnAddMonster;
+                AddMonster.canceled -= m_Wrapper.m_MapEditorActionsCallbackInterface.OnAddMonster;
             }
             m_Wrapper.m_MapEditorActionsCallbackInterface = instance;
             if (instance != null)
@@ -753,6 +778,9 @@ public class Controls : IInputActionCollection
                 SelectRight.started += instance.OnSelectRight;
                 SelectRight.performed += instance.OnSelectRight;
                 SelectRight.canceled += instance.OnSelectRight;
+                AddMonster.started += instance.OnAddMonster;
+                AddMonster.performed += instance.OnAddMonster;
+                AddMonster.canceled += instance.OnAddMonster;
             }
         }
     }
@@ -900,6 +928,7 @@ public class Controls : IInputActionCollection
         void OnLoadMap(InputAction.CallbackContext context);
         void OnSelectLeft(InputAction.CallbackContext context);
         void OnSelectRight(InputAction.CallbackContext context);
+        void OnAddMonster(InputAction.CallbackContext context);
     }
     public interface IInGameActions
     {
