@@ -221,9 +221,9 @@ namespace GeometryEscape
 
 
             Enabled = true;
-            //FileSystem.LoadMapByPath(Application.dataPath + "/Resources/Maps/TestGround");
+            FileSystem.LoadMapByPath(Application.dataPath + "/Resources/Maps/level1");
             //WorldSystem.TestMap(1, controlMode);
-            FileSystem.LoadMapByName(_MapName);
+            //FileSystem.LoadMapByName(_MapName);
             //UISystem.Displaypopup(0);
         }
 
