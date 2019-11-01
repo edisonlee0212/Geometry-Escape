@@ -219,17 +219,17 @@ namespace GeometryEscape
             #endregion
             //这个地方设置操作模式，不同操作模式对应不同场景。
 
-            WorldSystem.TestMap(10, ControlMode.InGame);
+            //WorldSystem.TestMap(10, ControlMode.InGame);
 
             Enabled = true;
-            /*if (!UseMap)
+            if (!UseMap)
             {
-                FileSystem.LoadMapByPath(Application.dataPath + "/Resources/Maps/level1");
+                FileSystem.LoadMapByPath(Application.dataPath + "/Resources/Maps/special");
             }
             else
             {
                 FileSystem.LoadMapByName(_MapName);
-            }*/
+            }
             //UISystem.Displaypopup(0);
         }
 
@@ -624,7 +624,7 @@ namespace GeometryEscape
             {
                 case TileType.NailTrap:
                     //UISystem.Displaypopup(2);
-
+                    CentralSystemInGameController.ChangeTileTest("NailTrap");
                     if (EntityManager.GetComponentData<TextureIndex>(FloatingOriginSystem.CenterTileEntity).Value == 1)
                     {
                         if (!EntityManager.GetComponentData<Timer>(FloatingOriginSystem.CenterTileEntity).isOn)
@@ -640,18 +640,26 @@ namespace GeometryEscape
                     }
                     break;
                 case TileType.Exit:
+                    CentralSystemInGameController.ChangeTileTest("Exit");
                     ReachExit();
                     break;
-                //case TileType.MusicAccleratorTrap:
-                //    UISystem.Displaypopup(3);
-                //    break;
-                //case TileType.FreezeTrap:
-                //    UISystem.Displaypopup(4);
-                //    break;
-                //case TileType.InverseTrap:
-                //    UISystem.Displaypopup(5);
-                //    break;
+                case TileType.MusicAccleratorTrap:
+                    //    UISystem.Displaypopup(3);
+                    CentralSystemInGameController.ChangeTileTest("Accelerator");
+                    break;
+                case TileType.FreezeTrap:
+                    //    UISystem.Displaypopup(4);
+                    CentralSystemInGameController.ChangeTileTest("Freeze Trap");
+                    break;
+                case TileType.InverseTrap:
+                    CentralSystemInGameController.ChangeTileTest("Inverse Trap");
+                    //    UISystem.Displaypopup(5);
+                    break;
+                case TileType.Recover:
+                    CentralSystemInGameController.ChangeTileTest("Revover Tile");
+                    break;
                 default:
+                    CentralSystemInGameController.ChangeTileTest("Normal");
                     break;
             }
         }

@@ -4,11 +4,17 @@ using Unity.Entities;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.Audio;
+using UnityEngine.UI;
 
 namespace GeometryEscape {
     public class CentralSystemInGameController : MonoBehaviour {
         public CentralSystem m_CentralSystem;
         public AudioMixer mixer;
+
+
+        public Text TileTypeText;
+
+        public static Text TileText;
         private bool is_volume_rocker_visible;
 
         // Start is called before the first frame update
@@ -16,6 +22,12 @@ namespace GeometryEscape {
             is_volume_rocker_visible = false;
             m_CentralSystem = World.Active.GetOrCreateSystem<CentralSystem>();
             m_CentralSystem.Init();
+            TileText = TileTypeText;
+        }
+
+        public static void ChangeTileTest(string text)
+        {
+            TileText.text = text;
         }
 
         public void OnBackToMainMenu() {
@@ -44,5 +56,7 @@ namespace GeometryEscape {
         public void OnPopupCloseButtonPressed() {
             UISystem.popup.SetActive(false);
         }
+
+        
     }
 }
