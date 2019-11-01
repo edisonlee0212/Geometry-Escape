@@ -18,6 +18,9 @@ public class UISystem : MonoBehaviour {
     private GameObject m_Popup;
     [SerializeField]
     private TextMeshProUGUI m_PopupText;
+    private bool isShow = true;
+    private float alpha = 0.1f;
+    private float alphaSpeed = 0.01f;
 
     public static TextMeshProUGUI MonsterHealthText;
     public static TextMeshProUGUI HealthStatusText;
@@ -25,6 +28,10 @@ public class UISystem : MonoBehaviour {
     public static GameObject miss;
     public static GameObject popup;
     public static TextMeshProUGUI popupText;
+    public static float _devision = 0;
+    public CanvasGroup cg;
+    
+    
 
     #region Popups
     private static string[] popupString = {
@@ -61,13 +68,38 @@ Up is now down and left is now right, etc."
 
         HealthStatusText = m_HealthStatusText;
         //   MonsterHealthText = m_MonsterHealthText;
-
         HideHit_300();
         HideMiss();
     }
 
     // Update is called once per frame
     void Update() {
+        if (_devision != 0)
+        {
+            alphaSpeed = Time.deltaTime / _devision * 2;
+        }
+        if (isShow)
+        {
+            if (alpha != cg.alpha)
+            {
+                cg.alpha = Mathf.Max(cg.alpha - alphaSpeed, alpha); //Mathf.Lerp(cg.alpha, alpha, alphaSpeed * Time.deltaTime);
+                if (Mathf.Abs(alpha - cg.alpha) <= 0.01)
+                {
+                    cg.alpha = alpha; isShow = false;
+                }
+            }
+        }
+        else
+        {
+            if (1 != cg.alpha)
+            {
+                cg.alpha = Mathf.Min(cg.alpha + alphaSpeed, 1);
+                if (Mathf.Abs(1 - cg.alpha) <= 0.01)
+                {
+                    cg.alpha = 1; isShow = true;
+                }
+            }
+        }
 
     }
 
