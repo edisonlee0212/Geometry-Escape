@@ -84,6 +84,7 @@ namespace GeometryEscape
         private static Entity _ExitTile;
         private static bool _Running;
         private static string _MapName;
+        private static bool _UseMap;
         private static int _MainCharacterIndex;
         #endregion
 
@@ -137,6 +138,7 @@ namespace GeometryEscape
         public static Entity ExitTile { get => _ExitTile; set => _ExitTile = value; }
         public static string MapName { get => _MapName; set => _MapName = value; }
         public static int MainCharacterIndex { get => _MainCharacterIndex; set => _MainCharacterIndex = value; }
+        public static bool UseMap { get => _UseMap; set => _UseMap = value; }
 
         #endregion
 
@@ -220,9 +222,14 @@ namespace GeometryEscape
 
 
             Enabled = true;
-            FileSystem.LoadMapByPath(Application.dataPath + "/Resources/Maps/level1");
-            //WorldSystem.TestMap(1, controlMode);
-            //FileSystem.LoadMapByName(_MapName);
+            if (!UseMap)
+            {
+                FileSystem.LoadMapByPath(Application.dataPath + "/Resources/Maps/level1");
+            }
+            else
+            {
+                FileSystem.LoadMapByName(_MapName);
+            }
             //UISystem.Displaypopup(0);
         }
 
