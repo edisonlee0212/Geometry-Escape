@@ -5,6 +5,7 @@ using Unity.Entities;
 using Unity.Jobs;
 using Unity.Transforms;
 using UnityEngine;
+using UnityEngine.Audio;
 namespace GeometryEscape
 {
     public struct MusicRecordingInfo
@@ -26,6 +27,7 @@ namespace GeometryEscape
         #region Private
         private static AudioResources m_MusicResources;
         private static MusicRecordingInfo m_MusicRecordingInfo;
+        private static AudioMixerGroup m_AudioMixerGroup;
         #endregion
 
         #region Public
@@ -66,6 +68,8 @@ namespace GeometryEscape
             m_MusicResources = CentralSystem.AudioResources;
             m_Music = m_MusicResources.Musics[0];
             m_SoundEffectAudioSources = new AudioSource[m_MusicResources.SoundEffects.Length];
+            AudioMixer mixer = Resources.Load<AudioMixer>("Musics/Main");
+            m_AudioMixerGroup = mixer.FindMatchingGroups("Master")[0];
             CreateMusic(m_Music.MusicClip);
             CreateSoundEffects(m_MusicResources.SoundEffects);
             m_MusicAudioSource.Play();
@@ -140,6 +144,7 @@ namespace GeometryEscape
                 return;
             }
             m_MusicAudioSource = m_MusicResources.InstanciateAudioSource(audioClip);
+            m_MusicAudioSource.outputAudioMixerGroup = m_AudioMixerGroup;
         }
 
         /*public static void CreateBeats(AudioClip audioClip)
@@ -168,6 +173,7 @@ namespace GeometryEscape
             for (int i = 0; i < amount; i++)
             {
                 m_SoundEffectAudioSources[i] = m_MusicResources.InstanciateAudioSource(audioClips[i]);
+                m_SoundEffectAudioSources[i].outputAudioMixerGroup = m_AudioMixerGroup;
             }
         }
         #endregion

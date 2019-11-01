@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using Unity.Entities;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.Audio;
 
 namespace GeometryEscape {
     public class CentralSystemInGameController : MonoBehaviour {
         public CentralSystem m_CentralSystem;
+        public AudioMixer mixer;
         private bool is_volume_rocker_visible;
 
         // Start is called before the first frame update
@@ -36,7 +38,7 @@ namespace GeometryEscape {
         }
 
         public void SetVolumeLevel(float sliderValue) {
-
+            mixer.SetFloat("MasterVol", Mathf.Log10(sliderValue) * 20);
         }
 
         public void OnPopupCloseButtonPressed() {
