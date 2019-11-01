@@ -299,7 +299,7 @@ namespace GeometryEscape
                 Coordinate nextMove = default;
                 var type = EntityManager.GetComponentData<TypeOfMonster>(monster);
                 float3 pos = CentralSystem.CurrentCenterPosition + FloatingOriginSystem.WorldPositionOffset;
-                bool isInScope = Vector2.Distance(new Vector2(coordinate.X, coordinate.Y), new Vector2(-pos.x, -pos.y)) < 6;
+                bool isInScope = Vector2.Distance(new Vector2(coordinate.X, coordinate.Y), new Vector2(-pos.x, -pos.y)) < 4;
 
 
                 if (!isInScope)
