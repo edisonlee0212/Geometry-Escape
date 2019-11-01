@@ -73,6 +73,7 @@ namespace GeometryEscape
             Enabled = true;
 
             _Deviation = m_Music.MusicInfo.MusicBeatsTime / 4;
+            UISystem._devision = m_Music.MusicInfo.MusicBeatsTime;
         }
 
         public void Pause()
