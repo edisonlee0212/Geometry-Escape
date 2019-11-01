@@ -501,6 +501,8 @@ namespace GeometryEscape
                     if (ControlSystem.ControlMode == ControlMode.InGame)
                     {
                         UISystem.ShowHit_300();
+                        float3 value = m_EntityManager.GetComponentData<Translation>(ExitTile).Value;
+                        UISystem.UpdateExitIndicator(value.x, value.y);
                     }
 
                 }

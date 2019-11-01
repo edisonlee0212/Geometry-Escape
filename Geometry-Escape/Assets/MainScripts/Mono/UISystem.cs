@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class UISystem : MonoBehaviour {
     //This [SerializeField] will add a option in the inspector. Click on the UISystem in the scene to see the results.
@@ -18,15 +19,21 @@ public class UISystem : MonoBehaviour {
     private GameObject m_Popup;
     [SerializeField]
     private TextMeshProUGUI m_PopupText;
+    [SerializeField]
+    private Image m_ExitIndicator;
+
     private bool isShow = true;
     private float alpha = 0.1f;
     private float alphaSpeed = 0.01f;
+    private static Sprite[] arrows;
+    private static int last_arrow;
 
     public static TextMeshProUGUI MonsterHealthText;
     public static TextMeshProUGUI HealthStatusText;
     public static GameObject hit_300;
     public static GameObject miss;
     public static GameObject popup;
+    public static Image exit_indicator;
     public static TextMeshProUGUI popupText;
     public static float _devision = 0;
     public CanvasGroup cg;
@@ -65,6 +72,9 @@ Up is now down and left is now right, etc."
         miss = m_Miss;
         popup = m_Popup;
         popupText = m_PopupText;
+        exit_indicator = m_ExitIndicator;
+        arrows = Resources.LoadAll<Sprite>("Textures/UI/arrows");
+        last_arrow = -1;
 
         HealthStatusText = m_HealthStatusText;
         //   MonsterHealthText = m_MonsterHealthText;
@@ -142,6 +152,68 @@ Up is now down and left is now right, etc."
                 popupFlags[index] = false;
                 popupText.text = popupString[index];
                 popup.SetActive(true);
+            }
+        }
+    }
+
+    public static void UpdateExitIndicator(float x, float y) {
+        if (ControlSystem.ControlMode == ControlMode.InGame) {
+            if (x > 0.0f && y > 0.0f) {
+                if (last_arrow == 6) {
+                    return;
+                }
+
+                exit_indicator.overrideSprite = arrows[6];
+                last_arrow = 6;
+            } else if (x > 0.0f && y == 0.0f) {
+                if (last_arrow == 4) {
+                    return;
+                }
+
+                exit_indicator.overrideSprite = arrows[4];
+                last_arrow = 4;
+            } else if (x == 0.0f && y > 0.0f) {
+                if (last_arrow == 7) {
+                    return;
+                }
+
+                exit_indicator.overrideSprite = arrows[7];
+                last_arrow = 7;
+            } else if (x < 0.0f && y > 0.0f) {
+                if (last_arrow == 5) {
+                    return;
+                }
+
+                exit_indicator.overrideSprite = arrows[5];
+                last_arrow = 5;
+            } else if (x < 0.0f && y == 0.0f) {
+                if (last_arrow == 3) {
+                    return;
+                }
+
+                exit_indicator.overrideSprite = arrows[3];
+                last_arrow = 3;
+            } else if (x == 0.0f && y < 0.0f) {
+                if (last_arrow == 2) {
+                    return;
+                }
+
+                exit_indicator.overrideSprite = arrows[2];
+                last_arrow = 2;
+            } else if (x > 0.0f && y < 0.0f) {
+                if (last_arrow == 1) {
+                    return;
+                }
+
+                exit_indicator.overrideSprite = arrows[1];
+                last_arrow = 1;
+            } else {
+                if (last_arrow == 0) {
+                    return;
+                }
+
+                exit_indicator.overrideSprite = arrows[0];
+                last_arrow = 0;
             }
         }
     }
