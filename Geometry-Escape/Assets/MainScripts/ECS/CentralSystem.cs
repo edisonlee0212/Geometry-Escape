@@ -184,7 +184,6 @@ namespace GeometryEscape
             /* 设置灯光，因为地图具有缩放功能，在地图缩放的时候灯光范围也应该随之更改，所以在这里加入引用。
              */
             m_Light = LightResources.ViewLight.transform;
-
             MainCharacterController = m_MainCharacterResources.Init(_MainCharacterIndex);
 
             _CurrentZoomFactor = 1;

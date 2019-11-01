@@ -308,6 +308,30 @@ public class EnhanceScrollView:MonoBehaviour
         WorldSystem.tileindex_ = targetIndex;
     }
 
+    public void OnChBtnLeftClick()
+    {
+        if (!canChangeItem)
+            return;
+        int targetIndex = curCenterItem.CurveOffSetIndex - 1;
+        if (targetIndex < 0)
+            targetIndex = listEnhanceItems.Count - 1;
+        SetHorizontalTargetItemIndex(listEnhanceItems[targetIndex]);
+        Debug.Log(targetIndex);
+        CentralSystem.MainCharacterIndex = targetIndex;
+    }
+
+    public void OnChBtnRightClick()
+    {
+        if (!canChangeItem)
+            return;
+        int targetIndex = curCenterItem.CurveOffSetIndex - 1;
+        if (targetIndex < 0)
+            targetIndex = listEnhanceItems.Count - 1;
+        SetHorizontalTargetItemIndex(listEnhanceItems[targetIndex]);
+        Debug.Log(targetIndex);
+        CentralSystem.MainCharacterIndex = targetIndex;
+    }
+
     public float factor = 0.001f;
     // On Drag Move
     public void OnDragEnhanceViewMove(Vector2 delta)
