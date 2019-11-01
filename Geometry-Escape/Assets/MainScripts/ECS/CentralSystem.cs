@@ -167,7 +167,7 @@ namespace GeometryEscape
             CopyDisplayColorSystem = World.Active.GetOrCreateSystem<CopyDisplayColorSystem>();
             FloatingOriginSystem = World.Active.GetOrCreateSystem<FloatingOriginSystem>();
             #endregion
-            _MapName = "level1";
+            _MapName = "special";
             SceneManager.LoadScene("MainMenu");
             Enabled = false;
         }
@@ -219,17 +219,17 @@ namespace GeometryEscape
             #endregion
             //这个地方设置操作模式，不同操作模式对应不同场景。
 
-
+            WorldSystem.TestMap(10, ControlMode.InGame);
 
             Enabled = true;
-            if (!UseMap)
+            /*if (!UseMap)
             {
                 FileSystem.LoadMapByPath(Application.dataPath + "/Resources/Maps/level1");
             }
             else
             {
                 FileSystem.LoadMapByName(_MapName);
-            }
+            }*/
             //UISystem.Displaypopup(0);
         }
 
