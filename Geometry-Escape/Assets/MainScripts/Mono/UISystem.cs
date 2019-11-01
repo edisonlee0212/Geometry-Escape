@@ -12,6 +12,8 @@ public class UISystem : MonoBehaviour {
     [SerializeField]
     private GameObject m_Miss;
     [SerializeField]
+    private Slider m_HealthBar;
+    [SerializeField]
     private TextMeshProUGUI m_HealthStatusText;
     // [SerializeField]
     // private TextMeshProUGUI m_MonsterHealthText;
@@ -29,6 +31,7 @@ public class UISystem : MonoBehaviour {
     private static int last_arrow;
 
     public static TextMeshProUGUI MonsterHealthText;
+    public static Slider health_bar;
     public static TextMeshProUGUI HealthStatusText;
     public static GameObject hit_300;
     public static GameObject miss;
@@ -78,6 +81,7 @@ Up is now down and left is now right, etc."
 
         HealthStatusText = m_HealthStatusText;
         //   MonsterHealthText = m_MonsterHealthText;
+        health_bar = m_HealthBar;
         HideHit_300();
         HideMiss();
     }
@@ -137,7 +141,8 @@ Up is now down and left is now right, etc."
     public static void ChangeHealth(int points) {
         if (ControlSystem.ControlMode == ControlMode.InGame)
         {
-            HealthStatusText.text = "Health: " + points;
+            health_bar.value = points;
+            HealthStatusText.text = points + "%";
         }
     }
     public static void ChangeMonsterHealth() {
