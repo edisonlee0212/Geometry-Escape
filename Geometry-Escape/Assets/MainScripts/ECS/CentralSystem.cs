@@ -165,7 +165,7 @@ namespace GeometryEscape
             CopyDisplayColorSystem = World.Active.GetOrCreateSystem<CopyDisplayColorSystem>();
             FloatingOriginSystem = World.Active.GetOrCreateSystem<FloatingOriginSystem>();
             #endregion
-
+            _MapName = "level1";
             SceneManager.LoadScene("MainMenu");
             Enabled = false;
         }
@@ -222,8 +222,8 @@ namespace GeometryEscape
 
             Enabled = true;
             //FileSystem.LoadMapByPath(Application.dataPath + "/Resources/Maps/TestGround");
-            WorldSystem.TestMap(30, controlMode);
-            //FileSystem.LoadMapByName(_MapName);
+            //WorldSystem.TestMap(1, controlMode);
+            FileSystem.LoadMapByName(_MapName);
             //UISystem.Displaypopup(0);
         }
 

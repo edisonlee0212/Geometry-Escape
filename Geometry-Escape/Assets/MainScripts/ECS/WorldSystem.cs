@@ -134,7 +134,7 @@ namespace GeometryEscape
             _TotalTileAmount = 0;
             _TotalMonsterAmount = 0;
 
-            
+
         }
 
         public void Pause()
@@ -255,7 +255,7 @@ namespace GeometryEscape
             {
                 _TileDestructionQueue.Enqueue(i);
             }
-            _RemovingTiles = true;
+            if (list.Length != 0) _RemovingTiles = true;
             list.Dispose();
 
             query = m_EntityManager.CreateEntityQuery(typeof(MonsterProperties));
@@ -264,7 +264,7 @@ namespace GeometryEscape
             {
                 _MonsterDestructionQueue.Enqueue(i);
             }
-            _RemovingMonsters = true;
+            if (list.Length != 0) _RemovingMonsters = true;
             list.Dispose();
             MapLoaded = false;
             CentralSystem.WorldSystem.Enabled = true;
@@ -552,7 +552,7 @@ namespace GeometryEscape
             inputDeps.Complete();
 
             EntityManager.SetComponentData(instance, new TypeOfEntity { Value = EntityType.Tile });
-            
+
             EntityManager.SetComponentData(instance, left[0]);
             EntityManager.SetComponentData(instance, right[0]);
             EntityManager.SetComponentData(instance, up[0]);
@@ -573,11 +573,11 @@ namespace GeometryEscape
             {
                 Value = tile.TileType
             };
-            if(tile.TileType == TileType.Exit)
+            if (tile.TileType == TileType.Exit)
             {
                 CentralSystem.ExitTile = instance;
             }
-            EntityManager.SetComponentData(instance,new RecoverTrapEnable { Value=true});
+            EntityManager.SetComponentData(instance, new RecoverTrapEnable { Value = true });
             EntityManager.SetComponentData(instance, tileType);
             _TotalTileAmount++;
         }

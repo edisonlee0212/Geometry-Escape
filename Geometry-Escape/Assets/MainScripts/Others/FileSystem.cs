@@ -99,11 +99,7 @@ namespace GeometryEscape
 
         private static void LoadMap(FileStream stream)
         {
-            if (WorldSystem.MapLoaded)
-            {
-                Debug.Log("Map is not loaded! Try load map first.");
-                return;
-            }
+
             var reader = new BinaryReader(stream);
             //Get the amount of tiles.
             int tileAmount = reader.ReadInt32();
