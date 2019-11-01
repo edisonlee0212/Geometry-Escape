@@ -552,6 +552,7 @@ namespace GeometryEscape
             inputDeps.Complete();
 
             EntityManager.SetComponentData(instance, new TypeOfEntity { Value = EntityType.Tile });
+            
             EntityManager.SetComponentData(instance, left[0]);
             EntityManager.SetComponentData(instance, right[0]);
             EntityManager.SetComponentData(instance, up[0]);
@@ -572,6 +573,10 @@ namespace GeometryEscape
             {
                 Value = tile.TileType
             };
+            if(tile.TileType == TileType.Exit)
+            {
+                CentralSystem.ExitTile = instance;
+            }
             EntityManager.SetComponentData(instance,new RecoverTrapEnable { Value=true});
             EntityManager.SetComponentData(instance, tileType);
             _TotalTileAmount++;
