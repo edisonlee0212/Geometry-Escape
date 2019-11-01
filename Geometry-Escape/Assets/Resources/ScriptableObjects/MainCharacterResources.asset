@@ -12,7 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 708aaf8d5ab1d874dbe564135f0dfa97, type: 3}
   m_Name: MainCharacterResources
   m_EditorClassIdentifier: 
-  m_CharacterControllers:
-  - {fileID: 2275024570278478825, guid: 95e87b6d088eac1428915bd517b666f2, type: 3}
-  - {fileID: 6162765492528953546, guid: 386a2851052d30c4b864254ff7dd170d, type: 3}
-  - {fileID: 3387292964701937453, guid: c4b9d57abb183c14c8f53e64607a27b0, type: 3}
+  m_MainCharacters:
+  - Character: {fileID: 2275024570278478825, guid: 95e87b6d088eac1428915bd517b666f2,
+      type: 3}
+    Icon: {fileID: 21300000, guid: 41576727d7f8960429722b95a8c3caa8, type: 3}
+  - Character: {fileID: 6162765492528953546, guid: 386a2851052d30c4b864254ff7dd170d,
+      type: 3}
+    Icon: {fileID: 21300000, guid: 3116d8bff6d8b1a4db675c68a20bbc15, type: 3}
+  - Character: {fileID: 3387292964701937453, guid: c4b9d57abb183c14c8f53e64607a27b0,
+      type: 3}
+    Icon: {fileID: 21300000, guid: 910244911aab54448812b8fe2daf6431, type: 3}
