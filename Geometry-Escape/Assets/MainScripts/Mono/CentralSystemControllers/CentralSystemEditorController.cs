@@ -66,6 +66,7 @@ namespace GeometryEscape
             if (name != "" && CentralSystem.Running)
             {
                 CentralSystem.MapName = name;
+                CentralSystem.UseMap = true;
             }
             
         }
