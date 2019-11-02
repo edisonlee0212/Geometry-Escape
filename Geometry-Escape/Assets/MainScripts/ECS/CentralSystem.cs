@@ -508,8 +508,7 @@ namespace GeometryEscape
                     if (ControlSystem.ControlMode == ControlMode.InGame)
                     {
                         UISystem.ShowHit_300();
-                        float3 value = m_EntityManager.GetComponentData<Translation>(ExitTile).Value;
-                        UISystem.UpdateExitIndicator(value.x, value.y);
+                        
                     }
 
                 }
@@ -550,6 +549,13 @@ namespace GeometryEscape
             m_TileSystem.OnFixedUpdate(ref inputDeps, _Counter);
             m_MonsterSystem.OnFixedUpdate(ref inputDeps, _Counter);
             #endregion
+
+            if(ControlSystem.ControlMode == ControlMode.InGame)
+            {
+                float3 value = m_EntityManager.GetComponentData<Translation>(ExitTile).Value;
+                Debug.Log(value);
+                UISystem.UpdateExitIndicator(value.x, value.y);
+            }
 
             if (FloatingOriginSystem.CenterTileEntity != Entity.Null)
             {

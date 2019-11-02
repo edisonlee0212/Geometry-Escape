@@ -208,12 +208,11 @@ namespace GeometryEscape
             }
         }
 
-        [BurstCompile]
         struct SetRoutePosition : IJobForEach<MonsterProperties, TypeOfMonster, Coordinate, PreviousCoordinate, TargetCoordinate, Timer>
         {
             [ReadOnly] public MonsterMovePattern MonsterMovePattern;
             [ReadOnly] public NativeHashMap<Coordinate, TileType> TileHashMap;
-            [ReadOnly] public Coordinate currentPlayerPosition;
+            public Coordinate currentPlayerPosition;
             public void Execute(ref MonsterProperties c0, ref TypeOfMonster c1, ref Coordinate c2, ref PreviousCoordinate c3, ref TargetCoordinate c4, ref Timer c5)
             {
                 c3.X = c2.X;
