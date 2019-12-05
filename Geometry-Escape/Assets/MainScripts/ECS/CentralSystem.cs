@@ -224,7 +224,7 @@ namespace GeometryEscape
             Enabled = true;
             if (!UseMap)
             {
-                FileSystem.LoadMapByPath(Application.dataPath + "/Resources/Maps/special");
+                FileSystem.LoadMapByPath(Application.dataPath + "/Resources/Maps/level0");
             }
             else
             {
@@ -537,7 +537,11 @@ namespace GeometryEscape
             {
                 if (!c0.isOn || c0.T == c0.maxT) return;
                 c0.T += deltaTime;
-                if (c0.T > c0.maxT) c0.T = c0.maxT;
+                if (c0.T > c0.maxT)
+                {
+                    c0.T = c0.maxT;
+                    c0.isOn = false;
+                }
             }
         }
         #endregion

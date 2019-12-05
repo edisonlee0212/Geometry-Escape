@@ -27,6 +27,20 @@ namespace GeometryEscape
     }
 
     [Serializable]
+    public struct SoundProperties : IComponentData
+    {
+        //Tell whether a sound is uploaded.
+        public int branchCount;
+        public int radius;
+        public int width;
+        public int colorIndex;
+        public bool bounce;
+        public Color baseColor;
+        public Color actualColor;
+        public bool uploaded;
+    }
+
+    [Serializable]
     public struct TypeOfEntity : IComponentData
     {
         public EntityType Value;
