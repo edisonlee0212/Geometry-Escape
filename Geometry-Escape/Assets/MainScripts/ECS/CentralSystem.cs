@@ -974,9 +974,14 @@ namespace GeometryEscape
 
                         break;
                 }
+
                 //Debug.Log("check monster HP"+CenterMonsterHP);
                 AudioSystem.PlayTrapSound();
                 var position = EntityManager.GetComponentData<Translation>(CenterMonsterEntity).Value;
+                Coordinate mposition = EntityManager.GetComponentData<Coordinate>(CenterMonsterEntity);
+                Debug.Log("&&& "+position.x);
+                CentralSystem.ParticleSoundFactory.CreateSound(true, new Vector2 { x = mposition.X, y = mposition.Y }, 50, 1, 2, 0.3f, 1, false);
+
                 if (position.x < 0)
                 {
                     CentralSystem.Move(new Vector2(1, 0), true, 0.1f);

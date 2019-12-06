@@ -172,6 +172,7 @@ namespace GeometryEscape
                         targetCoordinate.Direction = previousCoordinate.Direction;
                         break;
                 }
+               // CentralSystem.ParticleSoundFactory.CreateSound(true,new Vector2 { x=0,y=0},20,0,6,1f,1,false);
                 return targetCoordinate;
             }
             //原地转圈
@@ -384,6 +385,13 @@ namespace GeometryEscape
                     Debug.Log("Something wrong with setting monster position hash map!");
                     continue;
                 }
+
+                if (previousCoordinate.X!=nextMove.X
+                        || previousCoordinate.Y != nextMove.Y
+                        || previousCoordinate.Z != nextMove.Z) {
+                    CentralSystem.ParticleSoundFactory.CreateSound(true, new Vector2 { x = nextMove.X, y = nextMove.Y }, 20, 2, 2, 0.5f, 2, false);
+                }
+
                 EntityManager.SetComponentData(monster, previousCoordinate);
                 EntityManager.SetComponentData(monster, new TargetCoordinate { X = nextMove.X, Y = nextMove.Y, Z = nextMove.Z, Direction = nextMove.Direction });
                 EntityManager.SetComponentData(monster, new Timer { isOn = true, T = 0, maxT = 0.2f });
