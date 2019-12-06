@@ -50,6 +50,7 @@ namespace GeometryEscape
         #endregion
 
         #region Public
+        public ParticleSoundFactory m_ParticleSoundFactory;
         #endregion
 
         #region Managers
@@ -395,7 +396,6 @@ namespace GeometryEscape
         public JobHandle OnFixedUpdate(ref JobHandle inputDeps, int counter)
         {
             //Schedule your job for every time step here. Time step is defined in central system.
-
             return inputDeps;
         }
         protected override JobHandle OnUpdate(JobHandle inputDeps)

@@ -185,6 +185,7 @@ namespace GeometryEscape
             m_MonsterResources = Resources.Load<MonsterResources>("ScriptableObjects/MonsterResources");
             m_MainCharacterResources = Resources.Load<MainCharacterResources>("ScriptableObjects/MainCharacterResources");
             m_ParticleSoundFactory = Resources.Load<ParticleSoundFactory>("ScriptableObjects/ParticleSoundFactory");
+            MonsterSystem.m_ParticleSoundFactory = m_ParticleSoundFactory;
             #endregion
             #region Initial Settings
             m_ParticleSoundFactory.Start();
@@ -247,6 +248,7 @@ namespace GeometryEscape
             m_AudioResources = Resources.Load<AudioResources>("ScriptableObjects/AudioResources");
             m_MainCharacterResources = Resources.Load<MainCharacterResources>("ScriptableObjects/MainCharacterResources");
             m_ParticleSoundFactory = Resources.Load<ParticleSoundFactory>("ScriptableObjects/ParticleSoundFactory");
+            MonsterSystem.m_ParticleSoundFactory = m_ParticleSoundFactory;
             #endregion
             #region Initial Settings
             m_ParticleSoundFactory.Start();
@@ -581,7 +583,6 @@ namespace GeometryEscape
             m_AudioSystem.OnBeatUpdate(ref inputDeps, _BeatCounter);
             m_TileSystem.OnBeatUpdate(ref inputDeps, _BeatCounter);
             m_MonsterSystem.OnBeatUpdate(ref inputDeps, _BeatCounter);
-            m_ParticleSoundFactory.CreateSound(true, new Vector2(0, -10), 20, 0, 1, 1f, 1, false);
             #endregion
             AudioSystem.StopTrapSound();
             m_LightResources.StopTrapColor();
