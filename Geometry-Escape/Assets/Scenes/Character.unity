@@ -1389,7 +1389,7 @@ GameObject:
   - component: {fileID: 1372033650}
   - component: {fileID: 1372033649}
   m_Layer: 0
-  m_Name: CentralSystemEditorController
+  m_Name: CentralSystemCharacterController
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1884,7 +1884,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: BACK TO MAIN MENU
+  m_Text: USE THIS CHARACTER
 --- !u!114 &5689990877454063104
 MonoBehaviour:
   m_ObjectHideFlags: 0
