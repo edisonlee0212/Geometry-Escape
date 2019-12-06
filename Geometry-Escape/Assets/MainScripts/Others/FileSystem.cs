@@ -175,7 +175,14 @@ namespace GeometryEscape
         {
             StreamReader sr = null;
             List<float> BeatsTime = new List<float>();
-            sr = File.OpenText(_SavePath + "/" + name + ".txt");
+            try
+            {
+                sr = File.OpenText(_SavePath + "/" + name + ".txt");
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
             string t_sline;
             if ((t_sline = sr.ReadLine()) != null)
             {
