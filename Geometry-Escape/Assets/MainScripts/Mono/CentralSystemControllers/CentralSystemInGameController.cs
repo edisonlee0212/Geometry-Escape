@@ -10,8 +10,6 @@ namespace GeometryEscape {
     public class CentralSystemInGameController : MonoBehaviour {
         public CentralSystem m_CentralSystem;
         public AudioMixer mixer;
-
-
         public Text TileTypeText;
 
         public static Text TileText;
@@ -50,7 +48,7 @@ namespace GeometryEscape {
         }
 
         public void SetVolumeLevel(float sliderValue) {
-            mixer.SetFloat("MasterVol", Mathf.Log10(sliderValue) * 20);
+            mixer.SetFloat("MasterVol", Mathf.Log10(sliderValue / 100f) * 20);
         }
 
         public void OnPopupCloseButtonPressed() {
