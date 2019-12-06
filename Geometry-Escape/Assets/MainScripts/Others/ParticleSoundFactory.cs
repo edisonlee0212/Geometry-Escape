@@ -53,7 +53,7 @@ namespace GeometryEscape
 
             soundPropertiesReset = new SoundProperties
             {
-                uploaded = false,
+                syncMap = false,
                 branchCount = 0,
                 baseColor = Color.white,
                 actualColor = Color.white
@@ -87,7 +87,7 @@ namespace GeometryEscape
             }
             poolScene = SceneManager.CreateScene(name);
         }
-        public void CreateSound(bool needUpload, Vector2 originPosition, int branchAmount, int colorMode = 0, int radius = 6, float lifeTime = -1, int width = 1, bool bounce = true)
+        public void CreateSound(bool syncMap, Vector2 originPosition, int branchAmount, int colorMode = 0, int radius = 6, float lifeTime = -1, int width = 1, bool bounce = true)
         {
             if (lifeTime == -1) lifeTime = branchAmount * 0.015f;
             SoundOrigin instance;
@@ -96,15 +96,15 @@ namespace GeometryEscape
             {
                 instance = soundPool[lastIndex];
                 soundPool.RemoveAt(lastIndex);
-                ResetSound(needUpload, instance, branchAmount, originPosition, radius, colorMode, lifeTime, width, bounce);
+                ResetSound(syncMap, instance, branchAmount, originPosition, radius, colorMode, lifeTime, width, bounce);
             }
             else
             {
                 instance = NewSound();
-                ResetSound(needUpload, instance, branchAmount, originPosition, radius, colorMode, lifeTime, width, bounce);
+                ResetSound(syncMap, instance, branchAmount, originPosition, radius, colorMode, lifeTime, width, bounce);
             }
         }
-        void ResetSound(bool fromClient, SoundOrigin instance, int loudNess, Vector2 originPosition, int radius, int colorIndex, float lifeTime, int width, bool bounce)
+        void ResetSound(bool syncMap, SoundOrigin instance, int loudNess, Vector2 originPosition, int radius, int colorIndex, float lifeTime, int width, bool bounce)
         {
             timerReset.maxT = lifeTime;
             timerReset.T = 0;
@@ -114,8 +114,7 @@ namespace GeometryEscape
             soundPropertiesReset.radius = radius;
             soundPropertiesReset.width = width;
             soundPropertiesReset.bounce = bounce;
-            if (fromClient) soundPropertiesReset.uploaded = false;
-            else soundPropertiesReset.uploaded = true;
+            soundPropertiesReset.syncMap = syncMap;
             if (colorIndex >= 0 && colorIndex < colors.Length)
             {
                 soundPropertiesReset.baseColor = colors[colorIndex];

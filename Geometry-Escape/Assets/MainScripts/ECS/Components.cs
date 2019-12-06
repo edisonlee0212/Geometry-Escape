@@ -37,7 +37,7 @@ namespace GeometryEscape
         public bool bounce;
         public Color baseColor;
         public Color actualColor;
-        public bool uploaded;
+        public bool syncMap;
     }
 
     [Serializable]

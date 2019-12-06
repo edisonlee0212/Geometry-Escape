@@ -70,6 +70,8 @@ namespace GeometryEscape
         /// </summary>
         private static MainCharacterResources m_MainCharacterResources;
 
+        private static ParticleSoundFactory m_ParticleSoundFactory;
+
         #endregion
 
         #region Timers and Counters and Others
@@ -139,6 +141,7 @@ namespace GeometryEscape
         public static string MapName { get => _MapName; set => _MapName = value; }
         public static int MainCharacterIndex { get => _MainCharacterIndex; set => _MainCharacterIndex = value; }
         public static bool UseMap { get => _UseMap; set => _UseMap = value; }
+        public static ParticleSoundFactory ParticleSoundFactory { get => m_ParticleSoundFactory; set => m_ParticleSoundFactory = value; }
 
         #endregion
 
@@ -181,8 +184,10 @@ namespace GeometryEscape
             m_AudioResources = Resources.Load<AudioResources>("ScriptableObjects/AudioResources");
             m_MonsterResources = Resources.Load<MonsterResources>("ScriptableObjects/MonsterResources");
             m_MainCharacterResources = Resources.Load<MainCharacterResources>("ScriptableObjects/MainCharacterResources");
+            m_ParticleSoundFactory = Resources.Load<ParticleSoundFactory>("ScriptableObjects/ParticleSoundFactory");
             #endregion
             #region Initial Settings
+            m_ParticleSoundFactory.Start();
             /* 设置灯光，因为地图具有缩放功能，在地图缩放的时候灯光范围也应该随之更改，所以在这里加入引用。
              */
             m_Light = LightResources.ViewLight.transform;
@@ -241,8 +246,10 @@ namespace GeometryEscape
             m_LightResources = Resources.Load<LightResources>("ScriptableObjects/LightResources");
             m_AudioResources = Resources.Load<AudioResources>("ScriptableObjects/AudioResources");
             m_MainCharacterResources = Resources.Load<MainCharacterResources>("ScriptableObjects/MainCharacterResources");
+            m_ParticleSoundFactory = Resources.Load<ParticleSoundFactory>("ScriptableObjects/ParticleSoundFactory");
             #endregion
             #region Initial Settings
+            m_ParticleSoundFactory.Start();
             /* 设置灯光，因为地图具有缩放功能，在地图缩放的时候灯光范围也应该随之更改，所以在这里加入引用。
              */
             m_Light = LightResources.ViewLight.transform;
@@ -574,6 +581,7 @@ namespace GeometryEscape
             m_AudioSystem.OnBeatUpdate(ref inputDeps, _BeatCounter);
             m_TileSystem.OnBeatUpdate(ref inputDeps, _BeatCounter);
             m_MonsterSystem.OnBeatUpdate(ref inputDeps, _BeatCounter);
+            m_ParticleSoundFactory.CreateSound(true, new Vector2(0, -10), 20, 0, 1, 1f, 1, false);
             #endregion
             AudioSystem.StopTrapSound();
             m_LightResources.StopTrapColor();
