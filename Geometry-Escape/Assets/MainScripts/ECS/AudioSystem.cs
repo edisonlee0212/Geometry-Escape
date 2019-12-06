@@ -247,7 +247,7 @@ namespace GeometryEscape
                 return dev <= _Deviation || dev >= m_Music.MusicInfo.MusicBeatsTime - _Deviation;
             } else
             {
-
+                return true;
             }
 
         }
