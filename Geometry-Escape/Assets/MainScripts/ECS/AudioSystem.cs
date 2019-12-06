@@ -264,7 +264,7 @@ namespace GeometryEscape
             if (BeatsTime != null)
             {
                 for (int i = _BeatCounter; i < BeatsTime.Count; i ++) { 
-                    if (BeatsTime[i] == m_MusicAudioSource.time)
+                    if (BeatsTime[i] >= m_MusicAudioSource.time)
                     {
                         return i;
                     }
