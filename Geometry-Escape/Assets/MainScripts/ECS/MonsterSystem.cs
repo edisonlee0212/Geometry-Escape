@@ -354,6 +354,8 @@ namespace GeometryEscape
 
                     }
                 }
+                nextMove.X = Mathf.RoundToInt(nextMove.X);
+                nextMove.Y = Mathf.RoundToInt(nextMove.Y);
                 TileType tileType;
 
                 //If the next position is out of map we cancel.

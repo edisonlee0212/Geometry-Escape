@@ -230,7 +230,7 @@ namespace GeometryEscape
             Enabled = true;
             if (!UseMap)
             {
-                FileSystem.LoadMapByPath(Application.dataPath + "/Resources/Maps/level0");
+                FileSystem.LoadMapByPath(Application.dataPath + "/Resources/Maps/hello");
             }
             else
             {
@@ -566,7 +566,6 @@ namespace GeometryEscape
             if(ControlSystem.ControlMode == ControlMode.InGame)
             {
                 float3 value = m_EntityManager.GetComponentData<Translation>(ExitTile).Value;
-                Debug.Log(value);
                 UISystem.UpdateExitIndicator(value.x, value.y);
             }
 
