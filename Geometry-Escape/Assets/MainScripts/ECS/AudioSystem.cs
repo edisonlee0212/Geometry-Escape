@@ -6,6 +6,8 @@ using Unity.Jobs;
 using Unity.Transforms;
 using UnityEngine;
 using UnityEngine.Audio;
+using System.Text;
+using System.IO;
 namespace GeometryEscape
 {
     public struct MusicRecordingInfo
@@ -36,6 +38,7 @@ namespace GeometryEscape
         /// </summary>
         //private static AudioSource m_BeatsAudioSource;
         private static AudioSource[] m_SoundEffectAudioSources;
+        private static List<float> BeatsTime = new List<float>(); 
         private static AudioSource m_MusicAudioSource;
         //private static AudioSource m_KeyAudioSource;
         private static AudioResources.Music m_Music;
@@ -45,7 +48,6 @@ namespace GeometryEscape
         public static AudioSource MusicAudioSource { get => m_MusicAudioSource; set => m_MusicAudioSource = value; }
         //public static AudioSource BeatsAudioSource { get => m_BeatsAudioSource; set => m_BeatsAudioSource = value; }
         //public static AudioSource KeyAudioSource { get => m_KeyAudioSource; set => m_KeyAudioSource = value; }
-
 
         public static float Deviation { get => _Deviation; set => _Deviation = value; }
         public static AudioResources.Music Music { get => m_Music; set => m_Music = value; }
@@ -127,11 +129,24 @@ namespace GeometryEscape
             m_MusicRecordingInfo.CurrentBeatTime = m_MusicAudioSource.time;
         }
 
+
+
+        public static void RecordBeat()
+        {
+            BeatsTime.Add(m_MusicAudioSource.time);
+        }
+
         public static void EndRecording()
         {
-            float beatsTime = ((m_MusicRecordingInfo.CurrentBeatTime - m_MusicRecordingInfo.StartTime) / (m_MusicRecordingInfo.BeatCounter - 1));
-            m_MusicRecordingInfo.StartTime = m_MusicRecordingInfo.StartTime % beatsTime;
-            Debug.Log("[Starting Time]:" + m_MusicRecordingInfo.StartTime + " [Beat Time]: " + beatsTime);
+            //float beatsTime = ((m_MusicRecordingInfo.CurrentBeatTime - m_MusicRecordingInfo.StartTime) / (m_MusicRecordingInfo.BeatCounter - 1));
+            //m_MusicRecordingInfo.StartTime = m_MusicRecordingInfo.StartTime % beatsTime;
+            //Debug.Log("[Starting Time]:" + m_MusicRecordingInfo.StartTime + " [Beat Time]: " + beatsTime);
+            FileSystem.SavingBeats(BeatsTime, m_MusicAudioSource.name);
+        }
+
+        public static void ReadBeats()
+        {
+            BeatsTime = FileSystem.ReadBeats(m_MusicAudioSource.name);
         }
         #endregion
 

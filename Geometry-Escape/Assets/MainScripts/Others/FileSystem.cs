@@ -157,5 +157,35 @@ namespace GeometryEscape
                 };
             WorldSystem.AddMonsterCreationInfo(monsterLoadingInfo);
         }
+
+        public static void SavingBeats(List<float> BeatsTime, string name)
+        {
+            StreamWriter sw;
+            FileInfo fi = new FileInfo(_SavePath + "/" + name + ".txt");
+            sw = fi.CreateText();
+            for (int i = 0; i < BeatsTime.Count; i++)
+            {
+                sw.WriteLine(BeatsTime[i]);
+            }
+            sw.Close();
+            sw.Dispose();
+        }
+
+        public static List<float> ReadBeats(string name)
+        {
+            StreamReader sr = null;
+            List<float> BeatsTime = new List<float>();
+            sr = File.OpenText(_SavePath + "/" + name + ".txt");
+            string t_sline;
+            if ((t_sline = sr.ReadLine()) != null)
+            {
+
+                BeatsTime.Add(float.Parse(t_sline));
+
+            }
+            sr.Close();
+            sr.Dispose();
+            return BeatsTime;
+        }
     }
 }
