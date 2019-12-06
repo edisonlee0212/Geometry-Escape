@@ -585,7 +585,7 @@ namespace GeometryEscape
             #endregion
             AudioSystem.StopTrapSound();
             m_LightResources.StopTrapColor();
-
+            m_ParticleSoundFactory.CreateSound(false, new Vector2(0, 0), 20);
             if (FloatingOriginSystem.CenterTileEntity != Entity.Null)
             {
                 CheckTrapOnBeatsUpdate();
@@ -617,8 +617,11 @@ namespace GeometryEscape
                 #endregion
 
                 #region Beat
-                if (!AudioSystem.MusicAudioSource.isPlaying) AudioSystem.MusicAudioSource.Play();
-                int count = AudioSystem.CurrentBeatCounter(_BeatCounter);
+                if (!AudioSystem.MusicAudioSource.isPlaying)
+                {
+                    AudioSystem.RestartMusic();
+                }
+                int count = AudioSystem.CurrentBeatCounter();
                 if (count != _BeatCounter)
                 {
                     _BeatCounter = count;

@@ -38,7 +38,7 @@ namespace GeometryEscape
         /// </summary>
         //private static AudioSource m_BeatsAudioSource;
         private static AudioSource[] m_SoundEffectAudioSources;
-        private static List<float> BeatsTime = new List<float>(); 
+        private static List<float> BeatsTime; 
         private static AudioSource m_MusicAudioSource;
         //private static AudioSource m_KeyAudioSource;
         private static AudioResources.Music m_Music;
@@ -80,6 +80,7 @@ namespace GeometryEscape
 
             _Deviation = m_Music.MusicInfo.MusicBeatsTime / 4;
             UISystem._devision = m_Music.MusicInfo.MusicBeatsTime;
+            ReadBeats();
         }
 
         public void Pause()
@@ -115,6 +116,10 @@ namespace GeometryEscape
         #region Beats Editor
         public static void StartRecording()
         {
+            if(BeatsTime == null)
+            {
+                BeatsTime = new List<float>();
+            }
             BeatsTime.Clear();
             m_MusicAudioSource.Play();
             m_MusicRecordingInfo = default;
@@ -131,7 +136,11 @@ namespace GeometryEscape
             m_MusicRecordingInfo.CurrentBeatTime = m_MusicAudioSource.time;
         }
 
-
+        public static void RestartMusic()
+        {
+            CentralSystem.BeatCounter = 0;
+            AudioSystem.MusicAudioSource.Play();
+        }
 
         public static void RecordBeat()
         {
@@ -152,6 +161,11 @@ namespace GeometryEscape
         public static void ReadBeats()
         {
             BeatsTime = FileSystem.ReadBeats(m_MusicAudioSource.clip.name);
+            Debug.Log(BeatsTime);
+            foreach(var i in BeatsTime)
+            {
+                Debug.Log(i);
+            }
         }
         #endregion
 
@@ -238,18 +252,23 @@ namespace GeometryEscape
 
         public static bool OnBeats()
         {
+            bool normalCheck = false;
             if (BeatsTime == null)
             {
-                float dev = Mathf.Abs((m_MusicAudioSource.time - m_Music.MusicInfo.MusicStartTime) % m_Music.MusicInfo.MusicBeatsTime);
+                float dev = Mathf.Abs((m_MusicAudioSource.time - m_Music.MusicInfo.MusicStartTime + CentralSystemOffsetController._offset) % m_Music.MusicInfo.MusicBeatsTime);
 
                 Debug.Log("dev: " + dev);
                 Debug.Log("offset: " + CentralSystemOffsetController._offset);
-                return dev <= _Deviation || dev >= m_Music.MusicInfo.MusicBeatsTime - _Deviation;
+                normalCheck = dev <= _Deviation || dev >= m_Music.MusicInfo.MusicBeatsTime - _Deviation;
             } else
             {
-                return true;
+                if(BeatsTime.Count > CentralSystem.BeatCounter)
+                {
+                    float dev = Mathf.Abs(m_MusicAudioSource.time - BeatsTime[CentralSystem.BeatCounter]);
+                    normalCheck = dev <= _Deviation || dev >= m_Music.MusicInfo.MusicBeatsTime - _Deviation;
+                }
             }
-
+            return normalCheck;
         }
 
         public static int CalOffset()
@@ -259,11 +278,11 @@ namespace GeometryEscape
             return offset;
         }
 
-        public static int CurrentBeatCounter(int _BeatCounter)
+        public static int CurrentBeatCounter()
         {
             if (BeatsTime != null)
             {
-                for (int i = _BeatCounter; i < BeatsTime.Count; i ++) { 
+                for (int i = CentralSystem.BeatCounter; i < BeatsTime.Count; i++) { 
                     if (BeatsTime[i] >= m_MusicAudioSource.time)
                     {
                         return i;

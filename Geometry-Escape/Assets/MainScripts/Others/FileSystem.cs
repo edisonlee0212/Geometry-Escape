@@ -185,7 +185,7 @@ namespace GeometryEscape
                 return null;
             }
             string t_sline;
-            if ((t_sline = sr.ReadLine()) != null)
+            while ((t_sline = sr.ReadLine()) != null)
             {
 
                 BeatsTime.Add(float.Parse(t_sline));
