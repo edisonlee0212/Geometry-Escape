@@ -958,23 +958,24 @@ namespace GeometryEscape
                 {
                     case MonsterType.Blue:
                         CentralSystem.MainCharacterController.ChangeHealth(-10);
-                        EntityManager.SetComponentData<MonsterHP>(CenterMonsterEntity, new MonsterHP { Value = CenterMonsterHP - 50 });
+                        
+                        EntityManager.SetComponentData(CenterMonsterEntity, new MonsterHP { Value = CenterMonsterHP - 50 });
                         //CentralSystem.MonsterSystem.ChangeMonsterHealth();
                         break;
                     case MonsterType.Green:
                         CentralSystem.MainCharacterController.ChangeHealth(-20);
-                        EntityManager.SetComponentData<MonsterHP>(CenterMonsterEntity, new MonsterHP { Value = CenterMonsterHP - 50 });
+                        EntityManager.SetComponentData(CenterMonsterEntity, new MonsterHP { Value = CenterMonsterHP - 50 });
                         //CentralSystem.MonsterSystem.ChangeMonsterHealth();
 
                         break;
                     case MonsterType.Skeleton:
                         CentralSystem.MainCharacterController.ChangeHealth(-10);
-                        EntityManager.SetComponentData<MonsterHP>(CenterMonsterEntity, new MonsterHP { Value = CenterMonsterHP - 50 });
+                        EntityManager.SetComponentData(CenterMonsterEntity, new MonsterHP { Value = CenterMonsterHP - 50 });
                         //CentralSystem.MonsterSystem.ChangeMonsterHealth();
 
                         break;
                 }
-
+                
                 //Debug.Log("check monster HP"+CenterMonsterHP);
                 AudioSystem.PlayTrapSound();
                 var position = EntityManager.GetComponentData<Translation>(CenterMonsterEntity).Value;
@@ -999,6 +1000,7 @@ namespace GeometryEscape
                     CentralSystem.Move(new Vector2(0, -1), true, 0.1f);
                 }
                 _PushTimer = 0;
+                if (CenterMonsterHP < 0) EntityManager.DestroyEntity(CenterMonsterEntity);
             }
 
             inputDeps = new CalculateLocalToWorld
