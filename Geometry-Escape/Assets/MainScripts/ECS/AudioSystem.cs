@@ -238,11 +238,18 @@ namespace GeometryEscape
 
         public static bool OnBeats()
         {
-            float dev = Mathf.Abs((m_MusicAudioSource.time - m_Music.MusicInfo.MusicStartTime) % m_Music.MusicInfo.MusicBeatsTime);
+            if (BeatsTime == null)
+            {
+                float dev = Mathf.Abs((m_MusicAudioSource.time - m_Music.MusicInfo.MusicStartTime) % m_Music.MusicInfo.MusicBeatsTime);
 
-            Debug.Log("dev: " + dev);
-            Debug.Log("offset: " + CentralSystemOffsetController._offset);
-            return dev <= _Deviation || dev >= m_Music.MusicInfo.MusicBeatsTime - _Deviation;
+                Debug.Log("dev: " + dev);
+                Debug.Log("offset: " + CentralSystemOffsetController._offset);
+                return dev <= _Deviation || dev >= m_Music.MusicInfo.MusicBeatsTime - _Deviation;
+            } else
+            {
+
+            }
+
         }
 
         public static int CalOffset()
@@ -252,8 +259,17 @@ namespace GeometryEscape
             return offset;
         }
 
-        public static int CurrentBeatCounter()
+        public static int CurrentBeatCounter(int _BeatCounter)
         {
+            if (BeatsTime != null)
+            {
+                for (int i = _BeatCounter; i < BeatsTime.Count; i ++) { 
+                    if (BeatsTime[i] == m_MusicAudioSource.time)
+                    {
+                        return i;
+                    }
+                }
+            }
             return (int)((m_MusicAudioSource.time - m_Music.MusicInfo.MusicStartTime) / m_Music.MusicInfo.MusicBeatsTime);
         }
 

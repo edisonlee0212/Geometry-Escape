@@ -619,7 +619,7 @@ namespace GeometryEscape
 
                 #region Beat
                 if (!AudioSystem.MusicAudioSource.isPlaying) AudioSystem.MusicAudioSource.Play();
-                int count = AudioSystem.CurrentBeatCounter();
+                int count = AudioSystem.CurrentBeatCounter(_BeatCounter);
                 if (count != _BeatCounter)
                 {
                     _BeatCounter = count;
