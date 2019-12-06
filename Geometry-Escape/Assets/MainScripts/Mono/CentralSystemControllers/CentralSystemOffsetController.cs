@@ -4,6 +4,7 @@ using TMPro;
 using Unity.Entities;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 namespace GeometryEscape
 {
@@ -12,11 +13,14 @@ namespace GeometryEscape
         [SerializeField]
         private TextMeshProUGUI m_HealthStatusText;
 
+        public Button BackToMenu, ResetOffset, ChangeMode, StartRecording, EndRecording;
+
         public CentralSystem m_CentralSystem;
         private static int test_time;
         private static int[] offsets;
         public static int _offset;
         public static TextMeshProUGUI OffsetText;
+        public static bool isRecordingBeat;
         // Start is called before the first frame update
         void Start()
         {
@@ -44,14 +48,55 @@ namespace GeometryEscape
             CentralSystem.Resume();
         }
 
+        public void OnChangeMode()
+        {
+            isRecordingBeat = !isRecordingBeat;
+            if (isRecordingBeat)
+            {
+                AudioSystem.MusicAudioSource.Stop();
+                BackToMenu.interactable = false;
+                ResetOffset.interactable = false;
+                StartRecording.interactable = true;
+                EndRecording.interactable = false;
+            }
+            else
+            {
+                BackToMenu.interactable = true;
+                ResetOffset.interactable = true;
+                StartRecording.interactable = false;
+                EndRecording.interactable = false;
+            }
+        }
+
+        public void OnStartRecording()
+        {
+            StartRecording.interactable = false;
+            EndRecording.interactable = true;
+            
+        }
+
+        public void OnEndRecording()
+        {
+            StartRecording.interactable = true;
+            EndRecording.interactable = false;
+        }
+
+
         public static void updateOffset(int offset)
         {
-            Debug.Log(_offset);
-            Debug.Log(offset);
-            offsets[test_time % 20] = offset;
-            test_time += 1;
-            _offset = test_time <= 20 ? sumArray(offsets) / test_time : sumArray(offsets) / 20;
-            OffsetText.text = "Offset " + _offset + "ms";
+            if (!isRecordingBeat)
+            {
+                Debug.Log(_offset);
+                Debug.Log(offset);
+                offsets[test_time % 20] = offset;
+                test_time += 1;
+                _offset = test_time <= 20 ? sumArray(offsets) / test_time : sumArray(offsets) / 20;
+                OffsetText.text = "Offset " + _offset + "ms";
+            }
+            else
+            {
+
+            }
         }
 
         public static int sumArray(int[] array)

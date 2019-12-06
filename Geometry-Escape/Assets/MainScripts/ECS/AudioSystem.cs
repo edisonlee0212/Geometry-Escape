@@ -227,6 +227,7 @@ namespace GeometryEscape
 
         public static int CalOffset()
         {
+            
             int offset = (int)(100 * (float)((m_MusicAudioSource.time - m_Music.MusicInfo.MusicStartTime) % m_Music.MusicInfo.MusicBeatsTime));
             return offset;
         }
