@@ -3,24 +3,21 @@ using System.Collections.Generic;
 using Unity.Entities;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.Audio;
 using UnityEngine.UI;
 
 namespace GeometryEscape {
     public class CentralSystemInGameController : MonoBehaviour {
         public CentralSystem m_CentralSystem;
-        public AudioMixer mixer;
         public Text TileTypeText;
+        public Text usernameText;
 
         public static Text TileText;
-        private bool is_volume_rocker_visible;
-
         // Start is called before the first frame update
         private void Start() {
-            is_volume_rocker_visible = false;
             m_CentralSystem = World.Active.GetOrCreateSystem<CentralSystem>();
             m_CentralSystem.Init();
             TileText = TileTypeText;
+            usernameText.text = PlayerPrefs.GetString("UserName", "PLAYER");
         }
 
         public static void ChangeTileTest(string text)
@@ -39,16 +36,6 @@ namespace GeometryEscape {
 
         public void OnResume() {
             CentralSystem.Resume();
-        }
-
-        public void OnVolumeButtonPressed() {
-            is_volume_rocker_visible = !is_volume_rocker_visible;
-
-            UISystem.volume_rocker.SetActive(is_volume_rocker_visible);
-        }
-
-        public void SetVolumeLevel(float sliderValue) {
-            mixer.SetFloat("MasterVol", Mathf.Log10(sliderValue / 100f) * 20);
         }
 
         public void OnPopupCloseButtonPressed() {

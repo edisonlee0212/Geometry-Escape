@@ -12,11 +12,14 @@ namespace GeometryEscape
         public CentralSystem m_CentralSystem;
         [SerializeField]
         private InputField m_InputField;
+        public Text usernameText;
+
         // Start is called before the first frame update
         private void Start()
         {
             m_CentralSystem = World.Active.GetOrCreateSystem<CentralSystem>();
             m_CentralSystem.Init(ControlMode.MapEditor);
+            usernameText.text = PlayerPrefs.GetString("UserName", "PLAYER");
         }
 
         public void OnBackToMainMenu()

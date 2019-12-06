@@ -14,6 +14,7 @@ namespace GeometryEscape
         private TextMeshProUGUI m_HealthStatusText;
 
         public Button BackToMenu, ResetOffset, ChangeMode, StartRecording, EndRecording;
+        //public Text usernameText;
 
         public CentralSystem m_CentralSystem;
         private static int test_time;
@@ -30,6 +31,7 @@ namespace GeometryEscape
             _offset = 0;
             OffsetText = m_HealthStatusText;
             offsets = new int[20];
+            //usernameText.text = PlayerPrefs.GetString("UserName", "PLAYER");
         }
 
         public void OnBackMainMenu()

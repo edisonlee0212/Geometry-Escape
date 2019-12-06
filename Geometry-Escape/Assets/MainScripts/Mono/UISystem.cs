@@ -23,8 +23,6 @@ public class UISystem : MonoBehaviour {
     private TextMeshProUGUI m_PopupText;
     [SerializeField]
     private Image m_ExitIndicator;
-    [SerializeField]
-    private GameObject m_VolumeRocker;
 
     private bool isShow = true;
     private float alpha = 0.1f;
@@ -81,7 +79,6 @@ Up is now down and left is now right, etc."
         exit_indicator = m_ExitIndicator;
         arrows = Resources.LoadAll<Sprite>("Textures/UI/arrows");
         last_arrow = -1;
-        volume_rocker = m_VolumeRocker;
 
         HealthStatusText = m_HealthStatusText;
         //   MonsterHealthText = m_MonsterHealthText;
