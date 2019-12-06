@@ -1287,7 +1287,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: End Recording
+  m_Text: End Recording and SAVE
 --- !u!222 &756727069
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -1712,7 +1712,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Use This Offset
+  m_Text: Back to menu
 --- !u!222 &2032161512
 CanvasRenderer:
   m_ObjectHideFlags: 0

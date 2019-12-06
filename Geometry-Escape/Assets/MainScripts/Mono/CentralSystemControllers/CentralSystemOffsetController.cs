@@ -54,14 +54,12 @@ namespace GeometryEscape
             if (isRecordingBeat)
             {
                 AudioSystem.MusicAudioSource.Stop();
-                BackToMenu.interactable = false;
                 ResetOffset.interactable = false;
                 StartRecording.interactable = true;
                 EndRecording.interactable = false;
             }
             else
             {
-                BackToMenu.interactable = true;
                 ResetOffset.interactable = true;
                 StartRecording.interactable = false;
                 EndRecording.interactable = false;
@@ -72,6 +70,7 @@ namespace GeometryEscape
         {
             StartRecording.interactable = false;
             EndRecording.interactable = true;
+            ChangeMode.interactable = false;
             AudioSystem.StartRecording();
         }
 
@@ -79,6 +78,7 @@ namespace GeometryEscape
         {
             StartRecording.interactable = true;
             EndRecording.interactable = false;
+            ChangeMode.interactable = true;
             AudioSystem.EndRecording();
         }
 

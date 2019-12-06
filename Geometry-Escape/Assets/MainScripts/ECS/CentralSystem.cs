@@ -406,7 +406,6 @@ namespace GeometryEscape
             }
             if (avoidCheck || (!_Moving && (ControlSystem.ControlMode == ControlMode.MapEditor || FloatingOriginSystem.CenterTileEntity != Entity.Null)))
             {
-                Debug.Log(AudioSystem.OnBeats());
                 if (avoidCheck || (AudioSystem.OnBeats() || ControlSystem.ControlMode == ControlMode.MapEditor) && moveVec != Vector2.zero && moveVec.x * moveVec.y == 0)
                 {
                     Direction characterMovingDirection = Direction.Still;

@@ -64,11 +64,11 @@ namespace GeometryEscape
             Enabled = false;
         }
 
-        public void Init()
+        public void Init(int musicIndex = 2)
         {
             ShutDown();
             m_MusicResources = CentralSystem.AudioResources;
-            m_Music = m_MusicResources.Musics[0];
+            m_Music = m_MusicResources.Musics[musicIndex];
             m_SoundEffectAudioSources = new AudioSource[m_MusicResources.SoundEffects.Length];
             AudioMixer mixer = Resources.Load<AudioMixer>("Musics/Main");
             m_AudioMixerGroup = mixer.FindMatchingGroups("Master")[0];
@@ -78,7 +78,7 @@ namespace GeometryEscape
             _Deviation = 0.1f;
             Enabled = true;
 
-            _Deviation = m_Music.MusicInfo.MusicBeatsTime / 4;
+            _Deviation = 0.15f;
             UISystem._devision = m_Music.MusicInfo.MusicBeatsTime;
             ReadBeats();
         }
@@ -161,11 +161,6 @@ namespace GeometryEscape
         public static void ReadBeats()
         {
             BeatsTime = FileSystem.ReadBeats(m_MusicAudioSource.clip.name);
-            Debug.Log(BeatsTime);
-            foreach(var i in BeatsTime)
-            {
-                Debug.Log(i);
-            }
         }
         #endregion
 

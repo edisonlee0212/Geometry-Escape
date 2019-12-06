@@ -17,6 +17,46 @@ MonoBehaviour:
     MusicInfo:
       MusicStartTime: 0.2
       MusicBeatsTime: 0.857
+  - MusicClip: {fileID: 8300000, guid: fa315d7720bd3994aada0ee696551522, type: 3}
+    MusicInfo:
+      MusicStartTime: 0
+      MusicBeatsTime: 0.6
+  - MusicClip: {fileID: 8300000, guid: 83d2446235eda5944aee96b77c61306e, type: 3}
+    MusicInfo:
+      MusicStartTime: 0
+      MusicBeatsTime: 0.6
+  - MusicClip: {fileID: 8300000, guid: 49ffe5f75ca1c9a4c882e71e250a887d, type: 3}
+    MusicInfo:
+      MusicStartTime: 0
+      MusicBeatsTime: 0.6
+  - MusicClip: {fileID: 8300000, guid: ea0284461278d224b83a510e9aaa9666, type: 3}
+    MusicInfo:
+      MusicStartTime: 0
+      MusicBeatsTime: 0.6
+  - MusicClip: {fileID: 8300000, guid: f09d5298bd790c548a1bbbfb0aa8d9df, type: 3}
+    MusicInfo:
+      MusicStartTime: 0
+      MusicBeatsTime: 0.6
+  - MusicClip: {fileID: 8300000, guid: e54cd7bb45408c04aaf7b6de2353f2d3, type: 3}
+    MusicInfo:
+      MusicStartTime: 0
+      MusicBeatsTime: 0.6
+  - MusicClip: {fileID: 8300000, guid: 59954760502786b49b4c2f1f19c1049a, type: 3}
+    MusicInfo:
+      MusicStartTime: 0
+      MusicBeatsTime: 0.6
+  - MusicClip: {fileID: 8300000, guid: bcd15bd0f6f95804db4715f3da60e03d, type: 3}
+    MusicInfo:
+      MusicStartTime: 0
+      MusicBeatsTime: 0.6
+  - MusicClip: {fileID: 8300000, guid: 6f3d122420453f844aaef1936dc5d161, type: 3}
+    MusicInfo:
+      MusicStartTime: 0
+      MusicBeatsTime: 0.6
+  - MusicClip: {fileID: 8300000, guid: d64a5a9090bdfe74c8dc59689ecbd95c, type: 3}
+    MusicInfo:
+      MusicStartTime: 0
+      MusicBeatsTime: 0.6
   m_SoundEffects:
   - {fileID: 8300000, guid: 8b8697a82ea5c704ca08719b3be33b1a, type: 3}
   - {fileID: 8300000, guid: d835453e477ff8649ae8f35f5985c2ef, type: 3}
