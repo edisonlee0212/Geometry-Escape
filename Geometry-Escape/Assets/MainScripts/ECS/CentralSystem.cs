@@ -276,7 +276,7 @@ namespace GeometryEscape
             ControlSystem = new ControlSystem();//control system并不是一个真正的ECS的系统，所以我们通过这种方式建立。
             #endregion
 
-            ControlSystem.ControlMode = ControlMode.InGame;
+            ControlSystem.ControlMode = ControlMode.BeatsEditor;
             Running = true;
 
             Enabled = true;

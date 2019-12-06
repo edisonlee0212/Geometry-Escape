@@ -115,6 +115,8 @@ namespace GeometryEscape
         #region Beats Editor
         public static void StartRecording()
         {
+            BeatsTime.Clear();
+            m_MusicAudioSource.Play();
             m_MusicRecordingInfo = default;
             m_MusicRecordingInfo.BeatCounter = 0;
         }
@@ -133,7 +135,10 @@ namespace GeometryEscape
 
         public static void RecordBeat()
         {
-            BeatsTime.Add(m_MusicAudioSource.time);
+            if (CentralSystemOffsetController.isRecordingBeat) {
+                BeatsTime.Add(m_MusicAudioSource.time);
+                PlayKeySound();
+            }
         }
 
         public static void EndRecording()
@@ -141,12 +146,12 @@ namespace GeometryEscape
             //float beatsTime = ((m_MusicRecordingInfo.CurrentBeatTime - m_MusicRecordingInfo.StartTime) / (m_MusicRecordingInfo.BeatCounter - 1));
             //m_MusicRecordingInfo.StartTime = m_MusicRecordingInfo.StartTime % beatsTime;
             //Debug.Log("[Starting Time]:" + m_MusicRecordingInfo.StartTime + " [Beat Time]: " + beatsTime);
-            FileSystem.SavingBeats(BeatsTime, m_MusicAudioSource.name);
+            FileSystem.SavingBeats(BeatsTime, m_MusicAudioSource.clip.name);
         }
 
         public static void ReadBeats()
         {
-            BeatsTime = FileSystem.ReadBeats(m_MusicAudioSource.name);
+            BeatsTime = FileSystem.ReadBeats(m_MusicAudioSource.clip.name);
         }
         #endregion
 

@@ -72,13 +72,14 @@ namespace GeometryEscape
         {
             StartRecording.interactable = false;
             EndRecording.interactable = true;
-            
+            AudioSystem.StartRecording();
         }
 
         public void OnEndRecording()
         {
             StartRecording.interactable = true;
             EndRecording.interactable = false;
+            AudioSystem.EndRecording();
         }
 
 
@@ -95,7 +96,7 @@ namespace GeometryEscape
             }
             else
             {
-
+                AudioSystem.RecordBeat();
             }
         }
 

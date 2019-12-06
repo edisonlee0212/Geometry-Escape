@@ -592,7 +592,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1171649579}
-        m_MethodName: resetTest
+        m_MethodName: OnEndRecording
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -721,7 +721,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1171649579}
-        m_MethodName: resetTest
+        m_MethodName: OnStartRecording
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1379,7 +1379,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1171649579}
-        m_MethodName: resetTest
+        m_MethodName: OnChangeMode
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1455,6 +1455,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_HealthStatusText: {fileID: 196649148}
+  BackToMenu: {fileID: 237856201}
+  ResetOffset: {fileID: 496957926}
+  ChangeMode: {fileID: 885216619}
+  StartRecording: {fileID: 352467599}
+  EndRecording: {fileID: 344581559}
 --- !u!4 &1171649580
 Transform:
   m_ObjectHideFlags: 0

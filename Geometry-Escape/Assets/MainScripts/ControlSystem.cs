@@ -141,7 +141,7 @@ namespace GeometryEscape
 
         private static void BeatsEditorNewBeat(InputAction.CallbackContext ctx)
         {
-            AudioSystem.AddBeats();
+            AudioSystem.RecordBeat();
         }
 
         private static void BeatsEditorEndRecording(InputAction.CallbackContext ctx)
